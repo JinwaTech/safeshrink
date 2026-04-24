@@ -1,0 +1,124 @@
+SafeShrink 第三方开源组件许可证声明
+=====================================
+
+SafeShrink 使用了以下开源软件组件，特此声明并感谢这些项目的贡献。
+
+---
+
+GUI 框架
+--------
+PySide6 6.11.0
+- 许可证: GNU Lesser General Public License v3 (LGPL-3.0)
+- 版权: Qt Company
+- 用途: 图形用户界面
+- 说明: 动态链接使用，未修改源码
+- 源码: https://code.qt.io/cgit/pyside/pyside-setup.git
+
+---
+
+PDF 处理
+--------
+pypdf 6.9.2
+- 许可证: BSD 3-Clause License
+- 版权: Mathieu Fenniak
+- 用途: PDF 读取和元数据清理
+
+pikepdf 10.5.1
+- 许可证: Mozilla Public License 2.0 (MPL-2.0)
+- 版权: James R. Barlow
+- 用途: PDF 底层操作
+
+pdfplumber 0.11.9
+- 许可证: MIT License
+- 版权: Jeremy Singer-Vine
+- 用途: PDF 表格提取
+
+pdfminer.six 20251230
+- 许可证: MIT License
+- 版权: Yusuke Shinyama, pdfminer.six team
+- 用途: PDF 文本提取
+
+---
+
+Office 文档处理
+---------------
+python-docx 1.2.0
+- 许可证: MIT License
+- 版权: Mike MacCana
+- 用途: Word 文档处理
+
+openpyxl
+- 许可证: MIT License
+- 版权: Eric Gazoni, Charlie Clark
+- 用途: Excel 文档处理
+
+python-pptx
+- 许可证: MIT License
+- 版权: Steve Canny
+- 用途: PowerPoint 文档处理
+
+doc2docx 0.2.4
+- 许可证: MIT License
+- 用途: .doc 转 .docx 格式
+
+---
+
+Markdown 转换
+-------------
+MarkItDown 0.0.2
+- 许可证: MIT License
+- 版权: Microsoft
+- 用途: 文档转 Markdown
+
+---
+
+图像处理
+--------
+Pillow 12.1.1
+- 许可证: HPND (Historical Permission Notice and Disclaimer)
+- 版权: Jeffrey A. Clark (Alex)
+- 用途: 图像处理
+
+---
+
+编码检测
+--------
+chardet 4.0.0
+- 许可证: GNU Lesser General Public License v2.1 (LGPL-2.1)
+- 版权: Mark Pilgrim
+- 用途: 字符编码检测
+
+charset-normalizer 3.4.1
+- 许可证: MIT License
+- 版权: Ahmed TAHRI
+- 用途: 字符编码检测
+
+---
+
+其他工具库
+----------
+其他使用的开源库包括但不限于：
+- lxml (BSD)
+- requests (Apache-2.0)
+- click (BSD)
+- tqdm (MIT/MPL-2.0)
+
+---
+
+许可证全文获取
+--------------
+各许可证全文可通过以下链接获取：
+- LGPL-3.0: https://www.gnu.org/licenses/lgpl-3.0.txt
+- BSD-3-Clause: https://opensource.org/licenses/BSD-3-Clause
+- MIT: https://opensource.org/licenses/MIT
+- MPL-2.0: https://www.mozilla.org/MPL/2.0/
+- HPND: https://opensource.org/licenses/HPND
+
+---
+
+声明
+----
+SafeShrink 尊重开源精神，感谢以上项目及所有贡献者的辛勤工作。
+本软件对第三方库的使用符合其 respective 许可证条款。
+
+如有疑问，请联系: [your-email@example.com]
