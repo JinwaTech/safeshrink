@@ -1,0 +1,42 @@
+{
+  "language": "zh-CN",
+  "theme": "light",
+  "auto_check_update": false,
+  "minimize_to_tray": false,
+  "confirm_on_exit": true,
+  "output_dir": "",
+  "auto_backup": true,
+  "overwrite_confirm": true,
+  "preserve_structure": true,
+  "timestamp_output": false,
+  "workers": 8,
+  "image_quality": 75,
+  "text_compression": 60,
+  "pdf_quality": 70,
+  "remove_empty_lines": true,
+  "remove_empty_paragraphs": true,
+  "deep_clean_word": false,
+  "sanitize_types": [
+    "\u624b\u673a\u53f7",
+    "\u90ae\u7bb1"
+  ],
+  "mask_char": "*",
+  "preserve_first_last": true,
+  "sanitize_mode": "mask",
+  "history_limit": 100,
+  "show_result_dialog": true,
+  "show_progress_detail": true,
+  "font_size": 14,
+  "table_row_height": 32,
+  "log_level": "info",
+  "max_log_size_mb": 10,
+  "cache_enabled": true,
+  "cache_size_mb": 100,
+  "hotkey_enabled": false,
+  "hotkey_quick_slim": "Ctrl+Shift+S",
+  "hotkey_quick_sanitize": "Ctrl+Shift+D",
+  "custom_patterns": {
+    "keywords": "",
+    "regex": ""
+  }
+}
