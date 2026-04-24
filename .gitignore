@@ -1,0 +1,22 @@
+# 忽略构建产物
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+dist/
+build/
+*.spec.bak/
+
+# 忽略测试图片目录
+SafeShrink_测试图片/
+
+# 忽略 IDE 配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 忽略临时文件
+*.tmp
+*.log
