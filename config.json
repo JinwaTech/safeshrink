@@ -1,0 +1,8 @@
+{
+  "name": "SafeShrink",
+  "version": "2.0.0",
+  "description": "文档工具箱 - 文档减肥 & 脱敏",
+  "author": "OpenClaw_Scout",
+  "functions": ["slim", "sanitize"],
+  "output_dir": "output"
+}
