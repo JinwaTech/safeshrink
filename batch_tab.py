@@ -1448,16 +1448,25 @@ class BatchTab(QWidget):
                 action='sanitize'
             )
         else:
-            # 减肥模式：显示节省空间 + Token
-            dialog.set_batch_result(
-                total_files,
-                success_count,
-                total_saved,
-                [],
-                action='slim',
-                original_tokens=self.worker.total_orig_tokens if self.worker else 0,
-                new_tokens=self.worker.total_new_tokens if self.worker else 0
-            )
+            # 减肥模式：显示节省空间（只在 SSD 转换时显示 Token）
+            if self.mode_combo.currentText() == "转换为SSD":
+                dialog.set_batch_result(
+                    total_files,
+                    success_count,
+                    total_saved,
+                    [],
+                    action='slim',
+                    original_tokens=self.worker.total_orig_tokens if self.worker else 0,
+                    new_tokens=self.worker.total_new_tokens if self.worker else 0
+                )
+            else:
+                dialog.set_batch_result(
+                    total_files,
+                    success_count,
+                    total_saved,
+                    [],
+                    action='slim'
+                )
 
         # 显示对话框，捕获任何异常防止软件退出
         try:

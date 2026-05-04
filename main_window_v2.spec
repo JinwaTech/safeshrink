@@ -1,16 +1,43 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
     ['main_window_v2.py'],
     pathex=[],
     binaries=[],
-    datas=[('assets', 'assets')],
-    hiddenimports=['PySide6.QtCore', 'PySide6.QtWidgets', 'PySide6.QtGui'],
+    datas=[
+        ('assets/icon06_light.ico', 'assets'),
+        ('assets/arrow_up.png', 'assets'),
+        ('assets/arrow_down.png', 'assets'),
+        ('assets/arrow_down2.png', 'assets'),
+        ('assets/icon06_64x64_light.png', 'assets'),
+        ('assets/icon14_64x64_dark.png', 'assets'),
+    ],
+    hiddenimports=[
+        'safe_shrink',
+        'safe_shrink_gui',
+        'batch_processor',
+        'format_to_ssd',
+        'sanitize_ssd',
+        'ssd_embed_images',
+        'sanitize_tab',
+        'batch_tab',
+        'slim_tab',
+        'history_tab',
+        'settings_tab',
+        'theme_manager',
+        'history_manager',
+        'file_status',
+        'translations',
+        'result_compare_dialog',
+        'pypdf',
+        'python-docx',
+        'PIL',
+        'markitdown',
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['speech_recognition', 'pydub', 'tensorflow'],
+    excludes=[],
     noarchive=False,
     optimize=0,
 )
@@ -21,7 +48,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='main_window_v2',
+    name='SafeShrink',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -32,7 +59,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['assets\\icon06_light.ico'],
+    icon=['assets/icon06_light.ico'],
 )
 coll = COLLECT(
     exe,
@@ -41,5 +68,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='main_window_v2',
+    name='SafeShrink',
 )

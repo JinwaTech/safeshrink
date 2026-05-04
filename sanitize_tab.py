@@ -997,7 +997,7 @@ class SanitizeTab(QWidget):
             self.btn_save.setEnabled(True)
             self.btn_undo.setEnabled(True)
             self.result_label.setText("✅ 脱敏完成！格式已保留。")
-            QMessageBox.information(self, "完成", "脱敏完成！格式已保留。")
+            QMessageBox.information(self, "完成", "脱敏完成！")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"处理失败: {e}")
 

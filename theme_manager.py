@@ -996,6 +996,34 @@ class ThemeManager:
             return False
 
     @staticmethod
+    def get_dialog_style(theme='dark'):
+        """获取对话框样式表"""
+        c = ThemeManager.DARK_THEME if theme == 'dark' else ThemeManager.LIGHT_THEME
+        return f'''
+            QDialog {{
+                background-color: {c['window_bg']};
+            }}
+            QLabel {{
+                color: {c['text_primary']};
+                background-color: transparent;
+            }}
+            QPushButton {{
+                background-color: {c['accent']};
+                color: {c['accent_text']};
+                border: none;
+                border-radius: 6px;
+                padding: 8px 24px;
+                font-size: 13px;
+            }}
+            QPushButton:hover {{
+                background-color: {c['accent_hover']};
+            }}
+            QPushButton:pressed {{
+                background-color: {c['accent_pressed']};
+            }}
+        '''
+
+    @staticmethod
     def get_actual_theme(setting):
         """获取实际主题"""
         if setting == 'system':

@@ -991,15 +991,19 @@ def estimate_tokens(text):
 
     
 
-    # 1. 图片: ![alt](url) — 图片本身按 ~170 tokens 估算（中等分辨率）
-
-    for m in _re.finditer(r'!\[([^\]]*)\]\(([^)]+)\)', text):
-
+    # 1. 图片: Base64 data URI 精确计算 + 非 base64 图片按 170 估算
+    _b64_pat = r'data:image/[a-zA-Z]+;base64,[A-Za-z0-9+/=]+'
+    _b64_matches = _re.findall(_b64_pat, text)
+    if _b64_matches:
+        _b64_chars = sum(len(m.split(',', 1)[1]) for m in _b64_matches)
+        stats['images'] = _b64_chars // 4
+    else:
+        stats['images'] = 0
+    # 非 base64 图片（URL 引用），按 170 token 估算
+    for m in _re.finditer(r'!\[[^\]]*\]\((?!data:image)[^)]+\)', text):
         stats['images'] += 170
 
-    
-
-    # 2. 超链接: [text](url) — 非图片
+# 2. 超链接: [text](url) — 非图片
 
     link_matches = _re.findall(r'(?<!!)\[([^\]]+)\]\(([^)]+)\)', text)
 

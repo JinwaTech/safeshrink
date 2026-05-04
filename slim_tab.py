@@ -473,14 +473,31 @@ class SlimTab(QWidget):
 
         # 隐藏/显示压缩强度滑块（SSD转换不需要）
         if mode == "转换为SSD":
-            self.slider.setEnabled(False)
-            self.effect_label.setText("将文档转换为SSD格式，提升大模型可读性")
-            self.chk_embed_images.setVisible(True)
-        else:
-            self.slider.setEnabled(True)
-            self.on_slider_changed(self.slider.value())
-            self.chk_embed_images.setVisible(False)
+            try:
+                from safe_shrink import estimate_tokens
+                result = convert_format_to_ssd(self.current_file, embed_images=self.chk_embed_images.isChecked())
+                self.processed_content = result
+                self.text_edit.setPlainText(result)
+                self.btn_save.setEnabled(True)
+                self.btn_undo.setEnabled(True)
 
+                orig_len = len(self.original_content) if self.original_content else 0
+                new_len = len(result)
+
+                orig_tokens = estimate_tokens(self.original_content or "")
+                new_tokens = estimate_tokens(result)
+                token_saved = orig_tokens["total"] - new_tokens["total"]
+
+                self.stats_label.setText("原文: " + str(orig_len) + " chars -> SSD: " + str(new_len) + " chars")
+                self.result_label.setText("DONE: SSD converted")
+
+                sign = "" if token_saved >= 0 else "-"
+                token_str = "Token: ~" + str(orig_tokens["total"]) + " -> ~" + str(new_tokens["total"]) + " saved: " + sign + str(abs(token_saved))
+                QMessageBox.information(self, "Done", "SSD conversion complete!\n\nChars: " + str(orig_len) + " -> " + str(new_len) + "\n" + token_str)
+                return
+            except Exception as e:
+                QMessageBox.critical(self, "Error", "Conversion failed: " + str(e))
+                return
     def on_slider_changed(self, value):
         """滑块变化时更新显示"""
         self.slider_value.setText(f"{value}%")
@@ -548,22 +565,18 @@ class SlimTab(QWidget):
                 orig_len = len(self.original_content) if self.original_content else 0
                 new_len = len(result)
 
-                # Token 对比
-                orig_tokens = estimate_tokens(self.original_content) if self.original_content else None
-                new_tokens = estimate_tokens(result) if result else None
-                token_info = ""
-                if orig_tokens and new_tokens:
-                    token_saved = orig_tokens['total'] - new_tokens['total']
-                    token_info = f" | Token: ~{orig_tokens['total']:,} → ~{new_tokens['total']:,}"
-                    if token_saved > 0:
-                        token_info += f" (省 {token_saved:,})"
+                # Token calculation
+                orig_tokens = estimate_tokens(self.original_content or "")
+                new_tokens = estimate_tokens(result)
+                token_saved = orig_tokens["total"] - new_tokens["total"]
 
-                # 暂存 token，供保存历史时使用
-                self._orig_tokens = orig_tokens
-                self._new_tokens = new_tokens
-
-                self.stats_label.setText(f"原文: {orig_len} 字符 → SSD: {new_len} 字符{token_info}")
+                self.stats_label.setText(f"原文: {orig_len} 字符 -> SSD: {new_len} 字符")
                 self.result_label.setText(f"✅ 已转换为 SSD 格式")
+
+                # Show dialog
+                sign = "" if token_saved >= 0 else "-"
+                token_str = f"Token: ~{orig_tokens["total"]:,} -> ~{new_tokens["total"]:,}  节省: {sign}{abs(token_saved):,} tokens"
+                QMessageBox.information(self, "Done", "SSD conversion complete!\n\nChars: " + str(orig_len) + " -> " + str(new_len) + "\n" + token_str)
                 return
             except Exception as e:
                 QMessageBox.critical(self, "错误", f"转换失败: {e}")
@@ -612,24 +625,17 @@ class SlimTab(QWidget):
                 self.btn_save.setEnabled(True)
                 self.btn_undo.setEnabled(True)  # 启用撤销按钮
 
-                orig_len = len(self.original_content) if self.original_content else 0
-                new_len = len(result)
-                compress_rate = round((1 - new_len/orig_len) * 100, 1) if orig_len else 0
+                # 文件大小（KB）
+                orig_bytes = len(self.original_content.encode("utf-8")) if self.original_content else 0
+                new_bytes = len(result.encode("utf-8"))
+                compress_rate = round((1 - new_bytes / orig_bytes) * 100, 1) if orig_bytes else 0
 
-                # Token 简要显示
-                from safe_shrink import estimate_tokens as _est
-                ot = _est(self.original_content) if self.original_content else None
-                nt = _est(result) if result else None
-                token_info = ""
-                if ot and nt:
-                    ts = ot['total'] - nt['total']
-                    token_info = f" | Token: ~{ot['total']:,} → ~{nt['total']:,}"
-                    if ts > 0:
-                        token_info += f" (省 {ts:,})"
-
-                self.stats_label.setText(f"原文: {orig_len} 字符 → 压缩后: {new_len} 字符 (减少 {compress_rate}%){token_info}")
+                self.stats_label.setText(f"原文件: ~{orig_bytes / 1024:.1f} KB → 压缩后: ~{new_bytes / 1024:.1f} KB (压缩 {compress_rate}%)")
                 self.result_label.setText(f"✅ 压缩完成，减少 {compress_rate}%")
 
+
+
+                QMessageBox.information(self, "Done", "Compression complete!\n\nOriginal: ~" + str(round(orig_bytes / 1024, 1)) + " KB\nCompressed: ~" + str(round(new_bytes / 1024, 1)) + " KB\nRate: " + str(compress_rate) + "%")
             except Exception as e:
                 QMessageBox.critical(self, "错误", f"处理失败: {e}")
 
