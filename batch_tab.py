@@ -1447,11 +1447,10 @@ class BatchTab(QWidget):
                 orig_t = self.worker.total_orig_tokens if self.worker else 0
                 new_t = self.worker.total_new_tokens if self.worker else 0
                 token_saved = orig_t - new_t
-                saved_display = self.format_size(total_saved)
                 if token_saved > 0:
-                    msg = f"批量 SSD 转换完成\n\n处理文件: {total_files} 个\n成功: {success_count} 个\n节省空间: {saved_display}\n节省 Token: ~{token_saved:,}"
+                    msg = f"批量 SSD 转换完成\n\n处理文件: {total_files} 个\n成功: {success_count} 个\n节省 Token: ~{token_saved:,}"
                 else:
-                    msg = f"批量 SSD 转换完成\n\n处理文件: {total_files} 个\n成功: {success_count} 个\n节省空间: {saved_display}"
+                    msg = f"批量 SSD 转换完成\n\n处理文件: {total_files} 个\n成功: {success_count} 个"
                 QMessageBox.information(main_win, "完成", msg)
             else:
                 # 标准/深度清理：显示节省空间
