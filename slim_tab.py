@@ -467,38 +467,18 @@ class SlimTab(QWidget):
             self.img_info_label.setText(f"无法读取图片: {e}")
 
     def on_format_changed(self, index):
-        """处理模式变化"""
+        """处理模式变化 — 只做UI切换，实际处理在按钮handler里"""
         modes = ["标准压缩", "深度清理", "保留结构", "转换为SSD"]
         mode = modes[index] if index < len(modes) else "标准压缩"
 
         # 隐藏/显示压缩强度滑块（SSD转换不需要）
         if mode == "转换为SSD":
-            try:
-                from safe_shrink import estimate_tokens
-                from safe_shrink_gui import convert_format_to_ssd
-                result = convert_format_to_ssd(self.current_file, embed_images=self.chk_embed_images.isChecked())
-                self.processed_content = result
-                self.text_edit.setPlainText(result)
-                self.btn_save.setEnabled(True)
-                self.btn_undo.setEnabled(True)
+            self.slider_frame.hide()
+            self.chk_embed_images.setEnabled(True)
+        else:
+            self.slider_frame.show()
+            self.chk_embed_images.setEnabled(False)
 
-                orig_len = len(self.original_content) if self.original_content else 0
-                new_len = len(result)
-
-                orig_tokens = estimate_tokens(self.original_content or "")
-                new_tokens = estimate_tokens(result)
-                token_saved = orig_tokens["total"] - new_tokens["total"]
-
-                self.stats_label.setText("原文: " + str(orig_len) + " chars -> SSD: " + str(new_len) + " chars")
-                self.result_label.setText("DONE: SSD converted")
-
-                sign = "" if token_saved >= 0 else "-"
-                token_str = "Token: ~" + str(orig_tokens["total"]) + " → ~" + str(new_tokens["total"]) + "\n节省: " + sign + str(abs(token_saved)) + " tokens"
-                QMessageBox.information(self, "完成", "SSD 转换完成\n\n原文字符: " + str(orig_len) + " → 压缩后: " + str(new_len) + "\n" + token_str)
-                return
-            except Exception as e:
-                QMessageBox.critical(self, "错误", "转换失败: " + str(e))
-                return
     def on_slider_changed(self, value):
         """滑块变化时更新显示"""
         self.slider_value.setText(f"{value}%")
