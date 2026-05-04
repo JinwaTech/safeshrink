@@ -386,7 +386,7 @@ class BatchWorker(QThread):
                 '.safeshrink_skip',
             }
             skip_suffixes = (
-                '_减肥', '_脱敏', '_原始', '_SSD', '_备份',
+                '_减肥', '_脱敏', '_原始', '_备份',
                 '_original', '_backup', '_processed', '_done',
                 '_sanitized', '_cleaned',
             )
@@ -1192,7 +1192,7 @@ class BatchTab(QWidget):
                 '.safeshrink_skip',              # 跳过标记文件
             }
             skip_suffixes = (
-                '_处理结果', '_减肥', '_脱敏', '_SSD', '_备份',
+                '_处理结果', '_减肥', '_脱敏', '_备份',
                 '_original', '_backup', '_processed', '_done',
                 '_sanitized', '_cleaned',
             )
