@@ -893,7 +893,7 @@ class SanitizeTab(QWidget):
                 for cell in row.cells:
                     total_count += len(mask_pattern.findall(cell.text))
 
-        return total_count
+        return total_count, 0
 
     def _sanitize_native_xlsx(self, wb, types, custom, mode):
         """原地脱敏 xlsx(保持所有格式)
