@@ -599,8 +599,36 @@ class SanitizeTab(QWidget):
             try:
                 from docx import Document
                 doc = Document(path)
-                paragraphs = [p.text for p in doc.paragraphs]
-                return '\n'.join(paragraphs), doc, actual_ext
+                # 全量文本提取（段落+表格+页眉+页脚+文本框）
+                full_lines = []
+                for para in doc.paragraphs:
+                    if para.text.strip():
+                        full_lines.append(para.text)
+                for table in doc.tables:
+                    for row in table.rows:
+                        for cell in row.cells:
+                            if cell.text.strip():
+                                full_lines.append(cell.text.strip())
+                # 页眉页脚
+                for section in doc.sections:
+                    for hdr in [section.header, section.first_page_header, section.even_page_header]:
+                        if hdr and hdr.is_linked_to_previous is False:
+                            for para in hdr.paragraphs:
+                                if para.text.strip():
+                                    full_lines.append(para.text)
+                    for ftr in [section.footer, section.first_page_footer, section.even_page_footer]:
+                        if ftr and ftr.is_linked_to_previous is False:
+                            for para in ftr.paragraphs:
+                                if para.text.strip():
+                                    full_lines.append(para.text)
+                # 文本框 (drawing shapes)
+                for shape in doc.element.body.iter():
+                    if shape.tag.endswith('}txbx'):
+                        for para in shape.iter():
+                            if para.tag.endswith('}t') and para.text:
+                                full_lines.append(para.text)
+                text = '\n'.join(full_lines)
+                return text, doc, actual_ext
             except ImportError:
                 return self._fallback_read(path), None, actual_ext
             except Exception as e:
