@@ -76,6 +76,46 @@ class BatchWorker(QThread):
 
             saved_bytes = 0
 
+            # Markdown/TXT 脱敏：使用 SanitizeTab._sanitize_text() 原地处理
+            if ext in ('.md', '.txt') and self.action == 'sanitize':
+                types = self.options.get('sanitize_items', None)
+                custom = self.options.get('custom_words', [])
+                mode = self.options.get('mask_mode', 'mask')
+                try:
+                    from sanitize_tab import SanitizeTab
+                    sanitizer = SanitizeTab.__new__(SanitizeTab)
+                    with open(str(file_path), 'r', encoding='utf-8') as f:
+                        text = f.read()
+                    sanitized_text, _ = sanitizer._sanitize_text(text, types, custom, mode)
+                    out_file = output_path.with_stem(output_path.stem + '_脱敏')
+                    with open(str(out_file), 'w', encoding='utf-8') as f:
+                        f.write(sanitized_text)
+                    new_size = out_file.stat().st_size
+                    saved_bytes = orig_size - new_size
+                    from safe_shrink_gui import detect_sensitive
+                    detected = detect_sensitive(text, types)
+                    sanitized_count = len(detected)
+                    with self._lock:
+                        self._processed_records.append({
+                            'original': file_path.name,
+                            'output': out_file.name,
+                            'type': self.action,
+                            'status': 'success'
+                        })
+                    return (file_path.name, True, f"已完成脱敏{sanitized_count}处", saved_bytes)
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
+                    shutil.copy2(file_path, output_path)
+                    with self._lock:
+                        self._processed_records.append({
+                            'original': file_path.name,
+                            'output': file_path.name,
+                            'type': 'copy',
+                            'status': 'success'
+                        })
+                    return (file_path.name, True, "复制", 0)
+
             # Office 文档脱敏：保持格式原地处理（不含 PDF，PDF 走 batch_processor）
             if ext in ('.docx', '.xlsx', '.xls', '.pptx', '.ppt') and self.action == 'sanitize':
                 types = self.options.get('sanitize_items', None)
