@@ -1399,7 +1399,6 @@ class BatchTab(QWidget):
 
     def show_batch_compare(self, folder=None):
         """显示批量处理结果对比"""
-        from result_compare_dialog import ResultCompareDialog
 
         # 统计结果
         total_files = self.file_table.rowCount()
@@ -1434,45 +1433,30 @@ class BatchTab(QWidget):
 
         print(f"[DEBUG] 总节省: {total_saved} bytes = {self.format_size(total_saved)}")
 
-        # 关键：用 window() 获取真正的顶级窗口作为父，避免对话框关闭时误关主窗口
+        # 用 QMessageBox 统一弹窗风格（与 slim_tab.py / sanitize_tab.py 保持一致）
         main_win = self.window()
-        dialog = ResultCompareDialog(main_win)
 
         if action == 'sanitize':
             # 脱敏模式：显示脱敏处数
-            dialog.set_batch_result(
-                total_files,
-                success_count,
-                total_items,
-                [],
-                action='sanitize'
-            )
+            msg = f"批量脱敏完成\n\n处理文件: {total_files} 个\n成功: {success_count} 个\n脱敏: {total_items} 处"
+            QMessageBox.information(main_win, "完成", msg)
         else:
-            # 减肥模式：显示节省空间（只在 SSD 转换时显示 Token）
+            # 减肥模式
             if self.mode_combo.currentText() == "转换为SSD":
-                dialog.set_batch_result(
-                    total_files,
-                    success_count,
-                    total_saved,
-                    [],
-                    action='slim',
-                    original_tokens=self.worker.total_orig_tokens if self.worker else 0,
-                    new_tokens=self.worker.total_new_tokens if self.worker else 0
-                )
+                orig_t = self.worker.total_orig_tokens if self.worker else 0
+                new_t = self.worker.total_new_tokens if self.worker else 0
+                token_saved = orig_t - new_t
+                saved_display = self.format_size(total_saved)
+                if token_saved > 0:
+                    msg = f"批量 SSD 转换完成\n\n处理文件: {total_files} 个\n成功: {success_count} 个\n节省空间: {saved_display}\n节省 Token: ~{token_saved:,}"
+                else:
+                    msg = f"批量 SSD 转换完成\n\n处理文件: {total_files} 个\n成功: {success_count} 个\n节省空间: {saved_display}"
+                QMessageBox.information(main_win, "完成", msg)
             else:
-                dialog.set_batch_result(
-                    total_files,
-                    success_count,
-                    total_saved,
-                    [],
-                    action='slim'
-                )
-
-        # 显示对话框，捕获任何异常防止软件退出
-        try:
-            dialog.exec()
-        except Exception as e:
-            print(f"[ERROR] 结果对话框异常: {e}")
+                # 标准/深度清理：显示节省空间
+                saved_display = self.format_size(total_saved)
+                msg = f"批量压缩完成\n\n处理文件: {total_files} 个\n成功: {success_count} 个\n节省空间: {saved_display}"
+                QMessageBox.information(main_win, "完成", msg)
 
         # 保存到历史
         self.save_batch_to_history(total_files, success_count, total_saved, folder, action, total_items)
