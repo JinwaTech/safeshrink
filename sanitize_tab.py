@@ -971,6 +971,7 @@ class SanitizeTab(QWidget):
         try:
             # 脱敏前检测统计
             content_for_count = self.text_edit.toPlainText()
+            from safe_shrink_gui import detect_sensitive
             before = detect_sensitive(content_for_count, types, custom_patterns=custom)
             found_count = len(before)
 

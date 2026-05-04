@@ -475,6 +475,7 @@ class SlimTab(QWidget):
         if mode == "转换为SSD":
             try:
                 from safe_shrink import estimate_tokens
+                from safe_shrink_gui import convert_format_to_ssd
                 result = convert_format_to_ssd(self.current_file, embed_images=self.chk_embed_images.isChecked())
                 self.processed_content = result
                 self.text_edit.setPlainText(result)
