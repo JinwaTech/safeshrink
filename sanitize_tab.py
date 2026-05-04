@@ -969,24 +969,30 @@ class SanitizeTab(QWidget):
         mode = 'mask' if self.radio_mask.isChecked() else 'tags'
 
         try:
-            # 如果有原生文档对象，优先原地处理
+            # 脱敏前检测统计
+            content_for_count = self.text_edit.toPlainText()
+            before = detect_sensitive(content_for_count, types, custom_patterns=custom)
+            found_count = len(before)
+
+            # 原地脱敏
             if self._native_doc is not None:
                 ext = self._native_docx_ext
-                
+
                 if ext == '.docx':
                     self._sanitize_native_docx(self._native_doc, types, custom, mode)
                     self._update_preview_from_native()
-                
+
                 elif ext in ('.xlsx', '.xls'):
                     self._sanitize_native_xlsx(self._native_doc, types, custom, mode)
                     self._update_preview_from_native()
-                
+
                 elif ext == '.pptx':
                     self._sanitize_native_pptx(self._native_doc, types, custom, mode)
                     self._update_preview_from_native()
-                
+
                 self.processed_content = self.text_edit.toPlainText()
-            
+
+
             else:
                 # 纯文本文件：直接用 safe_shrink_gui 脱敏
                 content = self.text_edit.toPlainText()
@@ -994,10 +1000,16 @@ class SanitizeTab(QWidget):
                 self.processed_content = result
                 self.text_edit.setPlainText(result)
 
+            # 脱敏后检测，对比差值
+            after_content = self.text_edit.toPlainText()
+            after_items = detect_sensitive(after_content, types, custom_patterns=custom)
+            sanitized_count = found_count - len(after_items)
+
             self.btn_save.setEnabled(True)
             self.btn_undo.setEnabled(True)
             self.result_label.setText("✅ 脱敏完成！格式已保留。")
-            QMessageBox.information(self, "完成", "脱敏完成！")
+            msg = f"脱敏完成！\n\n发现: {found_count} 处\n已脱敏: {sanitized_count} 处\n未脱敏: {len(after_items)} 处"
+            QMessageBox.information(self, "完成", msg)
         except Exception as e:
             QMessageBox.critical(self, "错误", f"处理失败: {e}")
 
