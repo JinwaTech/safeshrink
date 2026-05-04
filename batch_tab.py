@@ -86,15 +86,19 @@ class BatchWorker(QThread):
                     sanitizer = SanitizeTab.__new__(SanitizeTab)
                     with open(str(file_path), 'r', encoding='utf-8') as f:
                         text = f.read()
+                    print(f"[DEBUG] _sanitize_text start, text_len={len(text)}, types={types}")
                     sanitized_text, _ = sanitizer._sanitize_text(text, types, custom, mode)
+                    print(f"[DEBUG] _sanitize_text done, result_len={len(sanitized_text)}")
                     out_file = output_path.with_stem(output_path.stem + '_脱敏')
                     with open(str(out_file), 'w', encoding='utf-8') as f:
                         f.write(sanitized_text)
                     new_size = out_file.stat().st_size
                     saved_bytes = orig_size - new_size
                     from safe_shrink_gui import detect_sensitive
+                    print(f"[DEBUG] detect_sensitive start, text_len={len(text)}")
                     detected = detect_sensitive(text, types)
                     sanitized_count = len(detected)
+                    print(f"[DEBUG] detect_sensitive done, count={sanitized_count}")
                     with self._lock:
                         self._processed_records.append({
                             'original': file_path.name,
