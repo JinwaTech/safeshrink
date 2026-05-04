@@ -1020,6 +1020,25 @@ class SanitizeTab(QWidget):
         if not self.current_file:
             return
 
+        # 防重复脱敏检查：若文件已含 __MASK_ 占位符（已脱敏过），弹窗警告
+        if self._native_doc is not None:
+            masked_content = self.text_edit.toPlainText()
+            import re
+            existing_masks = re.findall(r'__MASK_\d+__', masked_content)
+            unique_masks = len(set(existing_masks))
+            if existing_masks:
+                reply = QMessageBox.warning(
+                    self, "文件已脱敏",
+                    f"检测到文件已包含 {unique_masks} 处脱敏标记（__MASK__）。\n"
+                    "请勿重复脱敏。\n\n"
+                    "点击【是】强制重新脱敏（可能多余覆盖），点击【否】取消操作。",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                )
+                if reply != QMessageBox.StandardButton.Yes:
+                    return
+                # 用户选了 Yes，重新从头扫描（先保存当前文档内容用于比对）
+                # 注意：已存在的占位符仍会被计入
+
         types = self.get_selected_types()
         print(f"[DEBUG] sanitize_file called, types={types}")  # 调试输出
         custom = self.get_custom_patterns()
