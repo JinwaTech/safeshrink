@@ -1,6 +1,6 @@
 """
 文档脱敏标签页
-功能：检测并脱敏敏感信息
+功能:检测并脱敏敏感信息
 """
 
 from PySide6.QtWidgets import (
@@ -17,22 +17,22 @@ class SanitizeTab(QWidget):
     def __init__(self):
         super().__init__()
         self.current_file = None
-        self.original_content = None  # 原始内容（用于撤销）
+        self.original_content = None  # 原始内容(用于撤销)
         self.processed_content = None  # 处理后内容
         self.detected_items = []
-        self._scene_ready = False  # 场景预设锁，防止信号级联触发
-        
-        # 原生文档对象（保持格式用）
+        self._scene_ready = False  # 场景预设锁,防止信号级联触发
+
+        # 原生文档对象(保持格式用)
         self._native_doc = None  # docx Document 对象
         self._native_docx_ext = None  # 原文件扩展名
-        
+
         self.setup_ui()
         self._scene_ready = True
         self.scene_general.setChecked(True)
         self.load_settings()
-    
+
     def load_settings(self):
-        """从设置文件加载脱敏模式偏好（仅影响脱敏模式，不影响类型勾选）"""
+        """从设置文件加载脱敏模式偏好(仅影响脱敏模式,不影响类型勾选)"""
         import json
         from pathlib import Path
         settings_file = Path(__file__).parent / 'settings.json'
@@ -45,66 +45,66 @@ class SanitizeTab(QWidget):
                 self.radio_tags.setChecked(mode == 'tags')
             except:
                 pass
-        
+
     def setup_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 16, 0, 0)
         layout.setSpacing(16)
-        
-        # 文件选择（固定顶部）
+
+        # 文件选择(固定顶部)
         file_section = self.create_file_section()
         layout.addWidget(file_section)
-        
+
         # 可滚动内容区
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
-        
+
         scroll_content = QWidget()
         scroll_layout = QVBoxLayout(scroll_content)
         scroll_layout.setContentsMargins(0, 0, 0, 0)
         scroll_layout.setSpacing(16)
-        
+
         # 敏感信息类型选择
         types_section = self.create_types_section()
         scroll_layout.addWidget(types_section)
-        
+
         # 内容区域
         content_section = self.create_content_section()
         scroll_layout.addWidget(content_section, 1)
-        
+
         scroll.setWidget(scroll_content)
         layout.addWidget(scroll, 1)
-        
-        # 操作按钮（固定底部）
+
+        # 操作按钮(固定底部)
         actions_section = self.create_actions_section()
         layout.addWidget(actions_section)
-        
+
     def create_file_section(self):
         frame = QFrame()
         frame.setObjectName("card")
         layout = QHBoxLayout(frame)
         layout.setContentsMargins(20, 16, 20, 16)
-        
+
         self.file_label = QLabel("未选择文件")
         self.file_label.setObjectName("subtitle")
-        
+
         btn_browse = QPushButton("选择文件...")
         btn_browse.clicked.connect(self.browse_file)
-        
+
         layout.addWidget(self.file_label)
         layout.addStretch()
         layout.addWidget(btn_browse)
-        
+
         return frame
-    
+
     def create_types_section(self):
         frame = QFrame()
         frame.setObjectName("card")
         layout = QVBoxLayout(frame)
         layout.setContentsMargins(20, 12, 20, 12)
         layout.setSpacing(8)
-        
+
         title = QLabel("脱敏类型")
         title.setStyleSheet("font-weight: 600; font-size: 14px;")
         layout.addWidget(title)
@@ -138,68 +138,68 @@ class SanitizeTab(QWidget):
         mode_layout = QHBoxLayout()
         mode_label = QLabel("脱敏模式:")
         mode_label.setStyleSheet("color: #666; font-size: 12px;")
-        
+
         self.radio_mask = QCheckBox("简单遮蔽 (***)")
         self.radio_mask.setChecked(True)
         self.radio_mask.setToolTip("将敏感信息替换为 ***")
-        
+
         self.radio_tags = QCheckBox("语义标签 (<PERSON_NAME.1>)")
-        self.radio_tags.setToolTip("用语义标签替代，大模型能理解类型但看不到内容")
-        
+        self.radio_tags.setToolTip("用语义标签替代,大模型能理解类型但看不到内容")
+
         # 互斥选择
         self.radio_mask.stateChanged.connect(lambda: self.radio_tags.setChecked(not self.radio_mask.isChecked()))
         self.radio_tags.stateChanged.connect(lambda: self.radio_mask.setChecked(not self.radio_tags.isChecked()))
-        
+
         mode_layout.addWidget(mode_label)
         mode_layout.addWidget(self.radio_mask)
         mode_layout.addWidget(self.radio_tags)
         mode_layout.addStretch()
         layout.addLayout(mode_layout)
-        
+
         # 创建可滚动的内容容器
         scroll_content = QWidget()
         scroll_layout = QVBoxLayout(scroll_content)
         scroll_layout.setContentsMargins(0, 0, 0, 0)
         scroll_layout.setSpacing(8)
-        
+
         # 使用水平布局分组
         types_layout = QHBoxLayout()
-        
+
         # 个人敏感信息组
         personal_group = QVBoxLayout()
         group1_label = QLabel("个人敏感信息:")
         group1_label.setStyleSheet("color: #8b92a5; font-size: 12px;")
-        
+
         self.chk_phone = QCheckBox("手机号 (138****8888)")
         self.chk_phone.setChecked(True)
-        
+
         self.chk_email = QCheckBox("邮箱 (ab***@domain.com)")
         self.chk_email.setChecked(True)
-        
+
         self.chk_idcard = QCheckBox("身份证号 (3301***********4)")
         self.chk_idcard.setChecked(True)
-        
+
         self.chk_bank = QCheckBox("银行卡号 (1234****5678)")
         self.chk_bank.setChecked(True)
-        
+
         self.chk_ip = QCheckBox("IP地址 (xxx.xxx.xxx.xxx)")
         self.chk_ip.setChecked(True)
-        
+
         self.chk_passport = QCheckBox("护照号 (G********1)")
         self.chk_passport.setChecked(True)
-        
+
         self.chk_mac = QCheckBox("Mac 地址")
         self.chk_mac.setChecked(True)
-        
+
         self.chk_imei = QCheckBox("IMEI 设备号")
         self.chk_imei.setChecked(True)
-        
+
         self.chk_plate = QCheckBox("车牌号 (浙A*****5)")
         self.chk_plate.setChecked(True)
-        
+
         self.chk_social = QCheckBox("社保卡号")
         self.chk_social.setChecked(True)
-        
+
         personal_group.addWidget(group1_label)
         personal_group.addWidget(self.chk_phone)
         personal_group.addWidget(self.chk_email)
@@ -212,45 +212,45 @@ class SanitizeTab(QWidget):
         personal_group.addWidget(self.chk_plate)
         personal_group.addWidget(self.chk_social)
         personal_group.addStretch()
-        
+
         # 商业敏感信息组
         business_group = QVBoxLayout()
         group2_label = QLabel("商业敏感信息:")
         group2_label.setStyleSheet("color: #8b92a5; font-size: 12px;")
-        
+
         self.chk_credit = QCheckBox("社会信用代码 (9133***XXXX)")
         self.chk_credit.setChecked(True)
-        
+
         self.chk_license = QCheckBox("营业执照号")
         self.chk_license.setChecked(True)
-        
+
         self.chk_contract = QCheckBox("合同编号 (HT****)")
         self.chk_contract.setChecked(True)
-        
+
         self.chk_amount = QCheckBox("投标/成交价 (¥***)")
         self.chk_amount.setChecked(True)
-        
+
         self.chk_phone2 = QCheckBox("固定电话")
         self.chk_phone2.setChecked(True)
-        
+
         self.chk_account_permit = QCheckBox("开户许可证号")
         self.chk_account_permit.setChecked(True)
-        
+
         self.chk_purchase_order = QCheckBox("采购/订单编号")
         self.chk_purchase_order.setChecked(True)
-        
+
         self.chk_fax = QCheckBox("传真号")
         self.chk_fax.setChecked(True)
-        
+
         self.chk_employee_id = QCheckBox("工号/学号")
         self.chk_employee_id.setChecked(True)
-        
+
         self.chk_project_code = QCheckBox("项目代号")
         self.chk_project_code.setChecked(True)
-        
+
         self.chk_postal = QCheckBox("邮编")
         self.chk_postal.setChecked(True)
-        
+
         business_group.addWidget(group2_label)
         business_group.addWidget(self.chk_credit)
         business_group.addWidget(self.chk_license)
@@ -264,33 +264,33 @@ class SanitizeTab(QWidget):
         business_group.addWidget(self.chk_project_code)
         business_group.addWidget(self.chk_postal)
         business_group.addStretch()
-        
+
         # 专用类型组
         special_group = QVBoxLayout()
         group3_label = QLabel("专用类型:")
         group3_label.setStyleSheet("color: #8b92a5; font-size: 12px;")
-        
+
         gov_label = QLabel("  党政公文:")
         gov_label.setStyleSheet("font-size: 11px; color: #6b7280;")
-        
-        self.chk_docnum = QCheckBox("公文份号 (№******)")
+
+        self.chk_docnum = QCheckBox("公文份号 (No******)")
         self.chk_docnum.setChecked(True)
-        
+
         self.chk_doclevel = QCheckBox("密级标注 (绝密★***年)")
         self.chk_doclevel.setChecked(True)
-        
+
         self.chk_docref = QCheckBox("公文文号 (〔2024〕*字第***号)")
         self.chk_docref.setChecked(True)
-        
+
         med_label = QLabel("  医疗档案:")
         med_label.setStyleSheet("font-size: 11px; color: #6b7280;")
-        
+
         self.chk_medicare = QCheckBox("医保卡号")
         self.chk_medicare.setChecked(True)
-        
+
         self.chk_medical_record = QCheckBox("病历号/门诊号")
         self.chk_medical_record.setChecked(True)
-        
+
         special_group.addWidget(group3_label)
         special_group.addWidget(gov_label)
         special_group.addWidget(self.chk_docnum)
@@ -300,22 +300,22 @@ class SanitizeTab(QWidget):
         special_group.addWidget(self.chk_medicare)
         special_group.addWidget(self.chk_medical_record)
         special_group.addStretch()
-        
+
         types_layout.addLayout(personal_group)
         types_layout.addLayout(business_group)
         types_layout.addLayout(special_group)
-        
+
         scroll_layout.addLayout(types_layout)
-        
+
         # 创建滚动区域
         scroll_area = QScrollArea()
         scroll_area.setWidget(scroll_content)
         scroll_area.setWidgetResizable(True)
-        # 让内容自然展开，不限制高度
+        # 让内容自然展开,不限制高度
         # 样式由 theme_manager 统一设置
-        
+
         layout.addWidget(scroll_area)
-        
+
         # 全选/取消按钮
         btn_layout = QHBoxLayout()
         btn_select_all = QPushButton("全选")
@@ -328,32 +328,32 @@ class SanitizeTab(QWidget):
         btn_layout.addWidget(btn_select_all)
         btn_layout.addWidget(btn_deselect_all)
         layout.addLayout(btn_layout)
-        
+
         return frame
-    
+
     def create_content_section(self):
         frame = QFrame()
         frame.setObjectName("card")
         layout = QVBoxLayout(frame)
         layout.setContentsMargins(20, 16, 20, 16)
-        
+
         title = QLabel("文件内容")
         title.setStyleSheet("font-weight: 600; font-size: 14px;")
-        
+
         self.text_edit = QTextEdit()
-        self.text_edit.setPlaceholderText("选择文件后，内容将显示在这里...")
-        
+        self.text_edit.setPlaceholderText("选择文件后,内容将显示在这里...")
+
         # 检测结果标签
         self.result_label = QLabel("")
         self.result_label.setObjectName("status")
         self.result_label.setWordWrap(True)
-        
+
         layout.addWidget(title)
         layout.addWidget(self.text_edit)
         layout.addWidget(self.result_label)
-        
+
         return frame
-    
+
     def create_actions_section(self):
         frame = QFrame()
         layout = QHBoxLayout(frame)
@@ -386,7 +386,7 @@ class SanitizeTab(QWidget):
         return frame
 
     def _apply_scene(self, scene: str):
-        """根据场景预设联动勾选——与 batch_tab / settings_tab 完全一致"""
+        """根据场景预设联动勾选--与 batch_tab / settings_tab 完全一致"""
         if not self._scene_ready:
             return
         self._scene_ready = False
@@ -456,7 +456,7 @@ class SanitizeTab(QWidget):
                       self.chk_project_code, self.chk_postal]:
                 c.setChecked(True)
         elif scene == 'custom':
-            # 自定义场景：全部勾选
+            # 自定义场景:全部勾选
             for c in [self.chk_phone, self.chk_email, self.chk_idcard, self.chk_bank,
                       self.chk_ip, self.chk_passport, self.chk_mac, self.chk_imei,
                       self.chk_plate, self.chk_social,
@@ -525,12 +525,12 @@ class SanitizeTab(QWidget):
             chk.setChecked(False)
 
     def undo_process(self):
-        """撤销脱敏，恢复原始内容"""
+        """撤销脱敏,恢复原始内容"""
         if not self.current_file or not self.original_content:
             return
 
         reply = QMessageBox.question(
-            self, "确认撤销", "确定要撤销脱敏，恢复原始内容吗？",
+            self, "确认撤销", "确定要撤销脱敏,恢复原始内容吗?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
 
@@ -539,10 +539,10 @@ class SanitizeTab(QWidget):
             self.processed_content = None
             self.btn_undo.setEnabled(False)
             self.btn_save.setEnabled(False)
-            self.result_label.setText("↩️ 已撤销，恢复原始内容")
+            self.result_label.setText("↩️ 已撤销,恢复原始内容")
 
     def set_file(self, file_path):
-        """设置文件（供拖拽使用）"""
+        """设置文件(供拖拽使用)"""
         self.current_file = file_path
         self.file_label.setText(Path(file_path).name)
         self.load_file_content(file_path)
@@ -563,19 +563,19 @@ class SanitizeTab(QWidget):
             self.load_file_content(file_path)
             self.btn_detect.setEnabled(True)
             self.btn_sanitize.setEnabled(True)
-    
+
     def _get_preview_text(self, path):
-        """获取文件的纯文本预览（用于 text_edit 显示）
-        
-        对于 docx/xlsx/pptx，提取纯文本用于显示；
-        对于 txt/md/json 等，直接读取文本。
+        """获取文件的纯文本预览(用于 text_edit 显示)
+
+        对于 docx/xlsx/pptx,提取纯文本用于显示;
+        对于 txt/md/json 等,直接读取文本。
         格式完全保持的原地脱敏在保存时通过原生对象实现。
-        
+
         返回: (text, native_obj, actual_ext)
         """
         ext = Path(path).suffix.lower()
         actual_ext = ext  # 记录实际处理的格式
-        
+
         # .doc → 先转 .docx 再处理
         if ext == '.doc':
             try:
@@ -594,12 +594,12 @@ class SanitizeTab(QWidget):
                 actual_ext = '.docx'
             except ImportError:
                 return self._fallback_read(path), None, ext
-        
+
         if ext == '.docx':
             try:
                 from docx import Document
                 doc = Document(path)
-                # 全量文本提取（段落+表格+页眉+页脚+文本框）
+                # 全量文本提取(段落+表格+页眉+页脚+文本框)
                 full_lines = []
                 for para in doc.paragraphs:
                     if para.text.strip():
@@ -633,12 +633,12 @@ class SanitizeTab(QWidget):
                 return self._fallback_read(path), None, actual_ext
             except Exception as e:
                 raise Exception(f"无法读取 docx 文件: {e}")
-        
+
         elif ext in ('.xlsx', '.xls'):
             try:
                 from openpyxl import load_workbook
-                # data_only=False + read_only=False：显示公式文字（如 =SUM(B2:B5)）
-                # 注意：只读模式 data_only 参数无效，必须关闭只读才能看到公式
+                # data_only=False + read_only=False:显示公式文字(如 =SUM(B2:B5))
+                # 注意:只读模式 data_only 参数无效,必须关闭只读才能看到公式
                 wb = load_workbook(path, data_only=False)
                 lines = []
                 for sheet in wb.sheetnames:
@@ -655,14 +655,14 @@ class SanitizeTab(QWidget):
                         row_text = '\t'.join(cells)
                         if row_text.strip():
                             lines.append(row_text)
-                # 不要 close()！_native_doc 后续由 _sanitize_native_xlsx/save_result 使用
+                # 不要 close()!_native_doc 后续由 _sanitize_native_xlsx/save_result 使用
                 return '\n'.join(lines), wb, actual_ext
                 return '\n'.join(lines), wb, actual_ext
             except ImportError:
                 return self._fallback_read(path), None, actual_ext
             except Exception as e:
                 raise Exception(f"无法读取 xlsx 文件: {e}")
-        
+
         elif ext == '.pptx':
             try:
                 from pptx import Presentation
@@ -680,9 +680,9 @@ class SanitizeTab(QWidget):
                 return self._fallback_read(path), None, actual_ext
             except Exception as e:
                 raise Exception(f"无法读取 pptx 文件: {e}")
-        
+
         elif ext == '.pdf':
-            # PDF 文件：使用 pypdf 提取文本
+            # PDF 文件:使用 pypdf 提取文本
             try:
                 from pypdf import PdfReader
                 reader = PdfReader(path)
@@ -696,16 +696,16 @@ class SanitizeTab(QWidget):
                 return self._fallback_read(path), None, actual_ext
             except Exception as e:
                 raise Exception(f"无法读取 pdf 文件: {e}")
-        
+
         else:
-            # txt/md/json/xml/csv/html 等纯文本文档，原生对象即内容本身
+            # txt/md/json/xml/csv/html 等纯文本文档,原生对象即内容本身
             return self._fallback_read(path), None, actual_ext
 
     def _fallback_read(self, path):
-        """回退的文本读取（用于不支持原生处理的格式）"""
+        """回退的文本读取(用于不支持原生处理的格式)"""
         with open(path, 'r', encoding='utf-8') as f:
             return f.read()
-    
+
     def load_file_content(self, path):
         try:
             content, native_obj, actual_ext = self._get_preview_text(path)
@@ -717,7 +717,7 @@ class SanitizeTab(QWidget):
             self.btn_undo.setEnabled(False)
         except Exception as e:
             QMessageBox.warning(self, "错误", f"无法读取文件: {e}")
-    
+
     def get_selected_types(self):
         """获取选中的脱敏类型"""
         types = []
@@ -748,7 +748,7 @@ class SanitizeTab(QWidget):
         if self.chk_project_code.isChecked(): types.append('项目代号')
         if self.chk_postal.isChecked(): types.append('邮编')
         return types
-    
+
     def get_custom_patterns(self):
         """从设置加载自定义规则"""
         settings_file = Path(__file__).parent / 'settings.json'
@@ -765,26 +765,26 @@ class SanitizeTab(QWidget):
         """检测敏感信息"""
         if not self.current_file:
             return
-        
+
         from safe_shrink_gui import detect_sensitive
-        
+
         content = self.text_edit.toPlainText()
         types = self.get_selected_types()
         custom = self.get_custom_patterns()
-        
+
         self.detected_items = detect_sensitive(content, types, custom_patterns=custom)
-        
+
         if self.detected_items:
             # 统计各类型数量
             type_counts = {}
             for item in self.detected_items:
                 t = item['type']
                 type_counts[t] = type_counts.get(t, 0) + 1
-            
+
             msg = f"检测到 {len(self.detected_items)} 处敏感信息:\n"
             for t, count in type_counts.items():
                 msg += f"- {t}: {count} 处\n"
-            
+
             self.result_label.setText(msg.strip())
             QMessageBox.information(self, "检测结果", msg)
         else:
@@ -792,7 +792,7 @@ class SanitizeTab(QWidget):
             QMessageBox.information(self, "检测结果", "未检测到敏感信息")
 
     def _sanitize_text(self, text, types, custom, mode):
-        """对纯文本执行脱敏，返回脱敏后的文本"""
+        """对纯文本执行脱敏,返回脱敏后的文本"""
         import sys, traceback
         try:
             from safe_shrink_gui import sanitize_content
@@ -811,9 +811,9 @@ class SanitizeTab(QWidget):
                 print(f"[DEBUG] safe_shrink_gui NOT in sys.modules")
             traceback.print_exc()
             raise
-    
+
     def _sanitize_native_docx(self, doc, types, custom, mode):
-        """原地脱敏 docx Document 对象（保持所有格式）"""
+        """原地脱敏 docx Document 对象(保持所有格式)"""
         import sys, traceback
         print(f"[DEBUG] _sanitize_native_docx called, types={types}")
         try:
@@ -830,13 +830,13 @@ class SanitizeTab(QWidget):
             traceback.print_exc()
             raise
         import re
-        
+
         masked = {}
         def replacer(match):
             placeholder = f'__MASK_{len(masked)}__'
             masked[placeholder] = match.group(0)
             return placeholder
-        
+
         def sanitize_run_text(run_text):
             if not run_text.strip():
                 return run_text
@@ -848,26 +848,26 @@ class SanitizeTab(QWidget):
             for ph, original in masked.items():
                 sanitized = sanitized.replace(ph, original)
             return sanitized
-        
-        # 收集所有段落（含表格内）
+
+        # 收集所有段落(含表格内)
         all_paragraphs = list(doc.paragraphs)
         for table in doc.tables:
             for row in table.rows:
                 for cell in row.cells:
                     all_paragraphs.extend(cell.paragraphs)
-        
-        # 保存原始段落文本（用于跨 run 检测）
+
+        # 保存原始段落文本(用于跨 run 检测)
         original_texts = {}
         for para in all_paragraphs:
             original_texts[id(para)] = para.text
-        
+
         # Pass 1: 逐 run 脱敏（保留格式）
         for para in all_paragraphs:
             for run in para.runs:
                 new_text = sanitize_run_text(run.text)
                 if new_text != run.text:
                     run.text = new_text
-        
+
         # Pass 2: 跨 run 修复 — 检查段落合并文本是否仍有残留敏感数据
         for para in all_paragraphs:
             original = original_texts[id(para)]
@@ -881,10 +881,23 @@ class SanitizeTab(QWidget):
                 para.runs[0].text = fully_sanitized
                 for run in para.runs[1:]:
                     run.text = ''
-    
+
+        # 统计脱敏处数：扫描文档中所有 __MASK_N__ 占位符
+        import re
+        mask_pattern = re.compile(r'__MASK_\d+__')
+        total_count = 0
+        for para in doc.paragraphs:
+            total_count += len(mask_pattern.findall(para.text))
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    total_count += len(mask_pattern.findall(cell.text))
+
+        return total_count
+
     def _sanitize_native_xlsx(self, wb, types, custom, mode):
-        """原地脱敏 xlsx（保持所有格式）
-        注意：传入的 wb 可能是 read_only=True 模式（来自预览），不可修改。
+        """原地脱敏 xlsx(保持所有格式)
+        注意:传入的 wb 可能是 read_only=True 模式(来自预览),不可修改。
         此函数用 read_only=False 重新加载一份可写副本。
         """
         import sys, traceback
@@ -895,27 +908,27 @@ class SanitizeTab(QWidget):
             print(f"[DEBUG] _sanitize_native_xlsx ImportError: {e}")
             traceback.print_exc()
             raise
-        
-        # 读取当前文件路径，用可写模式重新加载
+
+        # 读取当前文件路径,用可写模式重新加载
         file_path = getattr(self, '_current_file_path', None) or getattr(self, 'current_file', '')
         if not file_path:
-            # fallback: 尝试关闭只读 wb，用同一路径重新打开
+            # fallback: 尝试关闭只读 wb,用同一路径重新打开
             try:
                 wb.close()
             except Exception:
                 pass
-            raise Exception("无法确定 xlsx 文件路径，请重新打开文件")
-        
-        # 保存预览用的只读 workbook（如果可迭代）
+            raise Exception("无法确定 xlsx 文件路径,请重新打开文件")
+
+        # 保存预览用的只读 workbook(如果可迭代)
         try:
             wb.close()
         except Exception:
             pass
-        
+
         # 用可写模式加载
-        writable_wb = _load(str(file_path), data_only=False)  # False: 保留公式，Excel打开后重算
+        writable_wb = _load(str(file_path), data_only=False)  # False: 保留公式,Excel打开后重算
         self._native_doc = writable_wb  # 更新引用为可写版本
-        
+
         for sheet_name in writable_wb.sheetnames:
             ws = writable_wb[sheet_name]
             for row in ws.iter_rows():
@@ -925,9 +938,18 @@ class SanitizeTab(QWidget):
                         sanitized = sanitize_content(cell_text, types, custom_patterns=custom, mode=mode)
                         if sanitized != cell_text:
                             cell.value = sanitized
-    
+        total_count = 0
+        mask_pattern = re.compile(r'__MASK_\d+__')
+        for sheet_name in writable_wb.sheetnames:
+            ws = writable_wb[sheet_name]
+            for row in ws.iter_rows():
+                for cell in row:
+                    if cell.value is not None:
+                        total_count += len(mask_pattern.findall(str(cell.value)))
+        return total_count, 0
+
     def _sanitize_native_pptx(self, prs, types, custom, mode):
-        """原地脱敏 python-pptx Presentation 对象（保持所有格式）"""
+        """原地脱敏 python-pptx Presentation 对象(保持所有格式)"""
         import sys, traceback
         try:
             from safe_shrink_gui import sanitize_content
@@ -935,7 +957,8 @@ class SanitizeTab(QWidget):
             print(f"[DEBUG] _sanitize_native_pptx ImportError: {e}")
             traceback.print_exc()
             raise
-        
+
+        total_count = 0
         for slide in prs.slides:
             for shape in slide.shapes:
                 if not hasattr(shape, "text_frame"):
@@ -943,18 +966,24 @@ class SanitizeTab(QWidget):
                 for paragraph in shape.text_frame.paragraphs:
                     for run in paragraph.runs:
                         if run.text.strip():
-                            run.text = sanitize_content(
+                            orig_text = run.text
+                            sanitized = sanitize_content(
                                 run.text, types, custom_patterns=custom, mode=mode
                             )
-    
+                            if sanitized != orig_text:
+                                run.text = sanitized
+                                import re
+                                total_count += len(re.findall(r'__MASK_\d+__', sanitized))
+        return total_count, 0
+
     def _update_preview_from_native(self):
-        """在原地脱敏后，用原生文档更新预览文本"""
+        """在原地脱敏后,用原生文档更新预览文本"""
         ext = self._native_docx_ext
-        
+
         if ext == '.docx' and self._native_doc is not None:
             paras = [p.text for p in self._native_doc.paragraphs]
             self.text_edit.setPlainText('\n'.join(paras))
-        
+
         elif ext in ('.xlsx', '.xls') and self._native_doc is not None:
             lines = []
             for sheet_name in self._native_doc.sheetnames:
@@ -972,9 +1001,9 @@ class SanitizeTab(QWidget):
                     if row_text.strip():
                         lines.append(row_text)
             # preview 函数里 _native_doc 来自 _get_preview_text() 的 read_only=True 模式
-            # preview 不关闭它（由 _update_preview_from_native 统一管理生命周期）
+            # preview 不关闭它(由 _update_preview_from_native 统一管理生命周期)
             self.text_edit.setPlainText('\n'.join(lines))
-        
+
         elif ext == '.pptx' and self._native_doc is not None:
             lines = []
             for i, slide in enumerate(self._native_doc.slides, 1):
@@ -985,9 +1014,9 @@ class SanitizeTab(QWidget):
                 if slide_texts:
                     lines.append(f'[幻灯片 {i}]\n' + '\n'.join(slide_texts))
             self.text_edit.setPlainText('\n'.join(lines))
-    
+
     def sanitize_file(self):
-        """执行脱敏（原地处理，保持格式）"""
+        """执行脱敏(原地处理,保持格式)"""
         if not self.current_file:
             return
 
@@ -1006,59 +1035,60 @@ class SanitizeTab(QWidget):
             # 原地脱敏
             if self._native_doc is not None:
                 ext = self._native_docx_ext
+                total_count = 0
 
                 if ext == '.docx':
-                    self._sanitize_native_docx(self._native_doc, types, custom, mode)
+                    total_count, _ = self._sanitize_native_docx(self._native_doc, types, custom, mode)
                     self._update_preview_from_native()
 
                 elif ext in ('.xlsx', '.xls'):
-                    self._sanitize_native_xlsx(self._native_doc, types, custom, mode)
+                    total_count, _ = self._sanitize_native_xlsx(self._native_doc, types, custom, mode)
                     self._update_preview_from_native()
 
                 elif ext == '.pptx':
-                    self._sanitize_native_pptx(self._native_doc, types, custom, mode)
+                    total_count, _ = self._sanitize_native_pptx(self._native_doc, types, custom, mode)
                     self._update_preview_from_native()
 
                 self.processed_content = self.text_edit.toPlainText()
 
 
             else:
-                # 纯文本文件：直接用 safe_shrink_gui 脱敏
+                # 纯文本文件:直接用 safe_shrink_gui 脱敏
                 content = self.text_edit.toPlainText()
                 result = self._sanitize_text(content, types, custom, mode)
                 self.processed_content = result
                 self.text_edit.setPlainText(result)
 
-            # 脱敏后检测，对比差值
+            # 脱敏后检测,对比差值
             after_content = self.text_edit.toPlainText()
             after_items = detect_sensitive(after_content, types, custom_patterns=custom)
             sanitized_count = found_count - len(after_items)
 
             self.btn_save.setEnabled(True)
             self.btn_undo.setEnabled(True)
-            self.result_label.setText("✅ 脱敏完成！格式已保留。")
-            msg = f"脱敏完成！\n\n发现: {found_count} 处\n已脱敏: {sanitized_count} 处\n未脱敏: {len(after_items)} 处"
+            self.result_label.setText("✅ 脱敏完成!格式已保留。")
+            msg = f"脱敏完成!\n\n发现: {found_count} 处\n已脱敏: {total_count} 处\n剩余: {found_count - total_count} 处"
             QMessageBox.information(self, "完成", msg)
         except Exception as e:
             QMessageBox.critical(self, "错误", f"处理失败: {e}")
 
     def save_result(self):
-        """保存脱敏结果（使用原生对象保存，完全保持格式）"""
+        """保存脱敏结果(使用原生对象保存,完全保持格式)"""
         if not self.current_file:
             return
 
         original_path = Path(self.current_file)
         original_ext = self._native_docx_ext or original_path.suffix.lower()
         original_file_ext = original_path.suffix.lower()  # 用户原始文件扩展名
-        
+
         # 根据原文件类型设置默认保存路径和过滤器
-        # 注意：.doc 文件内部转换为 .docx 处理，保存时也只能保存为 .docx
+        # 注意:.doc 文件内部转换为 .docx 处理,保存时也只能保存为 .docx
         if original_ext == '.docx':
             default_name = str(original_path.with_stem(original_path.stem + '_脱敏'))
             file_filter = "Word文档 (*.docx)"
             if original_file_ext == '.doc':
-                # 原 .doc 文件，提示将保存为 .docx
-                file_filter = "Word文档 (*.docx) - 原文件为.doc，自动转为.docx格式"
+                # 原 .doc 文件,提示将保存为 .docx
+                file_filter = "Word文档 (*.docx) - 原文件为.doc,自动转为.docx格式"
         elif original_ext in ('.xlsx', '.xls'):
             default_name = str(original_path.with_stem(original_path.stem + '_脱敏'))
             file_filter = "Excel表格 (*.xlsx)"
@@ -1081,26 +1111,26 @@ class SanitizeTab(QWidget):
             default_name,
             file_filter
         )
-        
+
         if file_path:
             try:
                 save_ext = Path(file_path).suffix.lower()
-                
-                # .doc 格式不支持，强制转为 .docx
+
+                # .doc 格式不支持,强制转为 .docx
                 if save_ext == '.doc' and original_ext == '.docx':
                     file_path = str(Path(file_path).with_suffix('.docx'))
                     save_ext = '.docx'
-                    QMessageBox.information(self, "格式转换", 
-                        ".doc 格式不支持，已自动保存为 .docx 格式")
-                
-                # PDF 脱敏后无法保存回 PDF，提示用户
+                    QMessageBox.information(self, "格式转换",
+                        ".doc 格式不支持,已自动保存为 .docx 格式")
+
+                # PDF 脱敏后无法保存回 PDF,提示用户
                 if original_ext == '.pdf' and save_ext == '.pdf':
                     file_path = str(Path(file_path).with_suffix('.txt'))
                     save_ext = '.txt'
-                    QMessageBox.information(self, "格式转换", 
-                        "PDF 脱敏后无法保持原格式，已自动保存为文本文件")
-                
-                # 优先使用原生文档对象保存（保持格式）
+                    QMessageBox.information(self, "格式转换",
+                        "PDF 脱敏后无法保持原格式,已自动保存为文本文件")
+
+                # 优先使用原生文档对象保存(保持格式)
                 if self._native_doc is not None and save_ext == original_ext:
                     if save_ext == '.docx':
                         self._native_doc.save(file_path)
@@ -1108,7 +1138,7 @@ class SanitizeTab(QWidget):
                         self._native_doc.save(file_path)
                     elif save_ext == '.pptx':
                         self._native_doc.save(file_path)
-                
+
                 # 格式不同时回退到纯文本保存
                 else:
                     content = self.text_edit.toPlainText()
@@ -1121,11 +1151,11 @@ class SanitizeTab(QWidget):
                     else:
                         with open(file_path, 'w', encoding='utf-8') as f:
                             f.write(content)
-                
+
                 QMessageBox.information(self, "保存成功", f"已保存到: {file_path}")
             except Exception as e:
                 QMessageBox.critical(self, "错误", f"保存失败: {e}")
-    
+
     def _save_as_docx(self, filepath, content):
         """保存为Word文档"""
         try:
@@ -1135,13 +1165,13 @@ class SanitizeTab(QWidget):
             from safe_shrink import write_file
             write_file(filepath, content, 'docx')
             return
-        
+
         doc = Document()
         for para in content.split('\n'):
             if para.strip():
                 doc.add_paragraph(para)
         doc.save(filepath)
-    
+
     def _save_as_xlsx(self, filepath, content):
         """保存为Excel表格"""
         try:
@@ -1150,7 +1180,7 @@ class SanitizeTab(QWidget):
             from safe_shrink import write_file
             write_file(filepath, content, 'xlsx')
             return
-        
+
         wb = Workbook()
         ws = wb.active
         for i, line in enumerate(content.split('\n'), 1):
@@ -1160,7 +1190,7 @@ class SanitizeTab(QWidget):
             elif line.strip():
                 ws.cell(row=i, column=1, value=line)
         wb.save(filepath)
-    
+
     def _save_as_pptx(self, filepath, content):
         """保存为PowerPoint演示文稿"""
         from safe_shrink import write_file
@@ -1168,12 +1198,12 @@ class SanitizeTab(QWidget):
 
     def cleanup(self):
         pass
-    
+
     def update_language(self, lang):
         """更新语言"""
         from translations import get_translation
         _ = lambda t: get_translation(t, lang)
-        
+
         # 更新场景预设
         if hasattr(self, 'scene_general'):
             self.scene_general.setText(_('通用文档'))
@@ -1187,13 +1217,13 @@ class SanitizeTab(QWidget):
             self.scene_edu.setText(_('教育材料'))
         if hasattr(self, 'scene_custom'):
             self.scene_custom.setText(_('自定义'))
-        
+
         # 更新脱敏模式
         if hasattr(self, 'radio_mask'):
             self.radio_mask.setText(_('简单遮蔽 (***)'))
         if hasattr(self, 'radio_tags'):
             self.radio_tags.setText(_('语义标签 (<PERSON_NAME.1>)'))
-        
+
         # 更新按钮
         if hasattr(self, 'btn_detect'):
             self.btn_detect.setText(_('检测敏感信息'))
@@ -1203,7 +1233,7 @@ class SanitizeTab(QWidget):
             self.btn_undo.setText(_('撤销'))
         if hasattr(self, 'btn_save'):
             self.btn_save.setText(_('保存结果'))
-        
+
         # 更新全选按钮
         # These are dynamically created, need to find them by text
         pass

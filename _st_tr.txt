@@ -1,0 +1,39 @@
+1056:             shutil.rmtree(cache_dir, ignore_errors=True)
+1057:         QMessageBox.information(self, "完成", "缓存已清空。")
+1058: 
+1059:     def get_settings(self):
+1060:         return self.settings
+1061: 
+1062:     def update_language(self, lang):
+1063:         """更新语言"""
+1064:         from translations import get_translation
+1065:         _ = lambda t: get_translation(t, lang)
+1066: 
+1067:         # 更新场景预设
+1068:         if hasattr(self, 'scene_general'):
+1069:             self.scene_general.setText(_('通用文档'))
+1070:         if hasattr(self, 'scene_gov'):
+1071:             self.scene_gov.setText(_('党政公文'))
+1072:         if hasattr(self, 'scene_finance'):
+1073:             self.scene_finance.setText(_('金融合同'))
+1074:         if hasattr(self, 'scene_medical'):
+1075:             self.scene_medical.setText(_('医疗档案'))
+1076:         if hasattr(self, 'scene_edu'):
+1077:             self.scene_edu.setText(_('教育材料'))
+1078:         if hasattr(self, 'scene_custom'):
+1079:             self.scene_custom.setText(_('自定义'))
+1080: 
+1081:         # 更新按钮
+1082:         if hasattr(self, 'btn_save'):
+1083:             self.btn_save.setText(_('保存设置'))
+1084:         if hasattr(self, 'btn_reset'):
+1085:             self.btn_reset.setText(_('恢复默认'))
+1086:         if hasattr(self, 'btn_clear_history'):
+1087:             self.btn_clear_history.setText(_('清空所有历史记录'))
+1088:         if hasattr(self, 'btn_clear_cache'):
+1089:             self.btn_clear_cache.setText(_('清空缓存'))
+1090: 
+1091:         # 更新语言下拉框
+1092:         if hasattr(self, 'lang_combo'):
+1093:             self.lang_combo.setItemText(0, _('简体中文'))
+1094:             self.lang_combo.setItemText(1, 'English')

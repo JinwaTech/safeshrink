@@ -85,21 +85,22 @@ class BatchWorker(QThread):
                     from sanitize_tab import SanitizeTab
                     sanitizer = SanitizeTab.__new__(SanitizeTab)  # 无 __init__ 的 dummy 实例
                     # 输出路径加 _脱敏 后缀（保持格式）
+                    sanitized_count = 0
                     out_file = output_path.with_stem(output_path.stem + '_脱敏')
                     if ext == '.docx':
                         from docx import Document
                         doc = Document(str(file_path))
-                        sanitizer._sanitize_native_docx(doc, types, custom, mode)
+                        sanitized_count, _ = sanitizer._sanitize_native_docx(doc, types, custom, mode)
                         doc.save(str(out_file))
                     elif ext in ('.xlsx', '.xls'):
                         from openpyxl import load_workbook
                         wb = load_workbook(str(file_path))
-                        sanitizer._sanitize_native_xlsx(wb, types, custom, mode)
+                        sanitized_count, _ = sanitizer._sanitize_native_xlsx(wb, types, custom, mode)
                         wb.save(str(out_file))
                     elif ext == '.pptx':
                         from pptx import Presentation
                         prs = Presentation(str(file_path))
-                        sanitizer._sanitize_native_pptx(prs, types, custom, mode)
+                        sanitized_count, _ = sanitizer._sanitize_native_pptx(prs, types, custom, mode)
                         prs.save(str(out_file))
                     new_size = out_file.stat().st_size
                     saved_bytes = orig_size - new_size
@@ -110,7 +111,7 @@ class BatchWorker(QThread):
                             'type': self.action,
                             'status': 'success'
                         })
-                    return (file_path.name, True, "完成", saved_bytes)
+                    return (file_path.name, True, f"完成（脱敏{sanitized_count}处）", saved_bytes)
                 except Exception as e:
                     import traceback
                     traceback.print_exc()
