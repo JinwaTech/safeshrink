@@ -492,11 +492,11 @@ class SlimTab(QWidget):
                 self.result_label.setText("DONE: SSD converted")
 
                 sign = "" if token_saved >= 0 else "-"
-                token_str = "Token: ~" + str(orig_tokens["total"]) + " -> ~" + str(new_tokens["total"]) + " saved: " + sign + str(abs(token_saved))
-                QMessageBox.information(self, "Done", "SSD conversion complete!\n\nChars: " + str(orig_len) + " -> " + str(new_len) + "\n" + token_str)
+                token_str = "Token: ~" + str(orig_tokens["total"]) + " → ~" + str(new_tokens["total"]) + "\n节省: " + sign + str(abs(token_saved)) + " tokens"
+                QMessageBox.information(self, "完成", "SSD 转换完成\n\n原文字符: " + str(orig_len) + " → 压缩后: " + str(new_len) + "\n" + token_str)
                 return
             except Exception as e:
-                QMessageBox.critical(self, "Error", "Conversion failed: " + str(e))
+                QMessageBox.critical(self, "错误", "转换失败: " + str(e))
                 return
     def on_slider_changed(self, value):
         """滑块变化时更新显示"""
@@ -575,8 +575,8 @@ class SlimTab(QWidget):
 
                 # Show dialog
                 sign = "" if token_saved >= 0 else "-"
-                token_str = f"Token: ~{orig_tokens["total"]:,} -> ~{new_tokens["total"]:,}  节省: {sign}{abs(token_saved):,} tokens"
-                QMessageBox.information(self, "Done", "SSD conversion complete!\n\nChars: " + str(orig_len) + " -> " + str(new_len) + "\n" + token_str)
+                token_str = f"Token: ~{orig_tokens['total']:,} → ~{new_tokens['total']:,}\n节省: {sign}{abs(token_saved):,} tokens"
+                QMessageBox.information(self, "完成", "SSD 转换完成\n\n原文字符: " + str(orig_len) + " → 压缩后: " + str(new_len) + "\n" + token_str)
                 return
             except Exception as e:
                 QMessageBox.critical(self, "错误", f"转换失败: {e}")
@@ -635,7 +635,7 @@ class SlimTab(QWidget):
 
 
 
-                QMessageBox.information(self, "Done", "Compression complete!\n\nOriginal: ~" + str(round(orig_bytes / 1024, 1)) + " KB\nCompressed: ~" + str(round(new_bytes / 1024, 1)) + " KB\nRate: " + str(compress_rate) + "%")
+                QMessageBox.information(self, "完成", "压缩完成\n\n原文: ~" + str(round(orig_bytes / 1024, 1)) + " KB\n压缩后: ~" + str(round(new_bytes / 1024, 1)) + " KB\n压缩率: " + str(compress_rate) + "%")
             except Exception as e:
                 QMessageBox.critical(self, "错误", f"处理失败: {e}")
 
