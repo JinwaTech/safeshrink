@@ -111,7 +111,7 @@ class BatchWorker(QThread):
                             'type': self.action,
                             'status': 'success'
                         })
-                    return (file_path.name, True, f"完成（脱敏{sanitized_count}处）", saved_bytes)
+                    return (file_path.name, True, f"已完成脱敏{sanitized_count}处", saved_bytes)
                 except Exception as e:
                     import traceback
                     traceback.print_exc()

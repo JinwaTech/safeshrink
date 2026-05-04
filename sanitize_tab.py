@@ -1046,7 +1046,7 @@ class SanitizeTab(QWidget):
 
         try:
             # 脱敏前检测统计
-            content_for_count = self.text_edit.toPlainText()
+            content_for_count = self.original_content
             from safe_shrink_gui import detect_sensitive
             before = detect_sensitive(content_for_count, types, custom_patterns=custom)
             found_count = len(before)
@@ -1082,11 +1082,12 @@ class SanitizeTab(QWidget):
             after_content = self.text_edit.toPlainText()
             after_items = detect_sensitive(after_content, types, custom_patterns=custom)
             sanitized_count = found_count - len(after_items)
+            total_count = sanitized_count
 
             self.btn_save.setEnabled(True)
             self.btn_undo.setEnabled(True)
             self.result_label.setText("✅ 脱敏完成!格式已保留。")
-            msg = f"脱敏完成!\n\n发现: {found_count} 处\n已脱敏: {total_count} 处\n剩余: {found_count - total_count} 处"
+            msg = f"脱敏完成!\n\n发现: {found_count} 处\n已脱敏: {sanitized_count} 处"
             QMessageBox.information(self, "完成", msg)
         except Exception as e:
             QMessageBox.critical(self, "错误", f"处理失败: {e}")
