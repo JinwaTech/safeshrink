@@ -555,9 +555,7 @@ class SlimTab(QWidget):
                 self.result_label.setText(f"✅ 已转换为 SSD 格式")
 
                 # Show dialog
-                sign = "" if token_saved >= 0 else "-"
-                token_str = f"Token: ~{orig_tokens['total']:,} → ~{new_tokens['total']:,}\n节省: {sign}{abs(token_saved):,} tokens"
-                QMessageBox.information(self, "完成", "SSD 转换完成\n\n原文字符: " + str(orig_len) + " → 压缩后: " + str(new_len) + "\n" + token_str)
+                QMessageBox.information(self, "完成", f"SSD 转换完成\n\n原文字符: {orig_len} → 压缩后: {new_len}\nToken: ~{orig_tokens['total']:,} → ~{new_tokens['total']:,}\n节省: {abs(token_saved):,} tokens")
                 return
             except Exception as e:
                 QMessageBox.critical(self, "错误", f"转换失败: {e}")
