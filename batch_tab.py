@@ -381,7 +381,6 @@ class BatchWorker(QThread):
 
             # === 跳过逻辑：排除 _processed 等子目录及其内部文件 ===
             skip_names = {
-                'output',
                 '.safeshrink_processed',
                 '.safeshrink_skip',
             }
@@ -1187,7 +1186,7 @@ class BatchTab(QWidget):
 
             # 排除规则：跳过处理输出子文件夹和标记文件
             skip_names = {
-                'output',                        # SafeShrink 默认输出目录
+                # 'output',  # SafeShrink 默认输出目录
                 '.safeshrink_processed',         # 处理记录标记文件
                 '.safeshrink_skip',              # 跳过标记文件
             }
