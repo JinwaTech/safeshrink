@@ -792,11 +792,16 @@ class SanitizeTab(QWidget):
             QMessageBox.information(self, "检测结果", "未检测到敏感信息")
 
     def _sanitize_text(self, text, types, custom, mode):
-        """对纯文本执行脱敏,返回脱敏后的文本"""
+        """对纯文本执行脱敏,返回 (脱敏后文本, 脱敏处数) 元组"""
         import sys, traceback
         try:
             from safe_shrink_gui import sanitize_content
-            return sanitize_content(text, types, custom_patterns=custom, mode=mode)
+            sanitized_text = sanitize_content(text, types, custom_patterns=custom, mode=mode)
+            # 通过 * 密度估算脱敏处数：统计 sanitized_text 中连续4+个 * 的块数
+            import re
+            mask_blocks = re.findall(r'\*{4,}', sanitized_text)
+            count = len(mask_blocks)
+            return sanitized_text, count
         except ImportError as e:
             # 详细调试信息
             print(f"[DEBUG] ImportError: {e}")
