@@ -78,7 +78,8 @@ class BatchWorker(QThread):
 
             # Markdown/TXT 脱敏：使用 SanitizeTab._sanitize_text() 原地处理
             if ext in ('.md', '.txt') and self.action == 'sanitize':
-                types = self.options.get('sanitize_items', None)
+                san_items = self.options.get('sanitize_items', {})
+                types = list(san_items.keys()) if san_items else None
                 custom = self.options.get('custom_words', [])
                 mode = self.options.get('mask_mode', 'mask')
                 try:
@@ -87,7 +88,7 @@ class BatchWorker(QThread):
                     with open(str(file_path), 'r', encoding='utf-8') as f:
                         text = f.read()
                     print(f"[DEBUG] _sanitize_text start, text_len={len(text)}, types={types}")
-                    sanitized_text, _ = sanitizer._sanitize_text(text, types, custom, mode)
+                    sanitized_text = sanitizer._sanitize_text(text, types, custom, mode)
                     print(f"[DEBUG] _sanitize_text done, result_len={len(sanitized_text)}")
                     out_file = output_path.with_stem(output_path.stem + '_脱敏')
                     with open(str(out_file), 'w', encoding='utf-8') as f:
@@ -122,7 +123,8 @@ class BatchWorker(QThread):
 
             # Office 文档脱敏：保持格式原地处理（不含 PDF，PDF 走 batch_processor）
             if ext in ('.docx', '.xlsx', '.xls', '.pptx', '.ppt') and self.action == 'sanitize':
-                types = self.options.get('sanitize_items', None)
+                san_items = self.options.get('sanitize_items', {})
+                types = list(san_items.keys()) if san_items else None
                 custom = self.options.get('custom_words', [])
                 mode = self.options.get('mask_mode', 'mask')
                 try:
