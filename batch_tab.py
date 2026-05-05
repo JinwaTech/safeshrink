@@ -1461,7 +1461,7 @@ class BatchTab(QWidget):
                 # 解析脱敏处数
                 if "脱敏" in status_text:
                     try:
-                        items = int(status_text.split("脱敏")[1].split("项")[0].strip())
+                        items = int(status_text.split("脱敏")[1].split("处")[0].strip())
                         total_items += items
                     except:
                         pass
