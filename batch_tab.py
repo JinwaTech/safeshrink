@@ -205,12 +205,22 @@ class BatchWorker(QThread):
                                 f.write(ssd_content)
                             new_size = out_file.stat().st_size
                             saved_bytes = orig_size - new_size
+                            # Token 统计（方案F：原文×3 vs Markdown真实开销）
+                            orig_char_count = orig_size   # Office文件大小≈字符数
+                            orig_tok = orig_char_count * 3
+                            from safe_shrink import estimate_tokens
+                            new_tok = estimate_tokens(ssd_content)["total"]
+                            with self._lock:
+                                self.total_orig_tokens += orig_tok
+                                self.total_new_tokens += new_tok
                             with self._lock:
                                 self._processed_records.append({
                                     'original': file_path.name,
                                     'output': out_file.name,
                                     'type': 'ssd',
-                                    'status': 'success'
+                                    'status': 'success',
+                                    'original_tokens': orig_tok,
+                                    'output_tokens': new_tok,
                                 })
                             return (file_path.name, True, "SSD", saved_bytes)
                     except Exception as e:
@@ -263,12 +273,21 @@ class BatchWorker(QThread):
                                 f.write(ssd_content)
                             new_size = out_file.stat().st_size
                             saved_bytes = orig_size - new_size
+                            # Token 统计（方案F：原文×3 vs Markdown真实开销）
+                            orig_tok = orig_size * 3
+                            from safe_shrink import estimate_tokens
+                            new_tok = estimate_tokens(ssd_content)["total"]
+                            with self._lock:
+                                self.total_orig_tokens += orig_tok
+                                self.total_new_tokens += new_tok
                             with self._lock:
                                 self._processed_records.append({
                                     'original': file_path.name,
                                     'output': out_file.name,
                                     'type': 'ssd',
-                                    'status': 'success'
+                                    'status': 'success',
+                                    'original_tokens': orig_tok,
+                                    'output_tokens': new_tok,
                                 })
                             return (file_path.name, True, "SSD", saved_bytes)
                     except Exception as e:

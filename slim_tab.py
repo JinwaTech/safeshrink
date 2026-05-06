@@ -14,6 +14,36 @@ from pathlib import Path
 import os
 
 
+def _read_ooxml_text(path):
+    """纯 Python 读取 OOXML 格式文本，不依赖任何外部库。"""
+    import zipfile, re, os
+    ext = os.path.splitext(path)[1].lower()
+    try:
+        with zipfile.ZipFile(path) as z:
+            if ext == '.docx':
+                xml = z.read('word/document.xml').decode('utf-8', errors='ignore')
+                texts = re.findall(r'<w:t[^>]*>([^<]+)</w:t>', xml)
+            elif ext == '.xlsx':
+                if 'xl/sharedStrings.xml' in z.namelist():
+                    xml = z.read('xl/sharedStrings.xml').decode('utf-8', errors='ignore')
+                    texts = re.findall(r'<t[^>]*>([^<]*)</t>', xml)
+                else:
+                    texts = []
+            elif ext == '.pptx':
+                texts = []
+                for name in z.namelist():
+                    if re.match(r'ppt/slides/slide\d+\.xml', name):
+                        xml = z.read(name).decode('utf-8', errors='ignore')
+                        texts.extend(re.findall(r'<a:t[^>]*>([^<]+)</a:t>', xml))
+            else:
+                # txt/md 等直接读
+                with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+                    return f.read()
+            return '\n'.join(texts)
+    except Exception:
+        return None
+
+
 class SlimTab(QWidget):
     file_processed = Signal(str, str)  # 原路径, 处理后内容
 
@@ -506,8 +536,10 @@ class SlimTab(QWidget):
 
     def load_file_content(self, path):
         try:
-            from safe_shrink import read_file
-            content = read_file(path)
+            content = _read_ooxml_text(path)
+            if content is None:
+                with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
             self.original_content = content
             self.text_edit.setPlainText(content)
             self.stats_label.setText(f"原文: {len(content)} 字符")
@@ -546,19 +578,21 @@ class SlimTab(QWidget):
                 orig_len = len(self.original_content) if self.original_content else 0
                 new_len = len(result)
 
-                # Token calculation
-                orig_tokens = estimate_tokens(self.original_content or "")
-                new_tokens = estimate_tokens(result)
-                token_saved = orig_tokens["total"] - new_tokens["total"]
+                # Token calculation（方案F：原文×3 vs SSD输出Markdown真实开销）
+                orig_char_count = len(self.original_content) if self.original_content else 0
+                orig_tokens_total = orig_char_count * 3   # DOCX膨胀3x系数
+                new_tokens = estimate_tokens(result)        # SSD输出Markdown计费
+                token_saved = orig_tokens_total - new_tokens["total"]
+                saved_pct = int(token_saved / orig_tokens_total * 100) if orig_tokens_total > 0 else 0
 
                 self.stats_label.setText(f"原文: {orig_len} 字符 -> SSD: {new_len} 字符")
                 self.result_label.setText(f"✅ 已转换为 SSD 格式")
 
                 # Show dialog
-                QMessageBox.information(self, "完成", f"SSD 转换完成\n\n原文字符: {orig_len} → 压缩后: {new_len}\nToken: ~{orig_tokens['total']:,} → ~{new_tokens['total']:,}\n节省: {abs(token_saved):,} tokens")
+                QMessageBox.information(self, "完成", f"SSD 转换完成\n\n原文字符: {orig_len} → 压缩后: {new_len}\nToken: ~{orig_tokens_total:,} → ~{new_tokens['total']:,}\n节省: {token_saved:,} tokens ({saved_pct}%)")
                 return
             except Exception as e:
-                QMessageBox.critical(self, "错误", f"转换失败: {e}")
+                QMessageBox.critical(self, "错误", f"SSD 转换失败: {e}")
                 return
 
         if mode == "深度清理" and ext == '.docx':
