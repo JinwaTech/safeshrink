@@ -106,9 +106,8 @@ def scan_folder(folder_path: str, recursive: bool = True, max_depth: int = 10) -
 
         return []
 
-    # 排除规则
+    # 排除规则（与 batch_tab.py 保持一致：不再跳过 output 文件夹，支持跨 Workflow）
     skip_names = {
-        'output',
         '.safeshrink_processed',
         '.safeshrink_skip',
     }
@@ -401,13 +400,15 @@ def process_file(
                         print(f"      [DEBUG] SSD 脱敏完成，长度: {len(processed)}")
                         # ★★★ 关键：SSD 脱敏后必须立即 return，否则 fallthrough 到后面的代码会覆盖结果
                         out_ext = '.md'
+                        # 计算输出路径（兼容修复：out_dir 是 process_file 函数参数，始终有定义）
+                        _out_dir = Path(str(out_dir))
                         if options.get('backup', False):
-                            backup_path = Path(output_base) / file_info['relative_path']
+                            backup_path = _out_dir / file_info['relative_path']
                             if backup_path.exists():
                                 import shutil
                                 backup_path.replace(backup_path.with_stem(backup_path.stem + '_原始'))
                         out_name = Path(file_info['name']).stem + '_脱敏' + out_ext
-                        out_path = Path(output_base) / file_info['relative_path'].replace(
+                        out_path = _out_dir / file_info['relative_path'].replace(
                             str(Path(file_info['name'])), out_name, 1)
                         out_path.parent.mkdir(parents=True, exist_ok=True)
                         with open(str(out_path), 'w', encoding='utf-8') as f:
@@ -583,21 +584,9 @@ def process_file(
 
 
 
-        # Token 估算
-
-        try:
-
-            from safe_shrink import estimate_tokens
-
-            result['original_tokens'] = estimate_tokens(text).get('total', 0)
-
-            result['output_tokens'] = estimate_tokens(processed).get('total', 0)
-
-        except Exception:
-
-            result['original_tokens'] = 0
-
-            result['output_tokens'] = 0
+        # Token 估算 - 方案 F: DOCX膨胀系数3x vs SSD纯文本
+        result['original_tokens'] = len(text) * 3   # DOCX 膨胀系数 3x
+        result['output_tokens'] = len(processed)       # SSD token-friendly 格式
 
 
 
