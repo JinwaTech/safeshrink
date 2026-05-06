@@ -1079,9 +1079,9 @@ class SanitizeTab(QWidget):
             else:
                 # 纯文本文件:直接用 safe_shrink_gui 脱敏
                 content = self.text_edit.toPlainText()
-                result = self._sanitize_text(content, types, custom, mode)
-                self.processed_content = result
-                self.text_edit.setPlainText(result)
+                sanitized_text, sanitized_count = self._sanitize_text(content, types, custom, mode)
+                self.processed_content = sanitized_text
+                self.text_edit.setPlainText(sanitized_text)
 
             # 脱敏后检测,对比差值
             after_content = self.text_edit.toPlainText()

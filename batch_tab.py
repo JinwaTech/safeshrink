@@ -193,6 +193,63 @@ class BatchWorker(QThread):
                         })
                     return (file_path.name, True, "复制", 0)
 
+            elif ext in ('.docx', '.xlsx', '.xls', '.pptx', '.ppt'):
+                # Office 文件的 SSD 转换（slim 减肥时启用，sanitize 脱敏时保持原格式）
+                if self.action == 'slim' and self.options.get('convert_to_ssd', False):
+                    try:
+                        from format_to_ssd import convert_to_ssd_v2, is_ssd_convertible
+                        if is_ssd_convertible(str(file_path)):
+                            ssd_content = convert_to_ssd_v2(str(file_path), embed_images=bool(self.options.get('embed_images', True)), optimize=True)
+                            out_file = output_path.with_stem(output_path.stem + '_SSD').with_suffix('.md')
+                            with open(str(out_file), 'w', encoding='utf-8') as f:
+                                f.write(ssd_content)
+                            new_size = out_file.stat().st_size
+                            saved_bytes = orig_size - new_size
+                            with self._lock:
+                                self._processed_records.append({
+                                    'original': file_path.name,
+                                    'output': out_file.name,
+                                    'type': 'ssd',
+                                    'status': 'success'
+                                })
+                            return (file_path.name, True, "SSD", saved_bytes)
+                    except Exception as e:
+                        import traceback
+                        traceback.print_exc()
+                        print(f"[DEBUG batch_tab] Office SSD 转换失败: {e}")
+
+                # 脱敏或普通压缩（不转换 SSD）
+                opts = dict(self.options)
+                opts['output_path'] = str(output_path)
+                result = process_file_gui(str(file_path), self.action, opts)
+                if result.get('success'):
+                    if result.get('content') and not result.get('direct_write'):
+                        out_file = output_path.with_stem(output_path.stem + ('_脱敏' if self.action == 'sanitize' else '_处理结果')).with_suffix(output_path.suffix)
+                        with open(str(out_file), 'w', encoding='utf-8') as f:
+                            f.write(result['content'])
+                        new_size = out_file.stat().st_size
+                    else:
+                        new_size = output_path.stat().st_size
+                    saved_bytes = orig_size - new_size
+                    with self._lock:
+                        self._processed_records.append({
+                            'original': file_path.name,
+                            'output': out_file.name if result.get('content') else file_path.name,
+                            'type': self.action,
+                            'status': 'success'
+                        })
+                    return (file_path.name, True, "完成", saved_bytes)
+                else:
+                    shutil.copy2(file_path, output_path)
+                    with self._lock:
+                        self._processed_records.append({
+                            'original': file_path.name,
+                            'output': file_path.name,
+                            'type': 'copy',
+                            'status': 'success'
+                        })
+                    return (file_path.name, True, "复制", 0)
+
             elif ext == '.pdf':
                 # 检查是否需要 SSD 转换
                 if self.action == 'slim' and self.options.get('convert_to_ssd', False):
