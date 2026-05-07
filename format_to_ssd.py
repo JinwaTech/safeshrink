@@ -401,7 +401,7 @@ def optimize_ssd(ssd_text: str) -> str:
 
 
 # ─── 主转换函数 ─────────────────────────────────────────────────────────────
-def convert_to_ssd_v2(file_path: str, embed_images: bool = True, optimize: bool = True, ocr_images: bool = False) -> str:
+def convert_to_ssd_v2(file_path: str, embed_images: bool = False, optimize: bool = True, ocr_images: bool = False) -> str:
     """
     统一转换入口：
     - .doc: 专用结构化解析（doc2docx + python-docx 表格）

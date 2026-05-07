@@ -132,7 +132,7 @@ class SlimTab(QWidget):
         if hasattr(self, 'img_quality_slider'):
             self.img_quality_slider.setValue(int(settings.get('image_quality', 60)))
         if hasattr(self, 'chk_embed_images'):
-            self.chk_embed_images.setChecked(bool(settings.get('embed_images', True)))
+            self.chk_embed_images.setChecked(bool(settings.get('embed_images', False)))
 
     def create_file_section(self):
         frame = QFrame()
@@ -185,8 +185,8 @@ class SlimTab(QWidget):
         form.addRow("处理模式:", self.format_combo)
 
         # 压缩强度
-        slider_widget = QWidget()
-        slider_layout = QHBoxLayout(slider_widget)
+        self.slider_widget = QWidget()
+        slider_layout = QHBoxLayout(self.slider_widget)
         slider_layout.setContentsMargins(0, 0, 0, 0)
         self.slider = QSlider(Qt.Orientation.Horizontal)
         self.slider.setRange(0, 100)
@@ -197,7 +197,7 @@ class SlimTab(QWidget):
         self.slider.valueChanged.connect(self.on_slider_changed)
         slider_layout.addWidget(self.slider, 1)
         slider_layout.addWidget(self.slider_value)
-        form.addRow("压缩强度:", slider_widget)
+        form.addRow("压缩强度:", self.slider_widget)
 
         layout.addLayout(form)
 
@@ -223,11 +223,11 @@ class SlimTab(QWidget):
         self.chk_resize_image.setChecked(False)
         self.chk_resize_image.setToolTip("当图片超过设定尺寸时自动缩小")
 
-        self.chk_embed_images = QCheckBox("转换SSD时嵌入图片（Base64）")
-        self.chk_embed_images.setChecked(True)
+        self.chk_embed_images = QCheckBox("嵌入图片（Base64）")
+        self.chk_embed_images.setChecked(False)
         self.chk_embed_images.setToolTip(
-            "勾选：图片转为Base64内嵌，SSD为单文件但体积变大\n"
-            "不勾选：只保留文字引用，文件更小（推荐）"
+            "⚠️ 勾选后图片将以Base64嵌入，可能大幅增加文件体积\n"
+            "不勾选（默认）：只保留图片引用，文件更小，推荐"
         )
         self.chk_embed_images.setVisible(False)  # SSD模式下才显示
 
@@ -474,6 +474,12 @@ class SlimTab(QWidget):
             self.load_file_content(path)
             # 恢复文本模式的预览效果
             self.on_slider_changed(self.slider.value())
+            # 更新 embed_images checkbox 显示状态（根据当前模式）
+            current_mode = self.format_combo.currentText()
+            if current_mode == "转换为SSD":
+                self.chk_embed_images.setVisible(True)
+            else:
+                self.chk_embed_images.setVisible(False)
 
     def load_image_info(self, path):
         """加载图片信息"""
@@ -500,16 +506,22 @@ class SlimTab(QWidget):
 
     def on_format_changed(self, index):
         """处理模式变化 — 只做UI切换，实际处理在按钮handler里"""
-        modes = ["标准压缩", "深度清理", "保留结构", "转换为SSD"]
+        modes = ["标准压缩", "激进压缩", "保留结构", "转换为SSD"]
         mode = modes[index] if index < len(modes) else "标准压缩"
 
         # 隐藏/显示压缩强度滑块（SSD转换不需要）
         if mode == "转换为SSD":
-            self.slider_frame.hide()
+            self.slider_widget.setVisible(False)  # SSD模式隐藏压缩强度
+            self.effect_label.setVisible(False)
+            self.chk_embed_images.setVisible(True)  # SSD 模式显示嵌入图片选项
             self.chk_embed_images.setEnabled(True)
         else:
-            self.slider_frame.show()
-            self.chk_embed_images.setEnabled(False)
+            self.slider_widget.setVisible(True)   # 非SSD模式显示压缩强度
+            self.effect_label.setVisible(True)
+            self.chk_embed_images.setVisible(False)  # 其他模式隐藏
+        
+        # 强制刷新布局
+        self.text_options.layout().update()
 
     def on_slider_changed(self, value):
         """滑块变化时更新显示"""

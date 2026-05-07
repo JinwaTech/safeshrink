@@ -199,7 +199,7 @@ class BatchWorker(QThread):
                     try:
                         from format_to_ssd import convert_to_ssd_v2, is_ssd_convertible
                         if is_ssd_convertible(str(file_path)):
-                            ssd_content = convert_to_ssd_v2(str(file_path), embed_images=bool(self.options.get('embed_images', True)), optimize=True)
+                            ssd_content = convert_to_ssd_v2(str(file_path), embed_images=bool(self.options.get('embed_images', False)), optimize=True)
                             out_file = output_path.with_stem(output_path.stem + '_SSD').with_suffix('.md')
                             with open(str(out_file), 'w', encoding='utf-8') as f:
                                 f.write(ssd_content)
@@ -279,7 +279,7 @@ class BatchWorker(QThread):
                         from format_to_ssd import convert_to_ssd_v2, is_ssd_convertible
                         print(f"[DEBUG batch_tab] PDF SSD 转换已启用")
                         if is_ssd_convertible(str(file_path)):
-                            ssd_content = convert_to_ssd_v2(str(file_path), embed_images=bool(self.options.get('embed_images', True)), optimize=True)
+                            ssd_content = convert_to_ssd_v2(str(file_path), embed_images=bool(self.options.get('embed_images', False)), optimize=True)
                             out_file = output_path.with_stem(output_path.stem + '_SSD').with_suffix('.md')
                             with open(str(out_file), 'w', encoding='utf-8') as f:
                                 f.write(ssd_content)
@@ -679,11 +679,11 @@ class BatchTab(QWidget):
         layout.addWidget(mode_label)
         layout.addWidget(self.mode_combo)
 
-        self.chk_batch_embed = QCheckBox("SSD转换时嵌入图片（Base64）")
-        self.chk_batch_embed.setChecked(True)
+        self.chk_batch_embed = QCheckBox("嵌入图片（Base64）")
+        self.chk_batch_embed.setChecked(False)
         self.chk_batch_embed.setToolTip(
-            "勾选：图片转为Base64内嵌，SSD为单文件但体积变大\n"
-            "不勾选：只保留文字引用，文件更小（推荐）"
+            "⚠️ 勾选后图片将以Base64嵌入，可能大幅增加文件体积\n"
+            "不勾选（默认）：只保留图片引用，文件更小，推荐"
         )
         self.chk_batch_embed.setVisible(False)  # 只有SSD模式才显示
         layout.addWidget(self.chk_batch_embed)
