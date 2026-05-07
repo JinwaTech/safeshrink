@@ -13,8 +13,6 @@ from PySide6.QtCore import Qt, Signal
 from pathlib import Path
 import os
 
-_DEBUG = True  # build.py 自动切换：release 打包时改为 False
-
 
 def _read_ooxml_text(path):
     """纯 Python 读取 OOXML 格式文本，不依赖任何外部库。"""
@@ -573,8 +571,10 @@ class SlimTab(QWidget):
                 from safe_shrink import estimate_tokens
                 result = convert_format_to_ssd(self.current_file, embed_images=self.chk_embed_images.isChecked())
 
-                if _DEBUG and not isinstance(result, str):
+                # ===== 防御性检查 =====
+                if not isinstance(result, str):
                     raise TypeError(f"convert_format_to_ssd 返回值类型错误: 期望 str，实际 {type(result).__name__}")
+                # =====================
 
                 self.processed_content = result
                 self.text_edit.setPlainText(result)
@@ -641,8 +641,10 @@ class SlimTab(QWidget):
             try:
                 result = slim_content(content, ratio, options)
 
-                if _DEBUG and not isinstance(result, str):
+                # ===== 防御性检查 =====
+                if not isinstance(result, str):
                     raise TypeError(f"slim_content 返回值类型错误: 期望 str，实际 {type(result).__name__}")
+                # =====================
 
                 self.processed_content = result  # 保存处理后的内容用于撤销
                 self.text_edit.setPlainText(result)

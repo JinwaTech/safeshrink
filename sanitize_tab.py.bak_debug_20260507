@@ -12,8 +12,6 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from pathlib import Path
 
-_DEBUG = True  # build.py 自动切换：release 打包时改为 False
-
 
 class SanitizeTab(QWidget):
     def __init__(self):
@@ -1083,11 +1081,12 @@ class SanitizeTab(QWidget):
                 content = self.text_edit.toPlainText()
                 sanitized_text, sanitized_count = self._sanitize_text(content, types, custom, mode)
                 
-                if _DEBUG:
-                    if not isinstance(sanitized_text, str):
-                        raise TypeError(f"_sanitize_text 返回值类型错误: 期望 str，实际 {type(sanitized_text).__name__}")
-                    if not isinstance(sanitized_count, int):
-                        raise TypeError(f"_sanitize_text 返回值类型错误: 期望 int，实际 {type(sanitized_count).__name__}")
+                # ===== 防御性检查 =====
+                if not isinstance(sanitized_text, str):
+                    raise TypeError(f"_sanitize_text 返回值类型错误: 期望 str，实际 {type(sanitized_text).__name__}")
+                if not isinstance(sanitized_count, int):
+                    raise TypeError(f"_sanitize_text 返回值类型错误: 期望 int，实际 {type(sanitized_count).__name__}")
+                # =====================
                 
                 self.processed_content = sanitized_text
                 self.text_edit.setPlainText(sanitized_text)

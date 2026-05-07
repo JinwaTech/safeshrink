@@ -166,7 +166,7 @@ class BatchWorker(QThread):
                         })
                     return (file_path.name, True, "复制", 0)
 
-            elif ext == '.docx' and self.action != 'sanitize' and self.options.get('deep_clean', False):
+            elif ext == '.docx' and self.action != 'sanitize' and self.options.get('deep_clean', False) and not self.options.get('convert_to_ssd', False):
                 # 直接清理原始文件，保存结果到输出路径（带 "_减肥" 后缀标记处理）
                 from docx import Document
                 out_file = output_path.with_stem(output_path.stem + '_减肥')
@@ -205,8 +205,20 @@ class BatchWorker(QThread):
                                 f.write(ssd_content)
                             new_size = out_file.stat().st_size
                             saved_bytes = orig_size - new_size
-                            # Token 统计（方案F：原文×3 vs Markdown真实开销）
-                            orig_char_count = orig_size   # Office文件大小≈字符数
+                            # Token 统计（方案F：原文纯文字×3 vs SSD的Markdown真实开销）
+                            # 用 MarkItDown 提取纯文字字符数（比文件字节大小准确得多）
+                            orig_char_count = 0
+                            try:
+                                from format_to_ssd import get_markitdown_instance
+                                md = get_markitdown_instance()
+                                if md:
+                                    md_result = md.convert(str(file_path))
+                                    raw_text = md_result.text_content if hasattr(md_result, 'text_content') else str(md_result)
+                                    orig_char_count = len(raw_text)
+                            except Exception:
+                                pass
+                            if orig_char_count == 0:
+                                orig_char_count = orig_size  # fallback: 文件大小
                             orig_tok = orig_char_count * 3
                             from safe_shrink import estimate_tokens
                             new_tok = estimate_tokens(ssd_content)["total"]
@@ -273,8 +285,20 @@ class BatchWorker(QThread):
                                 f.write(ssd_content)
                             new_size = out_file.stat().st_size
                             saved_bytes = orig_size - new_size
-                            # Token 统计（方案F：原文×3 vs Markdown真实开销）
-                            orig_tok = orig_size * 3
+                            # Token 统计（方案F：原文纯文字×3 vs SSD的Markdown真实开销）
+                            orig_char_count = 0
+                            try:
+                                from format_to_ssd import get_markitdown_instance
+                                md = get_markitdown_instance()
+                                if md:
+                                    md_result = md.convert(str(file_path))
+                                    raw_text = md_result.text_content if hasattr(md_result, 'text_content') else str(md_result)
+                                    orig_char_count = len(raw_text)
+                            except Exception:
+                                pass
+                            if orig_char_count == 0:
+                                orig_char_count = orig_size  # fallback
+                            orig_tok = orig_char_count * 3
                             from safe_shrink import estimate_tokens
                             new_tok = estimate_tokens(ssd_content)["total"]
                             with self._lock:

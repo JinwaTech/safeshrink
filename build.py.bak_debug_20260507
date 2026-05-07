@@ -6,9 +6,6 @@ SPEC_FILE = os.path.join(PROJECT_DIR, 'main_window_v2.spec')
 DIST_NEW = os.path.join(PROJECT_DIR, 'dist', 'SafeShrink')  # PyInstaller 输出一致目录名
 EXE_PATH = os.path.join(DIST_NEW, 'SafeShrink.exe')
 
-# 带 _DEBUG 标记的源文件列表（打包时自动切为 False，打包后恢复 True）
-DEBUG_FILES = ['slim_tab.py', 'sanitize_tab.py']
-
 def clean():
     for d in ['build', 'dist']:
         p = os.path.join(PROJECT_DIR, d)
@@ -50,43 +47,15 @@ def verify():
         print(f'[ERROR] EXE not found: {EXE_PATH}')
         return False
 
-def toggle_debug(to_release):
-    """将 _DEBUG 在 True/False 之间切换（release 打包前改 False，打包后改回 True）。"""
-    old = '_DEBUG = True' if to_release else '_DEBUG = False'
-    new = '_DEBUG = False' if to_release else '_DEBUG = True'
-    changed = 0
-    for fname in DEBUG_FILES:
-        fpath = os.path.join(PROJECT_DIR, fname)
-        if not os.path.exists(fpath):
-            print(f'[WARN] {fname} not found, skip')
-            continue
-        content = open(fpath, encoding='utf-8').read()
-        if old not in content:
-            print(f'[INFO] {fname}: no {old} to replace, skip')
-            continue
-        content = content.replace(old, new)
-        open(fpath, 'w', encoding='utf-8').write(content)
-        changed += 1
-        print(f'[OK] {fname}: {old} -> {new}')
-    return changed
-
 if __name__ == '__main__':
     os.chdir(PROJECT_DIR)
     print('=' * 50)
     print('  SafeShrink Build Tool (Fixed)')
     print('=' * 50)
-    # 切换到 release 模式（_DEBUG = False）
-    print('[0/3] Setting _DEBUG = False for release build...')
-    toggle_debug(to_release=True)
-    try:
-        clean()
-        if not build():
-            sys.exit(1)
-        if not verify():
-            sys.exit(1)
-    finally:
-        # 无论成败，恢复开发模式（_DEBUG = True）
-        print('[3/3] Restoring _DEBUG = True for development...')
-        toggle_debug(to_release=False)
+    clean()
+    if not build():
+        sys.exit(1)
+    if not verify():
+        sys.exit(1)
     print()
     print('[OK] Done!')
