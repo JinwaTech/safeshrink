@@ -237,44 +237,10 @@ def read_csv(filepath):
 
 
 def read_docx(filepath):
-
-    """读取Word .docx文件"""
-
-    if not check_dep('docx', 'python-docx'):
-
-        raise ImportError("python-docx 未安装")
-
-    import docx
-
-    doc = docx.Document(filepath)
-
-    paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
-
-    # 读表格
-
-    tables_text = []
-
-    for table in doc.tables:
-
-        for row in table.rows:
-
-            cells = [cell.text.strip() for cell in row.cells]
-
-            if any(cells):
-
-                tables_text.append(' | '.join(cells))
-
-    result = '\n'.join(paragraphs)
-
-    if tables_text:
-
-        result += '\n\n[表格]\n' + '\n'.join(tables_text)
-
-    return result
-
-
-
-
+    """读取Word .docx文件 - 使用markitdown"""
+    import markitdown
+    mr = markitdown.convert(filepath)
+    return mr.text_content
 
 def read_xlsx(filepath, sheet_index=0):
 

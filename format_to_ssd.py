@@ -140,6 +140,12 @@ try:
 except ImportError:
     print("[WARNING] python-docx 不可用，.doc 表格结构解析可能失败")
 
+# ─── OOXML zipfile 降级实现（markitdown 不可用时） ─────────────────────────
+try:
+    from _ooxml_to_ssd import _ooxml_to_ssd as _zipfile_ooxml_to_ssd
+except ImportError:
+    _zipfile_ooxml_to_ssd = None
+
 # ─── 支持格式定义 ───────────────────────────────────────────────────────────
 SUPPORTED_FORMATS = {
     '.txt', '.ssd', '.md', '.json', '.csv', '.xml', '.yaml', '.yml',
@@ -440,13 +446,26 @@ def convert_to_ssd_v2(file_path: str, embed_images: bool = True, optimize: bool 
             if images:
                 print(f"    [图片] 从 {ext} 文件提取了 {len(images)} 张图片")
 
-        # MarkItDown 转换
-        if not MARKITDOWN_AVAILABLE:
-            raise ValueError("MarkItDown 不可用")
+        # MarkItDown 转换（优先），markitdown 不可用时降级到纯 zipfile
+        ssd_text = None
+        if MARKITDOWN_AVAILABLE:
+            try:
+                md = get_markitdown_instance()
+                result = md.convert(actual_path)
+                ssd_text = result.text_content if hasattr(result, 'text_content') else str(result)
+            except Exception:
+                pass
 
-        md = get_markitdown_instance()
-        result = md.convert(actual_path)
-        ssd_text = result.text_content if hasattr(result, 'text_content') else str(result)
+        if ssd_text is None:
+            # 降级：使用纯 zipfile 实现
+            if _zipfile_ooxml_to_ssd is None:
+                raise ValueError("MarkItDown 不可用且 zipfile 降级模块未找到")
+            if ext not in ('.docx', '.xlsx', '.pptx'):
+                raise ValueError(f"MarkItDown 不可用且 {ext} 格式不支持 zipfile 降级")
+            try:
+                ssd_text = _zipfile_ooxml_to_ssd(actual_path)
+            except Exception as e:
+                raise ValueError(f"zipfile 降级转换失败: {e}")
 
         if not ssd_text:
             raise ValueError("转换结果为空")

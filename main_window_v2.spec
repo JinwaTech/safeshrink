@@ -11,6 +11,7 @@ a = Analysis(
         ('assets/arrow_down2.png', 'assets'),
         ('assets/icon06_64x64_light.png', 'assets'),
         ('assets/icon14_64x64_dark.png', 'assets'),
+        ('_ooxml_to_ssd.py', '.'),
     ],
     hiddenimports=[
         'safe_shrink',
@@ -29,8 +30,8 @@ a = Analysis(
         'file_status',
         'translations',
         'result_compare_dialog',
+        'docx',
         'pypdf',
-        'python-docx',
         'PIL',
         'markitdown',
     ],
