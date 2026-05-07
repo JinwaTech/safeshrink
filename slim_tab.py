@@ -585,11 +585,12 @@ class SlimTab(QWidget):
                 token_saved = orig_tokens_total - new_tokens["total"]
                 saved_pct = int(token_saved / orig_tokens_total * 100) if orig_tokens_total > 0 else 0
 
-                self.stats_label.setText(f"原文: {orig_len} 字符 -> SSD: {new_len} 字符")
+                # stats_label 显示 Token 节省（更有意义）
+                self.stats_label.setText(f"Token: ~{orig_tokens_total:,} → ~{new_tokens['total']:,} (节省 {saved_pct}%)")
                 self.result_label.setText(f"✅ 已转换为 SSD 格式")
 
                 # Show dialog
-                QMessageBox.information(self, "完成", f"SSD 转换完成\n\n原文字符: {orig_len} → 压缩后: {new_len}\nToken: ~{orig_tokens_total:,} → ~{new_tokens['total']:,}\n节省: {token_saved:,} tokens ({saved_pct}%)")
+                QMessageBox.information(self, "完成", f"SSD 转换完成\n\nToken: ~{orig_tokens_total:,} → ~{new_tokens['total']:,}\n节省: {token_saved:,} tokens ({saved_pct}%)")
                 return
             except Exception as e:
                 QMessageBox.critical(self, "错误", f"SSD 转换失败: {e}")
