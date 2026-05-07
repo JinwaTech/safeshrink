@@ -2,11 +2,7 @@
 
 > 一键文档减肥、脱敏、Markdown转换，完全离线，保护隐私
 
-**版本：v1.0.0**
-
----
-
-## ✨ 核心功能
+**版本：v1.1.3**  *(2026-05-07)*
 
 | 功能 | 说明 |
 |------|------|
@@ -14,6 +10,22 @@
 | 🔒 **智能脱敏** | 自动识别并脱敏手机号、身份证、银行卡、金额等 |
 | 📝 **Markdown 转换** | DOCX/PPTX/XLSX/PDF → Markdown，图片自动 Base64 内嵌 |
 | 📦 **批量处理** | 支持文件夹一键批量处理，智能跳过已处理文件 |
+
+---
+
+## 更新日志
+
+### v1.1.3 (2026-05-07)
+- **修复**：SSD模式下「嵌入图片（Base64）」选项可见性问题
+  - 修复 `slider_frame` 未定义的Bug（导致整段逻辑静默失败）
+  - `on_format_changed` 中 `modes` 列表修正（`深度清理` → `激进压缩`）
+  - `detect_file_type` 后同步更新 checkbox 可见性
+  - 增加布局刷新 `layout.update()`
+- **修复**：SSD转换默认 `embed_images=False`，避免PPTX多图文件token暴涨
+  - `format_to_ssd.py`：`convert_to_ssd_v2` 默认参数
+  - `batch_tab.py`：Office SSD / PDF SSD 默认值
+  - `slim_tab.py`：`chk_embed_images` 默认不勾选 + 设置页默认
+- **UX优化**：checkbox tooltip 增加 ⚠️ 警告提示
 
 ---
 
