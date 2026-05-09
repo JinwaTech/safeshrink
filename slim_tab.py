@@ -549,12 +549,10 @@ class SlimTab(QWidget):
         self.effect_label.setText(effect)
 
     def _on_img_format_changed(self, index):
-        """图片模式下的格式切换 — 同步到主 format_combo，触发 on_format_changed"""
+        """图片模式下的格式切换 — 只更新图片模式的 UI，图片模式独立于 format_combo"""
         if index == 1:  # 扫描为Markdown
-            self.format_combo.setCurrentIndex(3)
             self.img_chk_ocr.setChecked(True)
         else:  # 图片压缩
-            self.format_combo.setCurrentIndex(0)
             self.img_chk_ocr.setChecked(False)
 
     def on_image_quality_changed(self, value):

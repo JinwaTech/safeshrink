@@ -35,7 +35,7 @@ def build():
     return True
 
 def verify():
-    print('[2/2] Verifying EXE...')
+    print('[2/3] Verifying EXE...')
     if os.path.exists(EXE_PATH):
         sz = os.path.getsize(EXE_PATH) / 1e6
         print(f'[OK] EXE: {sz:.2f} MB')
@@ -48,6 +48,20 @@ def verify():
         return True
     else:
         print(f'[ERROR] EXE not found: {EXE_PATH}')
+        return False
+
+def sync_to_desktop():
+    """自动复制 EXE 到桌面路径（双保险）"""
+    print('[3/3] Syncing to desktop path...')
+    desktop_exe = r'C:\Users\26112\Desktop\SafeShrink\dist\SafeShrink\SafeShrink.exe'
+    desktop_dir = os.path.dirname(desktop_exe)
+    try:
+        os.makedirs(desktop_dir, exist_ok=True)
+        shutil.copy2(EXE_PATH, desktop_exe)
+        print(f'[OK] Copied to: {desktop_exe}')
+        return True
+    except Exception as e:
+        print(f'[WARN] Sync failed: {e}')
         return False
 
 def toggle_debug(to_release):
@@ -84,6 +98,7 @@ if __name__ == '__main__':
             sys.exit(1)
         if not verify():
             sys.exit(1)
+        sync_to_desktop()
     finally:
         # 无论成败，恢复开发模式（_DEBUG = True）
         print('[3/3] Restoring _DEBUG = True for development...')
