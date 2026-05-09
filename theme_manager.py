@@ -799,6 +799,12 @@ class ThemeManager:
                 font-size: 14px;
             }}
 
+            QSpinBox:disabled {{
+                background-color: {c['input_bg']};
+                border: 1px solid {c['border_light']};
+                color: {c['text_muted']};
+            }}
+
             QSpinBox:focus {{
                 border-color: {c['accent']};
             }}

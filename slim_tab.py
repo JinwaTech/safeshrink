@@ -292,42 +292,49 @@ class SlimTab(QWidget):
 
         # 尺寸限制
         size_group = QGroupBox("尺寸限制（可选）")
+        size_group.setMinimumHeight(120)
         size_layout = QVBoxLayout(size_group)
+        size_layout.setContentsMargins(8, 12, 8, 8)  # 增加顶部内边距
         self.img_chk_resize = QCheckBox("启用尺寸限制")
 
+        # 尺寸输入区域（直接布局，避免嵌套）
+        self.img_chk_resize = QCheckBox("启用尺寸限制")
+        self.img_chk_resize.toggled.connect(self._on_resize_toggled)
+
         size_input_layout = QHBoxLayout()
-        width_layout = QHBoxLayout()
-        width_layout.addWidget(QLabel("最大宽度:"))
+        size_input_layout.setSpacing(12)
+
+        # 最大宽度
+        width_label = QLabel("最大宽度:")
         self.img_spin_width = QSpinBox()
         self.img_spin_width.setRange(100, 10000)
         self.img_spin_width.setValue(1920)
         self.img_spin_width.setSuffix(" px")
         self.img_spin_width.setEnabled(False)
+        size_input_layout.addWidget(width_label)
+        size_input_layout.addWidget(self.img_spin_width)
+        size_input_layout.addSpacing(16)
 
-        height_layout = QHBoxLayout()
-        height_layout.addWidget(QLabel("最大高度:"))
+        # 最大高度
+        height_label = QLabel("最大高度:")
         self.img_spin_height = QSpinBox()
         self.img_spin_height.setRange(100, 10000)
         self.img_spin_height.setValue(1080)
         self.img_spin_height.setSuffix(" px")
         self.img_spin_height.setEnabled(False)
+        size_input_layout.addWidget(height_label)
+        size_input_layout.addWidget(self.img_spin_height)
+        size_input_layout.addStretch()
 
-        self.img_chk_resize.stateChanged.connect(
-            lambda checked: (
-                self.img_spin_width.setEnabled(checked),
-                self.img_spin_height.setEnabled(checked)
-            )
-        )
         self.img_chk_aspect = QCheckBox("保持宽高比")
         self.img_chk_aspect.setChecked(True)
 
-        size_input_layout.addLayout(width_layout)
-        size_input_layout.addLayout(height_layout)
         size_layout.addWidget(self.img_chk_resize)
         size_layout.addLayout(size_input_layout)
         size_layout.addWidget(self.img_chk_aspect)
 
         layout.addLayout(quality_layout)
+        layout.addSpacing(8)
         layout.addWidget(size_group)
 
         # OCR 文字识别（SSD 模式）
@@ -554,6 +561,11 @@ class SlimTab(QWidget):
             self.img_chk_ocr.setChecked(True)
         else:  # 图片压缩
             self.img_chk_ocr.setChecked(False)
+
+    def _on_resize_toggled(self, checked):
+        """启用/禁用尺寸限制时，启用/禁用宽高输入框"""
+        self.img_spin_width.setEnabled(checked)
+        self.img_spin_height.setEnabled(checked)
 
     def on_image_quality_changed(self, value):
         """图片质量滑块变化时更新显示"""
