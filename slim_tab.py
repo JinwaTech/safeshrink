@@ -13,8 +13,6 @@ from PySide6.QtCore import Qt, Signal
 from pathlib import Path
 import os
 
-_DEBUG = True  # build.py 自动切换：release 打包时改为 False
-
 
 def _read_ooxml_text(path):
     """纯 Python 读取 OOXML 格式文本，不依赖任何外部库。"""
@@ -414,6 +412,7 @@ class SlimTab(QWidget):
         """设置文件（供拖拽使用）"""
         self.current_file = file_path
         self.file_label.setText(Path(file_path).name)
+        open(r'C:\Users\26112\Desktop\SafeShrink_debug.log','a',encoding='utf-8').write(f"[DEBUG set_file] called with {file_path}\n")
         self.detect_file_type(file_path)
         self.btn_process.setEnabled(True)
         self.btn_undo.setEnabled(False)  # 重置撤销按钮
@@ -459,7 +458,9 @@ class SlimTab(QWidget):
                 self.content_section.setVisible(False)
         else:
             self.current_mode = 'text'
+            open(r'C:\Users\26112\Desktop\SafeShrink_debug.log','a',encoding='utf-8').write(f"[DEBUG] SWITCHING to text_options currentWidget={self.stacked_options.currentWidget().objectName()} idx={self.stacked_options.currentIndex()}\n")
             self.stacked_options.setCurrentWidget(self.text_options)
+            open(r'C:\Users\26112\Desktop\SafeShrink_debug.log','a',encoding='utf-8').write(f"[DEBUG] AFTER setCurrentWidget: currentWidget={self.stacked_options.currentWidget().objectName()} idx={self.stacked_options.currentIndex()}\n")
             self.content_section.setVisible(True)
             self.load_file_content(path)
             # 恢复文本模式的预览效果
@@ -616,7 +617,7 @@ class SlimTab(QWidget):
                     ocr_images=self.chk_ocr_images.isChecked()
                 )
 
-                if _DEBUG and not isinstance(result, str):
+                if not isinstance(result, str):
                     raise TypeError(f"convert_format_to_ssd 返回值类型错误: 期望 str，实际 {type(result).__name__}")
 
                 self.processed_content = result
@@ -684,7 +685,7 @@ class SlimTab(QWidget):
             try:
                 result = slim_content(content, ratio, options)
 
-                if _DEBUG and not isinstance(result, str):
+                if not isinstance(result, str):
                     raise TypeError(f"slim_content 返回值类型错误: 期望 str，实际 {type(result).__name__}")
 
                 self.processed_content = result  # 保存处理后的内容用于撤销
