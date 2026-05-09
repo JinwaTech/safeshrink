@@ -133,6 +133,8 @@ class SlimTab(QWidget):
             self.img_quality_slider.setValue(int(settings.get('image_quality', 60)))
         if hasattr(self, 'chk_embed_images'):
             self.chk_embed_images.setChecked(bool(settings.get('embed_images', False)))
+        if hasattr(self, 'chk_ocr_images'):
+            self.chk_ocr_images.setChecked(bool(settings.get('ocr_images', False)))
 
     def create_file_section(self):
         frame = QFrame()
@@ -231,80 +233,27 @@ class SlimTab(QWidget):
         )
         self.chk_embed_images.setVisible(False)  # SSD模式下才显示
 
+        # OCR 图片文字识别（SSD 模式）
+        self.chk_ocr_images = QCheckBox("OCR 文字识别（提取图片中的文字）")
+        self.chk_ocr_images.setChecked(False)
+        self.chk_ocr_images.setToolTip(
+            "⚠️ 需要安装 Tesseract OCR 引擎（Windows 版）\n"
+            "下载地址：https://github.com/UB-Mannheim/tesseract/wiki\n"
+            "勾选后从图片中提取文字，以纯文本方式插入文档末尾"
+        )
+        self.chk_ocr_images.setVisible(False)  # SSD模式下才显示
+
+        # 互斥：embed_images 与 OCR 不能同时勾选
+        self.chk_embed_images.toggled.connect(self._on_embed_toggled)
+        self.chk_ocr_images.toggled.connect(self._on_ocr_toggled)
+
         layout.addWidget(self.chk_remove_comments)
         layout.addWidget(self.chk_remove_ai)
         layout.addWidget(self.chk_resize_image)
         layout.addWidget(self.chk_embed_images)
+        layout.addWidget(self.chk_ocr_images)
 
         layout.addStretch()
-
-        return frame
-        """图片文件压缩选项"""
-        frame = QFrame()
-        layout = QVBoxLayout(frame)
-        layout.setContentsMargins(20, 16, 20, 16)
-        layout.setSpacing(12)
-
-        title = QLabel("图片压缩选项")
-        title.setStyleSheet("font-weight: 600; font-size: 14px;")
-        layout.addWidget(title)
-
-        # 图片信息
-        self.img_info_label = QLabel("尺寸: - | 大小: - | 格式: -")
-        self.img_info_label.setStyleSheet("color: #8b92a5; font-size: 12px;")
-        layout.addWidget(self.img_info_label)
-
-        # 图片压缩强度
-        quality_layout = QHBoxLayout()
-        quality_label = QLabel("图片压缩强度:")
-        self.img_quality_slider = QSlider(Qt.Orientation.Horizontal)
-        self.img_quality_slider.setRange(10, 100)
-        self.img_quality_slider.setValue(60)
-        self.img_quality_value = QLabel("60%")
-        self.img_quality_slider.valueChanged.connect(self.on_image_quality_changed)
-        quality_layout.addWidget(quality_label)
-        quality_layout.addWidget(self.img_quality_slider)
-        quality_layout.addWidget(self.img_quality_value)
-
-        # 尺寸限制
-        size_group = QGroupBox("尺寸限制（可选）")
-        size_layout = QVBoxLayout(size_group)
-        self.img_chk_resize = QCheckBox("启用尺寸限制")
-
-        size_input_layout = QHBoxLayout()
-        width_layout = QHBoxLayout()
-        width_layout.addWidget(QLabel("最大宽度:"))
-        self.img_spin_width = QSpinBox()
-        self.img_spin_width.setRange(100, 10000)
-        self.img_spin_width.setValue(1920)
-        self.img_spin_width.setSuffix(" px")
-        self.img_spin_width.setEnabled(False)
-
-        height_layout = QHBoxLayout()
-        height_layout.addWidget(QLabel("最大高度:"))
-        self.img_spin_height = QSpinBox()
-        self.img_spin_height.setRange(100, 10000)
-        self.img_spin_height.setValue(1080)
-        self.img_spin_height.setSuffix(" px")
-        self.img_spin_height.setEnabled(False)
-
-        self.img_chk_resize.stateChanged.connect(
-            lambda checked: (
-                self.img_spin_width.setEnabled(checked),
-                self.img_spin_height.setEnabled(checked)
-            )
-        )
-        self.img_chk_aspect = QCheckBox("保持宽高比")
-        self.img_chk_aspect.setChecked(True)
-
-        size_input_layout.addLayout(width_layout)
-        size_input_layout.addLayout(height_layout)
-        size_layout.addWidget(self.img_chk_resize)
-        size_layout.addLayout(size_input_layout)
-        size_layout.addWidget(self.img_chk_aspect)
-
-        layout.addLayout(quality_layout)
-        layout.addWidget(size_group)
 
         return frame
 
@@ -319,6 +268,13 @@ class SlimTab(QWidget):
         title.setStyleSheet("font-weight: 600; font-size: 14px;")
         layout.addWidget(title)
 
+        # 处理模式（图片模式专用）
+        self.img_format_combo = QComboBox()
+        self.img_format_combo.addItems(["图片压缩", "扫描为Markdown"])
+        self.img_format_combo.setToolTip("图片压缩：压缩图片文件大小\n扫描为Markdown：自动OCR识别，输出.md文件")
+        self.img_format_combo.currentIndexChanged.connect(self._on_img_format_changed)
+        layout.addWidget(self.img_format_combo)
+
         # 图片信息
         self.img_info_label = QLabel("尺寸: - | 大小: - | 格式: -")
         self.img_info_label.setStyleSheet("color: #8b92a5; font-size: 12px;")
@@ -375,6 +331,20 @@ class SlimTab(QWidget):
 
         layout.addLayout(quality_layout)
         layout.addWidget(size_group)
+
+        # OCR 文字识别（SSD 模式）
+        self.img_chk_ocr = QCheckBox("OCR 文字识别（提取图片中的文字）")
+        self.img_chk_ocr.setChecked(False)
+        self.img_chk_ocr.setToolTip(
+            "⚠️ 需要安装 Tesseract OCR 引擎（Windows 版）\n"
+            "下载地址：https://github.com/UB-Mannheim/tesseract/wiki\n"
+            "勾选后从图片中提取文字，输出为 .md 文本文件"
+        )
+        self.img_chk_ocr.setVisible(False)  # SSD模式下才显示
+        self.img_chk_ocr.toggled.connect(self._on_image_ocr_toggled)
+        layout.addWidget(self.img_chk_ocr)
+
+        layout.addStretch()
 
         return frame
 
@@ -399,6 +369,16 @@ class SlimTab(QWidget):
         layout.addWidget(self.stats_label)
 
         return frame
+
+    def _on_embed_toggled(self, checked: bool):
+        """互斥：勾选 embed_images 时取消 OCR，反之亦然"""
+        if checked and self.chk_ocr_images.isChecked():
+            self.chk_ocr_images.setChecked(False)
+
+    def _on_ocr_toggled(self, checked: bool):
+        """互斥：勾选 OCR 时取消 embed_images，反之亦然"""
+        if checked and self.chk_embed_images.isChecked():
+            self.chk_embed_images.setChecked(False)
 
     def create_actions_section(self):
         frame = QFrame()
@@ -462,11 +442,21 @@ class SlimTab(QWidget):
         if ext in image_exts:
             self.current_mode = 'image'
             self.stacked_options.setCurrentWidget(self.image_options)
-            self.content_section.setVisible(False)
             self.load_image_info(path)
             # 更新图片模式的预览效果
             quality = self.img_quality_slider.value()
             self.effect_label.setText(f"效果：图片质量 {quality}% {'+ 缩小尺寸' if self.img_chk_resize.isChecked() else ''}")
+            # 更新图片 OCR 复选框显示状态（根据当前格式）
+            current_mode = self.format_combo.currentText()
+            if current_mode == "转换为SSD":
+                self.img_chk_ocr.setVisible(True)
+            else:
+                self.img_chk_ocr.setVisible(False)
+            # OCR 模式下显示内容区域（用于显示识别的文字）
+            if self.img_chk_ocr.isChecked():
+                self.content_section.setVisible(True)
+            else:
+                self.content_section.setVisible(False)
         else:
             self.current_mode = 'text'
             self.stacked_options.setCurrentWidget(self.text_options)
@@ -515,11 +505,27 @@ class SlimTab(QWidget):
             self.effect_label.setVisible(False)
             self.chk_embed_images.setVisible(True)  # SSD 模式显示嵌入图片选项
             self.chk_embed_images.setEnabled(True)
+            self.chk_ocr_images.setVisible(True)  # SSD 模式显示 OCR 选项
+            self.chk_ocr_images.setEnabled(True)
+            if self.current_mode != 'image':
+                self.img_chk_ocr.setVisible(True)     # 只在text模式显示
+            # 图片 OCR 模式下显示内容区域
+            if self.current_mode == 'image' and self.img_chk_ocr.isChecked():
+                self.content_section.setVisible(True)
         else:
             self.slider_widget.setVisible(True)   # 非SSD模式显示压缩强度
             self.effect_label.setVisible(True)
             self.chk_embed_images.setVisible(False)  # 其他模式隐藏
+            self.chk_ocr_images.setVisible(False)   # 其他模式隐藏
+            self.img_chk_ocr.setVisible(False)      # 图片模式 OCR 复选框也隐藏
+            # 切换到非SSD时隐藏内容区域
+            if self.current_mode == 'image':
+                self.content_section.setVisible(False)
         
+        # 图片 SSD 模式：切换到 text_options（含压缩级别+SSD选项）
+        if self.current_mode == 'image' and mode == '转换为SSD':
+            self.stacked_options.setCurrentWidget(self.text_options)
+
         # 强制刷新布局
         self.text_options.layout().update()
 
@@ -541,12 +547,29 @@ class SlimTab(QWidget):
 
         self.effect_label.setText(effect)
 
+    def _on_img_format_changed(self, index):
+        """图片模式下的格式切换 — 同步到主 format_combo，触发 on_format_changed"""
+        if index == 1:  # 扫描为Markdown
+            self.format_combo.setCurrentIndex(3)
+            self.img_chk_ocr.setChecked(True)
+        else:  # 图片压缩
+            self.format_combo.setCurrentIndex(0)
+            self.img_chk_ocr.setChecked(False)
+
     def on_image_quality_changed(self, value):
         """图片质量滑块变化时更新显示"""
         self.img_quality_value.setText(f"{value}%")
         if self.current_mode == 'image':
             resize_text = " + 缩小尺寸" if self.img_chk_resize.isChecked() else ""
             self.effect_label.setText(f"效果：图片质量 {value}%{resize_text}")
+
+    def _on_image_ocr_toggled(self, checked):
+        """图片模式 OCR 复选框切换 — 保留压缩选项，只额外显示内容区"""
+        if checked and hasattr(self, 'chk_embed_images') and self.chk_embed_images.isChecked():
+            self.chk_embed_images.setChecked(False)
+        # OCR 是附加功能：压缩选项始终可见，只额外显示内容区
+        if self.current_mode == 'image':
+            self.content_section.setVisible(checked)
 
     def load_file_content(self, path):
         try:
@@ -565,7 +588,11 @@ class SlimTab(QWidget):
             return
 
         if self.current_mode == 'image':
-            self.compress_image()
+            # 图片 OCR 模式（SSD 转换）
+            if self.img_chk_ocr.isChecked():
+                self.process_image_ocr()
+            else:
+                self.compress_image()
         else:
             self.process_text_file()
 
@@ -583,7 +610,11 @@ class SlimTab(QWidget):
         if mode == "转换为SSD":
             try:
                 from safe_shrink import estimate_tokens
-                result = convert_format_to_ssd(self.current_file, embed_images=self.chk_embed_images.isChecked())
+                result = convert_format_to_ssd(
+                    self.current_file,
+                    embed_images=self.chk_embed_images.isChecked(),
+                    ocr_images=self.chk_ocr_images.isChecked()
+                )
 
                 if _DEBUG and not isinstance(result, str):
                     raise TypeError(f"convert_format_to_ssd 返回值类型错误: 期望 str，实际 {type(result).__name__}")
@@ -718,12 +749,73 @@ class SlimTab(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "错误", f"压缩失败: {e}")
 
+    def process_image_ocr(self):
+        """处理图片文件的 OCR 文字识别（扫描为Markdown）"""
+        if not self.current_file:
+            return
+
+        try:
+            from format_to_ssd import _detect_tesseract, _ocr_image_to_text
+
+            # 检查 Tesseract 是否可用
+            if not _detect_tesseract():
+                QMessageBox.warning(
+                    self, "OCR 未安装",
+                    "⚠️ 未检测到 Tesseract OCR 引擎\n\n"
+                    "请先安装：https://github.com/UB-Mannheim/tesseract/wiki\n"
+                    "安装后重启本程序即可使用"
+                )
+                return
+
+            # 读取图片字节并调用 OCR
+            with open(self.current_file, 'rb') as f:
+                image_data = f.read()
+
+            md_content = _ocr_image_to_text(image_data, lang='chi_sim+eng')
+
+            if md_content.strip():
+                self.processed_content = md_content
+                self.text_edit.setPlainText(md_content)
+                self.btn_save.setEnabled(True)
+                self.btn_undo.setEnabled(True)
+
+                # 显示统计信息
+                orig_size = os.path.getsize(self.current_file)
+                new_size = len(md_content.encode('utf-8'))
+                saved_kb = (orig_size - new_size) / 1024
+                self.stats_label.setText(
+                    f"原文件: {orig_size/1024:.1f} KB → OCR结果: {new_size/1024:.1f} KB "
+                    f"(节省 {saved_kb:.1f} KB)"
+                )
+                self.result_label.setText(f"✅ OCR 识别完成！")
+                QMessageBox.information(
+                    self, "完成",
+                    f"图片 OCR 识别完成！\n\n"
+                    f"原文件: {Path(self.current_file).name}\n"
+                    f"文字: {len(md_content)} 字符"
+                )
+            else:
+                self.result_label.setText(f"⚠️ 未识别出文字")
+                QMessageBox.warning(
+                    self, "OCR 失败",
+                    f"未能从图片中提取文字\n\n"
+                    f"提示：请确保图片中包含清晰的文字"
+                )
+
+        except Exception as e:
+            self.result_label.setText(f"⚠️ OCR 处理出错")
+            QMessageBox.critical(self, "错误", f"OCR 处理失败: {e}")
+
     def save_result(self):
         if not self.current_file:
             return
 
         if self.current_mode == 'image':
-            self.save_image()
+            # OCR 扫描结果走文本保存逻辑（结果在 text_edit，不在 compressed_path）
+            if hasattr(self, 'processed_content') and self.processed_content:
+                self.save_text()
+            else:
+                self.save_image()
         else:
             self.save_text()
 

@@ -28,6 +28,8 @@ from datetime import datetime
 
 from typing import List, Dict, Optional
 
+import shutil
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -81,6 +83,10 @@ SUPPORTED_EXTENSIONS = {
     # PDF
 
     '.pdf',
+
+    # 图片类（OCR处理）
+
+    '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.tiff', '.tif',
 
 }
 
@@ -220,23 +226,73 @@ def process_file(
 
     }
 
+    # ===== 图片文件 OCR 处理（必须在 read_file 之前，避免 ValueError） =====
+    IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.tiff', '.tif'}
+    if ext in IMAGE_EXTENSIONS and options.get('ocr_images_files', False):
+        try:
+            from format_to_ssd import _ocr_image_to_text, _detect_tesseract
+            
+            if not _detect_tesseract():
+                result['status'] = 'error'
+                result['error'] = 'Tesseract 未安装或不在 PATH 中'
+                return result
+            
+            with open(file_path, 'rb') as f_img:
+                image_data = f_img.read()
+            
+            ocr_text = _ocr_image_to_text(image_data)
+            
+            if not ocr_text:
+                # OCR 未识别到文字 → 复制原文件到 output，并在文件名标注
+                _stem = Path(file_path).stem
+                _suffix = Path(file_path).suffix
+                _out_name = f'{_stem}_OCR无文字{_suffix}'
+                _rel_dir = str(Path(rel_path).parent)
+                _target_dir = Path(out_dir) / _rel_dir if _rel_dir != '.' else Path(out_dir)
+                _target_dir.mkdir(parents=True, exist_ok=True)
+                _out_path = _target_dir / _out_name
+                shutil.copy2(file_path, _out_path)
+                
+                result['status'] = 'success'
+                result['type'] = 'ocr_image'
+                result['output_path'] = str(_out_path)
+                result['output_name'] = _out_name
+                result['output_size'] = Path(file_path).stat().st_size
+                result['note'] = 'OCR 未识别到文字，已复制原文件'
+                return result
+            
+            _stem = Path(file_path).stem
+            _out_name = f'{_stem}_OCR.md'
+            _rel_dir = str(Path(rel_path).parent)
+            _target_dir = Path(out_dir) / _rel_dir if _rel_dir != '.' else Path(out_dir)
+            _target_dir.mkdir(parents=True, exist_ok=True)
+            _out_path = _target_dir / _out_name
+            
+            md_content = f'# {_stem} - OCR 识别结果\n\n{ocr_text}'
 
+            with open(_out_path, 'w', encoding='utf-8') as f_out:
+                f_out.write(md_content)
+            
+            result['status'] = 'success'
+            result['type'] = 'ocr_image'
+            result['output_path'] = str(_out_path)
+            result['output_name'] = _out_name
+            result['output_size'] = len(md_content.encode('utf-8'))
+            return result
+            
+        except Exception as e:
+            result['status'] = 'error'
+            result['error'] = f'OCR 处理失败: {str(e)}'
+            return result
 
     try:
 
         # 读取文件
-
         text = read_file(file_path)
 
         original_len = len(text)
 
-
-
-        # 处理
-
-        ssd_converted = False  # 标记是否成功转换为 SSD（初始化）
-
-
+        # ===== 原有逻辑 =====
 
         if action == 'slim':
             orig_ext = Path(file_path).suffix.lower()
@@ -251,7 +307,11 @@ def process_file(
 
                     if is_ssd_convertible(file_path):
 
-                        processed = convert_to_ssd_v2(file_path, optimize=True)
+                        # 读取 embed_images 和 ocr_images 选项
+                        embed_images = options.get('embed_images', False)
+                        ocr_images = options.get('ocr_images', False)
+                        
+                        processed = convert_to_ssd_v2(file_path, optimize=True, embed_images=embed_images, ocr_images=ocr_images)
 
                         stats = {'compression_rate': 0}  # SSD 转换不计算压缩率
 
@@ -315,8 +375,7 @@ def process_file(
                         _target_dir = _input_dir / '_processed'
                     _target_dir.mkdir(parents=True, exist_ok=True)
                     _out_path = _target_dir / _out_name
-                    import shutil
-                    shutil.copy2(file_path, _out_path)  # 复制原文件到输出路径
+                    shutil.copy2(file_path, _out_path)
                     cr = options.get('compression_rate', 0.3)
                     rm_ai = options.get('remove_ai', False)
                     if orig_ext == '.docx':
@@ -372,8 +431,12 @@ def process_file(
                     
                     if is_ssd_convertible(file_path):
                         print(f"      [DEBUG] 开始 SSD 转换...")
+                        # 读取 embed_images 和 ocr_images 选项
+                        embed_images = options.get('embed_images', False)
+                        ocr_images = options.get('ocr_images', False)
+                        
                         # 先转为 SSD
-                        ssd_content = convert_to_ssd_v2(file_path, optimize=True)
+                        ssd_content = convert_to_ssd_v2(file_path, optimize=True, embed_images=embed_images, ocr_images=ocr_images)
                         print(f"      [DEBUG] SSD 转换完成，长度: {len(ssd_content)}")
                         # 再对 SSD 内容脱敏
                         from sanitize_ssd import SSDSanitizer
@@ -405,7 +468,6 @@ def process_file(
                         if options.get('backup', False):
                             backup_path = _out_dir / file_info['relative_path']
                             if backup_path.exists():
-                                import shutil
                                 backup_path.replace(backup_path.with_stem(backup_path.stem + '_原始'))
                         out_name = Path(file_info['name']).stem + '_脱敏' + out_ext
                         out_path = _out_dir / file_info['relative_path'].replace(

@@ -199,7 +199,12 @@ class BatchWorker(QThread):
                     try:
                         from format_to_ssd import convert_to_ssd_v2, is_ssd_convertible
                         if is_ssd_convertible(str(file_path)):
-                            ssd_content = convert_to_ssd_v2(str(file_path), embed_images=bool(self.options.get('embed_images', False)), optimize=True)
+                            ssd_content = convert_to_ssd_v2(
+                                str(file_path),
+                                embed_images=bool(self.options.get('embed_images', False)),
+                                ocr_images=bool(self.options.get('ocr_images', False)),
+                                optimize=True
+                            )
                             out_file = output_path.with_stem(output_path.stem + '_SSD').with_suffix('.md')
                             with open(str(out_file), 'w', encoding='utf-8') as f:
                                 f.write(ssd_content)
@@ -279,7 +284,12 @@ class BatchWorker(QThread):
                         from format_to_ssd import convert_to_ssd_v2, is_ssd_convertible
                         print(f"[DEBUG batch_tab] PDF SSD 转换已启用")
                         if is_ssd_convertible(str(file_path)):
-                            ssd_content = convert_to_ssd_v2(str(file_path), embed_images=bool(self.options.get('embed_images', False)), optimize=True)
+                            ssd_content = convert_to_ssd_v2(
+                                str(file_path),
+                                embed_images=bool(self.options.get('embed_images', False)),
+                                ocr_images=bool(self.options.get('ocr_images', False)),
+                                optimize=True
+                            )
                             out_file = output_path.with_stem(output_path.stem + '_SSD').with_suffix('.md')
                             with open(str(out_file), 'w', encoding='utf-8') as f:
                                 f.write(ssd_content)
@@ -354,6 +364,37 @@ class BatchWorker(QThread):
                     return (file_path.name, True, "复制", 0)
 
             elif ext in ('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'):
+                # 图片文件 OCR：优先走 batch_processor 处理
+                if self.options.get('ocr_images_files', False):
+                    try:
+                        from batch_processor import process_file
+                        file_info = {
+                            'path': str(file_path),
+                            'name': file_path.name,
+                            'ext': ext,
+                            'relative_path': str(rel_path),
+                            'size': orig_size
+                        }
+                        result = process_file(file_info, self.action, self.options, str(output_base))
+                        if result['status'] == 'success':
+                            new_size = result['output_size']
+                            saved_bytes = orig_size - new_size
+                            with self._lock:
+                                self._processed_records.append({
+                                    'original': file_path.name,
+                                    'output': result.get('output_name', file_path.name),
+                                    'type': 'ocr_image',
+                                    'status': 'success'
+                                })
+                            return (file_path.name, True, "OCR", saved_bytes)
+                        else:
+                            err_msg = result.get('error', '未知错误')
+                            return (file_path.name, False, f"失败: {err_msg}", 0)
+                    except Exception as e:
+                        import traceback
+                        traceback.print_exc()
+                        return (file_path.name, False, f"异常: {str(e)}", 0)
+                # 默认：图片压缩
                 if self.action == 'slim':
                     from safe_shrink_gui import compress_image_gui
                     quality = self.options.get('image_quality', 60)
@@ -612,6 +653,10 @@ class BatchTab(QWidget):
         action_section = self.create_action_section()
         scroll_layout.addWidget(action_section)
 
+        # SSD 模式选项（嵌入图片/OCR 子选项）
+        self.ssd_options_section = self.create_ssd_options_section()
+        scroll_layout.addWidget(self.ssd_options_section)
+
         # 选项区域
         options_section = self.create_options_section()
         scroll_layout.addWidget(options_section)
@@ -679,6 +724,16 @@ class BatchTab(QWidget):
         layout.addWidget(mode_label)
         layout.addWidget(self.mode_combo)
 
+        return frame
+
+    def create_ssd_options_section(self):
+        """SSD 模式选项（嵌入图片/OCR 子选项）- 独立垂直容器"""
+        frame = QFrame()
+        frame.setObjectName("card")
+        vbox = QVBoxLayout(frame)
+        vbox.setContentsMargins(20, 8, 20, 16)
+        vbox.setSpacing(8)
+
         self.chk_batch_embed = QCheckBox("嵌入图片（Base64）")
         self.chk_batch_embed.setChecked(False)
         self.chk_batch_embed.setToolTip(
@@ -686,9 +741,54 @@ class BatchTab(QWidget):
             "不勾选（默认）：只保留图片引用，文件更小，推荐"
         )
         self.chk_batch_embed.setVisible(False)  # 只有SSD模式才显示
-        layout.addWidget(self.chk_batch_embed)
+        vbox.addWidget(self.chk_batch_embed)
+
+        # OCR 图片文字识别（SSD 模式）
+        self.chk_batch_ocr = QCheckBox("OCR 文字识别（提取图片中的文字）")
+        self.chk_batch_ocr.setChecked(False)
+        self.chk_batch_ocr.setToolTip(
+            "⚠️ 需要安装 Tesseract OCR 引擎（Windows 版）\n"
+            "下载地址：https://github.com/UB-Mannheim/tesseract/wiki\n"
+            "勾选后从图片中提取文字，以纯文本方式插入文档末尾"
+        )
+        self.chk_batch_ocr.setVisible(False)  # 只有SSD模式才显示
+        vbox.addWidget(self.chk_batch_ocr)
+
+        # 子选项：扫描图片文件并 OCR（PNG/JPG/BMP/GIF 等）
+        self.chk_batch_ocr_images = QCheckBox("扫描图片文件并转为 Markdown")
+        self.chk_batch_ocr_images.setChecked(False)
+        self.chk_batch_ocr_images.setToolTip(
+            "扫描文件夹内的图片文件（.png/.jpg/.jpeg/.bmp/.gif/.webp），\n"
+            "使用 OCR 提取文字并保存为 .md 文件"
+        )
+        self.chk_batch_ocr_images.setVisible(False)  # 随主选项显示/隐藏
+        self.chk_batch_ocr_images.setStyleSheet("margin-left: 20px;")  # 缩进显示
+        vbox.addWidget(self.chk_batch_ocr_images)
+
+        # 主选项勾选时显示/隐藏子选项
+        self.chk_batch_ocr.toggled.connect(self._on_batch_ocr_main_toggled)
+
+        # 互斥：embed_images 与 OCR 不能同时勾选
+        self.chk_batch_embed.toggled.connect(self._on_batch_embed_toggled)
+        self.chk_batch_ocr.toggled.connect(self._on_batch_ocr_toggled)
 
         return frame
+
+    def _on_batch_embed_toggled(self, checked: bool):
+        """互斥：勾选 embed_images 时取消 OCR，反之亦然"""
+        if checked and self.chk_batch_ocr.isChecked():
+            self.chk_batch_ocr.setChecked(False)
+
+    def _on_batch_ocr_main_toggled(self, checked: bool):
+        """主选项勾选时显示/隐藏子选项"""
+        self.chk_batch_ocr_images.setVisible(checked)
+        if not checked:
+            self.chk_batch_ocr_images.setChecked(False)
+
+    def _on_batch_ocr_toggled(self, checked: bool):
+        """互斥：勾选 OCR 时取消 embed_images，反之亦然"""
+        if checked and self.chk_batch_embed.isChecked():
+            self.chk_batch_embed.setChecked(False)
 
     def create_options_section(self):
         frame = QFrame()
@@ -981,6 +1081,8 @@ class BatchTab(QWidget):
             self.sanitize_container.setVisible(True)
             self.mode_combo.setVisible(False)
             self.chk_batch_embed.setVisible(False)
+            self.chk_batch_ocr.setVisible(False)
+            self.chk_batch_ocr_images.setVisible(False)
         else:
             # 显示减肥选项
             self.slim_container.setVisible(True)
@@ -993,7 +1095,12 @@ class BatchTab(QWidget):
     def on_mode_changed(self):
         """切换处理模式（SSD模式时显示嵌入图片选项）"""
         is_ssd = self.mode_combo.currentText() == "转换为SSD"
+        # 整个 SSD 选项区域显示/隐藏
+        self.ssd_options_section.setVisible(is_ssd)
         self.chk_batch_embed.setVisible(is_ssd)
+        self.chk_batch_ocr.setVisible(is_ssd)
+        # 子选项随主选项显示（但也要主选项被勾选才显示）
+        self.chk_batch_ocr_images.setVisible(is_ssd and self.chk_batch_ocr.isChecked())
 
     def get_sanitize_types(self):
         """获取选中的脱敏类型（返回字典格式）"""
@@ -1372,6 +1479,8 @@ class BatchTab(QWidget):
             'deep_clean': self.mode_combo.currentText() == "深度清理 (Word)",
             'convert_to_ssd': self.mode_combo.currentText() == "转换为SSD",
             'embed_images': self.chk_batch_embed.isChecked(),
+            'ocr_images': self.chk_batch_ocr.isChecked(),  # 从文档内图片提取文字
+            'ocr_images_files': self.chk_batch_ocr_images.isChecked(),  # 扫描独立图片文件
             'compression_rate': self.text_compress_slider.value() / 100.0,
             'output_path': self.custom_save_location,
             'image_quality': self.img_quality_slider.value(),

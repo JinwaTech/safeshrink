@@ -12,6 +12,9 @@ a = Analysis(
         ('assets/icon06_64x64_light.png', 'assets'),
         ('assets/icon14_64x64_dark.png', 'assets'),
         ('_ooxml_to_ssd.py', '.'),
+        ('batch_processor.py', '.'),
+        ('format_to_ssd.py', '.'),
+        ('safe_shrink.py', '.'),
     ],
     hiddenimports=[
         'safe_shrink',

@@ -50,7 +50,8 @@ DEFAULT_SETTINGS = {
     'remove_empty_lines': True,
     'remove_empty_paragraphs': True,
     'deep_clean_word': False,
-    'embed_images': True,
+    'embed_images': False,
+    'ocr_images': False,
     'sanitize_types': ['手机号', '邮箱', '身份证', '银行卡', 'IP地址', '护照号', 'Mac地址', 'IMEI', '车牌号', '社保卡号', '社会信用代码', '合同编号', '投标/成交价', '营业执照号', '固定电话', '公文份号', '公文密级', '公文文号', '医保号', '病历号'],
     'mask_char': '*',
     'preserve_first_last': True,
@@ -946,6 +947,7 @@ class SettingsTab(QWidget):
         self.settings['remove_empty_paragraphs'] = self.chk_remove_empty_para.isChecked()
         self.settings['deep_clean_word'] = self.chk_deep_clean.isChecked()
         self.settings['embed_images'] = self.chk_embed.isChecked()
+        self.settings['ocr_images'] = False  # OCR 由各 Tab 独立控制，不通过设置页全局保存
 
         # 脱敏
         self.settings['sanitize_types'] = self.get_sanitize_types()

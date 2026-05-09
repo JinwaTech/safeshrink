@@ -94,12 +94,16 @@ def _ocr_image_to_text(image_data: bytes, lang: str = 'chi_sim+eng') -> str:
         import subprocess
         # 预处理图片
         processed = _ocr_preprocess(image_data)
-        # 调用 Tesseract（通过 stdin/stdout）
+        # 调用 Tesseract（通过 stdin/stdout），隐藏控制台窗口
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = subprocess.SW_HIDE
         result = subprocess.run(
             [TESSERACT_PATH, '--psm', '6', '-l', lang, 'stdin', 'stdout'],
             input=processed,
             capture_output=True,
             timeout=30,  # 单图超时 30 秒
+            startupinfo=startupinfo,
         )
         if result.returncode == 0:
             text = result.stdout.decode('utf-8', errors='ignore').strip()
