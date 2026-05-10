@@ -310,8 +310,22 @@ def process_file(
                         # 读取 embed_images 和 ocr_images 选项
                         embed_images = options.get('embed_images', False)
                         ocr_images = options.get('ocr_images', False)
+                        ocr_pdf = options.get('ocr_pdf', False)
                         
-                        processed = convert_to_ssd_v2(file_path, optimize=True, embed_images=embed_images, ocr_images=ocr_images)
+                        # PDF 扫描件 OCR 页数限制
+                        if ocr_pdf and orig_ext == '.pdf':
+                            try:
+                                import fitz
+                                doc = fitz.open(file_path)
+                                page_count = len(doc)
+                                if page_count > 20:
+                                    result['status'] = 'skipped'
+                                    result['error'] = f'扫描件 PDF 页数过多 ({page_count} 页)，超过 20 页限制，请手动处理'
+                                    return result
+                            except Exception as e:
+                                print(f"[PDF OCR] 页数检测失败: {e}")
+                        
+                        processed = convert_to_ssd_v2(file_path, optimize=True, embed_images=embed_images, ocr_images=ocr_images, ocr_pdf=ocr_pdf)
 
                         stats = {'compression_rate': 0}  # SSD 转换不计算压缩率
 

@@ -870,7 +870,7 @@ def format_size(size):
     return f"{size:.1f} TB"
 
 
-def convert_format_to_ssd(file_path, embed_images=True, ocr_images=False):
+def convert_format_to_ssd(file_path, embed_images=True, ocr_images=False, ocr_pdf=False):
     '''将文档转换为 SSD 格式（使用 MarkItDown v2，失败时抛出异常）'''
-    result = convert_to_ssd_v2(file_path, embed_images=embed_images, ocr_images=ocr_images)
+    result = convert_to_ssd_v2(file_path, embed_images=embed_images, ocr_images=ocr_images, ocr_pdf=ocr_pdf)
     return result

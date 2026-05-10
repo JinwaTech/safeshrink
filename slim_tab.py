@@ -241,6 +241,16 @@ class SlimTab(QWidget):
         )
         self.chk_ocr_images.setVisible(False)  # SSD模式下才显示
 
+        # PDF OCR 选项（SSD 模式）
+        self.chk_ocr_pdf = QCheckBox("对PDF文件进行OCR")
+        self.chk_ocr_pdf.setChecked(False)
+        self.chk_ocr_pdf.setToolTip(
+            "⚠️ 仅对扫描件PDF生效（无文字层的图片型PDF）\n"
+            "勾选后自动识别PDF中的文字，输出纯文本\n"
+            "注意：页数较多时处理时间较长"
+        )
+        self.chk_ocr_pdf.setVisible(False)  # SSD模式下才显示
+
         # 互斥：embed_images 与 OCR 不能同时勾选
         self.chk_embed_images.toggled.connect(self._on_embed_toggled)
         self.chk_ocr_images.toggled.connect(self._on_ocr_toggled)
@@ -250,6 +260,7 @@ class SlimTab(QWidget):
         layout.addWidget(self.chk_resize_image)
         layout.addWidget(self.chk_embed_images)
         layout.addWidget(self.chk_ocr_images)
+        layout.addWidget(self.chk_ocr_pdf)
 
         layout.addStretch()
 
@@ -515,6 +526,8 @@ class SlimTab(QWidget):
             self.chk_embed_images.setEnabled(True)
             self.chk_ocr_images.setVisible(True)  # SSD 模式显示 OCR 选项
             self.chk_ocr_images.setEnabled(True)
+            self.chk_ocr_pdf.setVisible(True)  # SSD 模式显示 PDF OCR 选项
+            self.chk_ocr_pdf.setEnabled(True)
             if self.current_mode != 'image':
                 self.img_chk_ocr.setVisible(True)     # 只在text模式显示
             # 图片 OCR 模式下显示内容区域
@@ -525,6 +538,7 @@ class SlimTab(QWidget):
             self.effect_label.setVisible(True)
             self.chk_embed_images.setVisible(False)  # 其他模式隐藏
             self.chk_ocr_images.setVisible(False)   # 其他模式隐藏
+            self.chk_ocr_pdf.setVisible(False)  # 其他模式隐藏
             self.img_chk_ocr.setVisible(False)      # 图片模式 OCR 复选框也隐藏
             # 切换到非SSD时隐藏内容区域
             if self.current_mode == 'image':
@@ -624,7 +638,8 @@ class SlimTab(QWidget):
                 result = convert_format_to_ssd(
                     self.current_file,
                     embed_images=self.chk_embed_images.isChecked(),
-                    ocr_images=self.chk_ocr_images.isChecked()
+                    ocr_images=self.chk_ocr_images.isChecked(),
+                    ocr_pdf=self.chk_ocr_pdf.isChecked()
                 )
 
                 if not isinstance(result, str):

@@ -203,6 +203,7 @@ class BatchWorker(QThread):
                                 str(file_path),
                                 embed_images=bool(self.options.get('embed_images', False)),
                                 ocr_images=bool(self.options.get('ocr_images', False)),
+                                ocr_pdf=bool(self.options.get('ocr_pdf', False)),
                                 optimize=True
                             )
                             out_file = output_path.with_stem(output_path.stem + '_SSD').with_suffix('.md')
@@ -288,6 +289,7 @@ class BatchWorker(QThread):
                                 str(file_path),
                                 embed_images=bool(self.options.get('embed_images', False)),
                                 ocr_images=bool(self.options.get('ocr_images', False)),
+                                ocr_pdf=bool(self.options.get('ocr_pdf', False)),
                                 optimize=True
                             )
                             out_file = output_path.with_stem(output_path.stem + '_SSD').with_suffix('.md')
@@ -765,6 +767,17 @@ class BatchTab(QWidget):
         self.chk_batch_ocr_images.setStyleSheet("margin-left: 20px;")  # 缩进显示
         vbox.addWidget(self.chk_batch_ocr_images)
 
+        # 子选项：对 PDF 文件进行 OCR（扫描件）
+        self.chk_batch_ocr_pdf = QCheckBox("对 PDF 文件进行 OCR（扫描件会比较耗时）")
+        self.chk_batch_ocr_pdf.setChecked(False)
+        self.chk_batch_ocr_pdf.setToolTip(
+            "勾选后，扫描件 PDF（无文字层）将通过 OCR 识别文字\n"
+            "注意：页数较多的扫描件 PDF 处理时间较长"
+        )
+        self.chk_batch_ocr_pdf.setVisible(False)  # 随主选项显示/隐藏
+        self.chk_batch_ocr_pdf.setStyleSheet("margin-left: 20px;")  # 缩进显示
+        vbox.addWidget(self.chk_batch_ocr_pdf)
+
         # 主选项勾选时显示/隐藏子选项
         self.chk_batch_ocr.toggled.connect(self._on_batch_ocr_main_toggled)
 
@@ -782,8 +795,10 @@ class BatchTab(QWidget):
     def _on_batch_ocr_main_toggled(self, checked: bool):
         """主选项勾选时显示/隐藏子选项"""
         self.chk_batch_ocr_images.setVisible(checked)
+        self.chk_batch_ocr_pdf.setVisible(checked)
         if not checked:
             self.chk_batch_ocr_images.setChecked(False)
+            self.chk_batch_ocr_pdf.setChecked(False)
 
     def _on_batch_ocr_toggled(self, checked: bool):
         """互斥：勾选 OCR 时取消 embed_images，反之亦然"""
@@ -1083,6 +1098,7 @@ class BatchTab(QWidget):
             self.chk_batch_embed.setVisible(False)
             self.chk_batch_ocr.setVisible(False)
             self.chk_batch_ocr_images.setVisible(False)
+            self.chk_batch_ocr_pdf.setVisible(False)
         else:
             # 显示减肥选项
             self.slim_container.setVisible(True)
@@ -1101,6 +1117,7 @@ class BatchTab(QWidget):
         self.chk_batch_ocr.setVisible(is_ssd)
         # 子选项随主选项显示（但也要主选项被勾选才显示）
         self.chk_batch_ocr_images.setVisible(is_ssd and self.chk_batch_ocr.isChecked())
+        self.chk_batch_ocr_pdf.setVisible(is_ssd and self.chk_batch_ocr.isChecked())
 
     def get_sanitize_types(self):
         """获取选中的脱敏类型（返回字典格式）"""
@@ -1481,6 +1498,7 @@ class BatchTab(QWidget):
             'embed_images': self.chk_batch_embed.isChecked(),
             'ocr_images': self.chk_batch_ocr.isChecked(),  # 从文档内图片提取文字
             'ocr_images_files': self.chk_batch_ocr_images.isChecked(),  # 扫描独立图片文件
+            'ocr_pdf': self.chk_batch_ocr_pdf.isChecked(),  # 对 PDF 文件进行 OCR
             'compression_rate': self.text_compress_slider.value() / 100.0,
             'output_path': self.custom_save_location,
             'image_quality': self.img_quality_slider.value(),

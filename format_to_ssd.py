@@ -150,6 +150,55 @@ try:
 except ImportError:
     _zipfile_ooxml_to_ssd = None
 
+# ─── PDF OCR 检测 ───────────────────────────────────────────────────────────
+
+def is_scanned_pdf(file_path: str) -> bool:
+    """
+    检测 PDF 是否为扫描件（无文本层）
+    返回 True = 扫描件，需要 OCR
+    返回 False = 有文本层，正常 SSD 转换
+    """
+    try:
+        import fitz
+        doc = fitz.open(file_path)
+        for page in doc:
+            if page.get_text().strip():
+                return False  # 有文本，不是扫描件
+        return True  # 无文本，是扫描件
+    except Exception as e:
+        print(f"[PDF检测] 无法检测文本层: {e}")
+        return False  # 检测失败时按正常 PDF 处理
+
+
+def ocr_pdf_pages(file_path: str, lang: str = 'chi_sim+eng') -> str:
+    """
+    对扫描件 PDF 逐页 OCR
+    返回：纯文本流（按页分节）
+    """
+    import fitz
+    
+    doc = fitz.open(file_path)
+    total_pages = len(doc)
+    results = []
+    
+    print(f"[PDF OCR] 开始处理 {total_pages} 页扫描件 PDF")
+    
+    for i, page in enumerate(doc):
+        # 渲染为图片（300 DPI 保证清晰度）
+        pix = page.get_pixmap(dpi=300)
+        img_data = pix.tobytes("png")
+        
+        # 调用现有 OCR 函数
+        text = _ocr_image_to_text(img_data, lang)
+        
+        if text:
+            results.append(f"## 第 {i+1} 页\n\n{text}")
+        else:
+            results.append(f"## 第 {i+1} 页\n\n（未识别到文字）")
+    
+    return '\n\n'.join(results)
+
+
 # ─── 支持格式定义 ───────────────────────────────────────────────────────────
 SUPPORTED_FORMATS = {
     '.txt', '.ssd', '.md', '.json', '.csv', '.xml', '.yaml', '.yml',
@@ -405,7 +454,7 @@ def optimize_ssd(ssd_text: str) -> str:
 
 
 # ─── 主转换函数 ─────────────────────────────────────────────────────────────
-def convert_to_ssd_v2(file_path: str, embed_images: bool = False, optimize: bool = True, ocr_images: bool = False) -> str:
+def convert_to_ssd_v2(file_path: str, embed_images: bool = False, optimize: bool = True, ocr_images: bool = False, ocr_pdf: bool = False) -> str:
     """
     统一转换入口：
     - .doc: 专用结构化解析（doc2docx + python-docx 表格）
@@ -441,6 +490,11 @@ def convert_to_ssd_v2(file_path: str, embed_images: bool = False, optimize: bool
             b64 = base64.b64encode(data).decode('utf-8')
             mime = get_mime_type(ext)
             return f"![{file_path.name}](data:{mime};base64,{b64})\n"
+
+        # ── PDF 扫描件 OCR ────────────────────────────────────────────────
+        if ext == '.pdf' and ocr_pdf and is_scanned_pdf(str(file_path)):
+            print(f"    [PDF OCR] 检测到扫描件，开始逐页 OCR")
+            return ocr_pdf_pages(str(file_path))
 
         # ── .docx/.pptx/.xlsx: 提取图片 + MarkItDown ─────────────────────
         actual_path = str(file_path)
