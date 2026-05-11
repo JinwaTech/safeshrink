@@ -1492,8 +1492,18 @@ class BatchTab(QWidget):
 
     def start_processing(self):
         """开始批量处理"""
+        # 防重入：如果正在处理中，不允许再次启动
+        if hasattr(self, '_processing_lock') and self._processing_lock:
+            return
+        self._processing_lock = True
+        
+        # 重置批量对比弹窗标志（允许新的弹窗）
+        if hasattr(self, '_batch_compare_shown'):
+            self._batch_compare_shown = False
+
         folder = self.folder_label.text()
         if folder == "未选择文件夹":
+            self._processing_lock = False
             return
 
         action = 'slim' if self.radio_slim.isChecked() else 'sanitize'
@@ -1572,6 +1582,7 @@ class BatchTab(QWidget):
                     QMessageBox.StandardButton.No
                 )
                 if reply == QMessageBox.StandardButton.No:
+                    self._processing_lock = False
                     return  # 用户选择不重新处理，直接返回
 
             elif status == 'PARTIAL':
@@ -1586,6 +1597,7 @@ class BatchTab(QWidget):
                     QMessageBox.StandardButton.Yes
                 )
                 if reply == QMessageBox.StandardButton.No:
+                    self._processing_lock = False
                     return
 
         except ImportError:
@@ -1681,9 +1693,18 @@ class BatchTab(QWidget):
             print(f"[ERROR] on_finished 异常: {e}")
             import traceback
             traceback.print_exc()
+        finally:
+            # 解锁，允许下一次批量处理
+            if hasattr(self, '_processing_lock'):
+                self._processing_lock = False
 
     def show_batch_compare(self, folder=None):
         """显示批量处理结果对比"""
+        
+        # 防止重复弹窗（递归保护）
+        if hasattr(self, '_batch_compare_shown') and self._batch_compare_shown:
+            return
+        self._batch_compare_shown = True
 
         # 统计结果
         total_files = self.file_table.rowCount()
@@ -1715,8 +1736,6 @@ class BatchTab(QWidget):
 
         # 直接从 worker 获取总节省空间（仅减肥模式）
         total_saved = self.worker.total_saved if self.worker else 0
-
-        print(f"[DEBUG] 总节省: {total_saved} bytes = {self.format_size(total_saved)}")
 
         # 用 QMessageBox 统一弹窗风格（与 slim_tab.py / sanitize_tab.py 保持一致）
         main_win = self.window()
@@ -1781,7 +1800,6 @@ class BatchTab(QWidget):
                     total_new_size += total_orig_size
 
             main_window = self.window()
-            print(f"[DEBUG] save_history: main_window={type(main_window).__name__}, has_manager={hasattr(main_window, 'history_manager')}, has_tab={hasattr(main_window, 'tab_history')}")
             if hasattr(main_window, 'history_manager'):
                 # 计算节省百分比
                 if action == 'slim':
@@ -1810,12 +1828,9 @@ class BatchTab(QWidget):
                     'original_tokens': self.worker.total_orig_tokens if (self.worker and self.worker.total_orig_tokens > 0) else None,
                     'new_tokens': self.worker.total_new_tokens if (self.worker and self.worker.total_new_tokens > 0) else None,
                 }
-                print(f"[DEBUG] save_history: appending record, history len before={len(main_window.history_manager.history)}")
                 main_window.history_manager.history.append(record)
                 main_window.history_manager.save_history()
-                print(f"[DEBUG] save_history: history len after={len(main_window.history_manager.history)}")
                 if hasattr(main_window, 'tab_history'):
-                    print(f"[DEBUG] save_history: calling load_history")
                     main_window.tab_history.load_history()
         except Exception as e:
             print(f"保存历史失败: {e}")
