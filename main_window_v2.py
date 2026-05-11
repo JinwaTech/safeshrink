@@ -1187,7 +1187,7 @@ class MainWindow(QMainWindow):
 
             exit_action = QAction("退出", self)
 
-            exit_action.triggered.connect(lambda: sys.exit(0))
+            exit_action.triggered.connect(self._on_tray_exit)
 
             tray_menu.addAction(exit_action)
 
@@ -1246,6 +1246,18 @@ class MainWindow(QMainWindow):
         self.activateWindow()
 
 
+
+    def _on_tray_exit(self):
+        """托盘退出：执行清理后退出"""
+        try:
+            self.tab_slim.cleanup()
+            self.tab_sanitize.cleanup()
+            self.tab_batch.cleanup()
+        except Exception as e:
+            print(f"[SafeShrink] Tray exit cleanup error: {e}")
+        if self.tray_icon:
+            self.tray_icon.hide()
+        sys.exit(0)
 
     def _delayed_update_check(self):
 

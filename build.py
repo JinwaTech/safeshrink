@@ -9,6 +9,20 @@ EXE_PATH = os.path.join(DIST_NEW, 'SafeShrink.exe')
 # 带 _DEBUG 标记的源文件列表（打包时自动切为 False，打包后恢复 True）
 DEBUG_FILES = ['slim_tab.py', 'sanitize_tab.py']
 
+def kill_residual_processes():
+    """强制终止残留的 SafeShrink 进程，避免 EXE 被锁"""
+    print('[0/4] Killing residual SafeShrink processes...')
+    result = subprocess.run(
+        ['taskkill', '/F', '/IM', 'SafeShrink.exe', '/T'],
+        capture_output=True, text=True
+    )
+    if result.returncode == 0:
+        print('[OK] Residual processes killed')
+    else:
+        # taskkill 返回 128/1 表示没找到进程，不算错误
+        print('[OK] No residual processes')
+    return True
+
 def clean():
     for d in ['build', 'dist']:
         p = os.path.join(PROJECT_DIR, d)
@@ -89,8 +103,10 @@ if __name__ == '__main__':
     print('=' * 50)
     print('  SafeShrink Build Tool (Fixed)')
     print('=' * 50)
-    # 切换到 release 模式（_DEBUG = False）
-    print('[0/3] Setting _DEBUG = False for release build...')
+    # 1. 终止残留进程
+    kill_residual_processes()
+    # 2. 切换到 release 模式（_DEBUG = False）
+    print('[1/4] Setting _DEBUG = False for release build...')
     toggle_debug(to_release=True)
     try:
         clean()
@@ -101,7 +117,7 @@ if __name__ == '__main__':
         sync_to_desktop()
     finally:
         # 无论成败，恢复开发模式（_DEBUG = True）
-        print('[3/3] Restoring _DEBUG = True for development...')
+        print('[4/4] Restoring _DEBUG = True for development...')
         toggle_debug(to_release=False)
     print()
     print('[OK] Done!')

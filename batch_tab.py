@@ -1589,6 +1589,7 @@ class BatchTab(QWidget):
         self.btn_start.setEnabled(False)
         self.btn_stop.setEnabled(True)
 
+        self.worker.setDaemon(True)
         self.worker.start()
 
     def update_progress(self, current, total):
