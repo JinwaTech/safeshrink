@@ -606,6 +606,23 @@ class BatchWorker(QThread):
     def stop(self):
         self._is_running = False
 
+    def is_processing(self):
+        """是否有任务正在处理（未全部完成）"""
+        return self.isRunning() and self._done_count < len(getattr(self, '_files', []))
+
+    def get_progress(self):
+        """返回当前进度 (done, total)"""
+        with self._lock:
+            return self._done_count, len(getattr(self, '_files', []))
+
+    def terminate_worker(self):
+        """强制终止线程（用于应用退出时清理）"""
+        self._is_running = False
+        self.wait(1000)  # 等待1秒优雅退出
+        if self.isRunning():
+            self.terminate()  # 强制终止
+            self.wait(500)
+
 
 class BatchTab(QWidget):
     def __init__(self):
@@ -1589,7 +1606,6 @@ class BatchTab(QWidget):
         self.btn_start.setEnabled(False)
         self.btn_stop.setEnabled(True)
 
-        self.worker.setDaemon(True)
         self.worker.start()
 
     def update_progress(self, current, total):
@@ -1835,10 +1851,23 @@ class BatchTab(QWidget):
 
     def cleanup(self):
         """清理资源"""
-        if self.worker:
-            self.worker.stop()
-            self.worker.wait()
-    
+        if self.worker and self.worker.isRunning():
+            self.worker.terminate_worker()
+        self.worker = None
+
+    def is_processing(self):
+        """是否有批量任务在进行"""
+        return self.worker is not None and self.worker.is_processing()
+
+    def get_progress_text(self):
+        """返回进度描述，用于弹窗显示"""
+        if not self.worker:
+            return ""
+        done, total = self.worker.get_progress()
+        if total == 0:
+            return ""
+        return f"批量处理中：{done}/{total} 文件已完成"
+
     def update_language(self, lang):
         """更新语言"""
         from translations import get_translation

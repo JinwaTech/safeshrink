@@ -1353,13 +1353,20 @@ class MainWindow(QMainWindow):
 
         # 未勾选最小化到托盘：弹出确认对话框
 
+        # 检测是否有批量任务在进行
+        batch_progress = ''
+        if hasattr(self, 'tab_batch') and self.tab_batch.is_processing():
+            batch_progress = self.tab_batch.get_progress_text()
+
+        if batch_progress:
+            msg = f'有批量任务正在进行中！\n\n{batch_progress}\n\n强制关闭可能导致数据丢失，是否继续退出？'
+        else:
+            msg = '确定要退出 SafeShrink 吗？'
+
         reply = QMessageBox.question(
-
             self,
-
-            "确认退出",
-
-            "确定要退出 SafeShrink 吗？",
+            '确认退出',
+            msg,
 
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
 
