@@ -2,7 +2,7 @@
 
 > 一键文档减肥、脱敏、SSD转换，完全离线，保护隐私
 
-**版本：v1.0.0** | [GitHub](https://github.com/yourname/safeshrink) · [下载 EXE](https://github.com/yourname/safeshrink/releases)
+**版本：v1.1.8** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 EXE](https://github.com/JinwaTech/safeshrink/releases/latest)
 
 ---
 
@@ -13,7 +13,8 @@
 | 🗜️ **文档减肥** | 压缩文档体积，去除冗余内容 | 体积减少 **30%-70%** |
 | 🔒 **智能脱敏** | 自动识别并脱敏敏感信息 | 支持 10+ 种敏感类型 |
 | 📝 **SSD 转换** | Office/PDF → .ssd 格式 | Token 消耗降低 **40%-60%** |
-| 📦 **批量处理** | 文件夹一键批量处理 | 4 线程并行，智能跳过 |
+| 📦 **批量处理** | 文件夹一键批量处理 | 多线程并行，智能跳过 |
+| 🖼️ **OCR 识别** | 扫描件 PDF / 图片自动 OCR | 输出可搜索文本 |
 
 ---
 
@@ -30,13 +31,7 @@
 
 *按 GPT-4o 价格 ¥0.10/1K tokens 计算
 
-### 🖼️ 转换效果示例
-
-**文档减肥前后对比：**
-```
-📄 原始文档.docx     2.4 MB
-📄 减肥后.docx       0.8 MB  ↓ 67%
-```
+### 📄 转换效果示例
 
 **SSD 转换效果：**
 ```
@@ -89,129 +84,35 @@
    └─ 技术文档.docx   →  技术文档.ssd（嵌入图片）
 ```
 
-### 💾 存储优化
-压缩历史文档，节省存储空间
+### 🖼️ 扫描件 OCR
+对扫描件 PDF 进行 OCR，输出可搜索文本
 
 ```
-📂 /资料库/ (1.2GB)
-   ↓ [批量减肥]
-📂 /资料库_output/ (380MB)  节省 68%
+📄 扫描合同.pdf  →  📄 扫描合同.ssd（文字可搜索）
 ```
 
 ---
 
 ## 🚀 快速开始
 
-### 方式一：SkillHub 安装（推荐）
+### 方式一：下载 EXE（推荐）
+
+前往 [GitHub Releases](https://github.com/JinwaTech/safeshrink/releases/latest) 下载 `SafeShrink.exe`，双击运行，无需安装。
+
+### 方式二：SkillHub 安装
 
 ```bash
 # 安装 SafeShrink Skill
 skillhub install safeshrink
-
-# 查看帮助
-safeshrink --help
-```
-
-### 方式二：下载 EXE
-
-```bash
-# 下载 Windows 可执行文件
-https://github.com/yourname/safeshrink/releases
 ```
 
 ### 方式三：源码运行
 
 ```bash
-# 克隆仓库
-git clone https://github.com/yourname/safeshrink.git
+git clone https://github.com/JinwaTech/safeshrink.git
 cd safeshrink
-
-# 安装依赖
 pip install -r requirements.txt
-
-# 启动 GUI
 python start_gui.py
-```
-
----
-
-## ⌨️ CLI 使用指南
-
-### 文档减肥
-
-```bash
-# 单文件减肥
-safeshrink slim input.docx -o output.docx
-
-# 批量减肥（保留原文件，输出到 output 文件夹）
-safeshrink slim ./docs --batch -o ./docs_slim
-
-# 指定压缩强度（0.1-0.9，默认 0.3）
-safeshrink slim input.docx --strength 0.5
-
-# 同时去除 AI 生成标记
-safeshrink slim input.docx --remove-ai
-```
-
-### 智能脱敏
-
-```bash
-# 单文件脱敏
-safeshrink sanitize input.docx -o output.ssd
-
-# 批量脱敏
-safeshrink sanitize ./contracts --batch -o ./contracts_sanitized
-
-# 指定脱敏类型
-safeshrink sanitize input.docx --items phone,email,idcard
-
-# 添加自定义敏感词
-safeshrink sanitize input.docx --words "公司名,内部代号"
-```
-
-### SSD 转换
-
-```bash
-# DOCX 转 SSD
-safeshrink convert input.docx -o output.ssd
-
-# 批量转换
-safeshrink convert ./docs --batch -o ./docs_ssd
-
-# 嵌入图片（Base64）
-safeshrink convert input.docx --embed-images
-
-# 转换时压缩图片
-safeshrink convert input.docx --embed-images --compress-images
-```
-
-### 批量处理
-
-```bash
-# 递归处理子文件夹
-safeshrink slim ./docs --batch --recursive
-
-# 4 线程并行处理
-safeshrink sanitize ./docs --batch --workers 4
-
-# 生成处理报告
-safeshrink slim ./docs --batch --report report.txt
-```
-
-### 高级选项
-
-```bash
-# 查看版本
-safeshrink --version
-
-# 详细日志
-safeshrink slim input.docx -v
-
-# 仅预览，不实际处理
-safeshrink slim input.docx --dry-run
-
-# 配置文件处理
-safeshrink --config config.json slim input.docx
 ```
 
 ---
@@ -245,23 +146,24 @@ safeshrink --config config.json slim input.docx
 | 指标 | 数值 |
 |------|------|
 | 处理速度 | ~50 页/秒（文档减肥） |
-| 批量并行 | 4 线程默认，可配置 |
+| 批量并行 | 多线程默认，智能调度 |
 | 内存占用 | < 200MB（常规文档） |
 | 支持单文件 | 最大 500MB |
+| OCR 支持 | 扫描件 PDF + 图片 |
 
 ---
 
 ## 🤝 贡献与支持
 
-- 🐛 [提交 Issue](https://github.com/yourname/safeshrink/issues)
-- 💡 [功能建议](https://github.com/yourname/safeshrink/discussions)
-- ⭐ [Star 支持](https://github.com/yourname/safeshrink)
+- 🐛 [提交 Issue](https://github.com/JinwaTech/safeshrink/issues)
+- 💡 [功能建议](https://github.com/JinwaTech/safeshrink/discussions)
+- ⭐ [Star 支持](https://github.com/JinwaTech/safeshrink)
 
 ---
 
 ## 📄 License
 
-MIT License - 免费使用、修改、分发
+MIT-0 License — 免费使用、修改、分发，无需署名
 
 ---
 
@@ -269,6 +171,6 @@ MIT License - 免费使用、修改、分发
 
 **SafeShrink 密小件 — 让文档更轻、更安全、更 AI 友好**
 
-[GitHub](https://github.com/yourname/safeshrink) · [SkillHub](https://skillhub.com/skills/safeshrink) · [问题反馈](https://github.com/yourname/safeshrink/issues)
+[GitHub](https://github.com/JinwaTech/safeshrink) · [下载 EXE](https://github.com/JinwaTech/safeshrink/releases/latest) · [问题反馈](https://github.com/JinwaTech/safeshrink/issues)
 
 </div>
