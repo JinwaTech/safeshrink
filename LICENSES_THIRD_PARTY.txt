@@ -121,4 +121,4 @@ charset-normalizer 3.4.1
 SafeShrink 尊重开源精神，感谢以上项目及所有贡献者的辛勤工作。
 本软件对第三方库的使用符合其 respective 许可证条款。
 
-如有疑问，请联系: [your-email@example.com]
+如有疑问，请联系: 261125202@qq.com
