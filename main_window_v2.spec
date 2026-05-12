@@ -3,6 +3,7 @@
 a = Analysis(
     ['main_window_v2.py'],
     pathex=[],
+    # name 保持默认，PyInstaller 使用脚本名 main_window_v2
     binaries=[],
     datas=[
         ('assets/icon06_light.ico', 'assets'),

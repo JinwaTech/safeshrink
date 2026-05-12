@@ -774,7 +774,7 @@ class BatchTab(QWidget):
         vbox.addWidget(self.chk_batch_ocr)
 
         # 子选项：扫描图片文件并 OCR（PNG/JPG/BMP/GIF 等）
-        self.chk_batch_ocr_images = QCheckBox("扫描图片文件并转为 Markdown")
+        self.chk_batch_ocr_images = QCheckBox("扫描图片文件并转为 SSD")
         self.chk_batch_ocr_images.setChecked(False)
         self.chk_batch_ocr_images.setToolTip(
             "扫描文件夹内的图片文件（.png/.jpg/.jpeg/.bmp/.gif/.webp），\n"

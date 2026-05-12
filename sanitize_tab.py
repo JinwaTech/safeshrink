@@ -3,6 +3,8 @@
 功能:检测并脱敏敏感信息
 """
 
+import os
+
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QTextEdit, QCheckBox, QFrame,
@@ -12,7 +14,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from pathlib import Path
 
-_DEBUG = True  # build.py 自动切换：release 打包时改为 False
+_DEBUG = os.environ.get("SAFE_SHRINK_DEBUG", "False") == "True"  # 打包后默认 False，开发时可设 SAFE_SHRINK_DEBUG=1 开启
 
 
 class SanitizeTab(QWidget):

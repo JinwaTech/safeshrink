@@ -279,8 +279,8 @@ class SlimTab(QWidget):
 
         # 处理模式（图片模式专用）
         self.img_format_combo = QComboBox()
-        self.img_format_combo.addItems(["图片压缩", "扫描为Markdown"])
-        self.img_format_combo.setToolTip("图片压缩：压缩图片文件大小\n扫描为Markdown：自动OCR识别，输出.md文件")
+        self.img_format_combo.addItems(["图片压缩", "扫描为SSD"])
+        self.img_format_combo.setToolTip("图片压缩：压缩图片文件大小\n扫描为SSD：自动OCR识别，输出.ssd文件")
         self.img_format_combo.currentIndexChanged.connect(self._on_img_format_changed)
         layout.addWidget(self.img_format_combo)
 
@@ -571,7 +571,7 @@ class SlimTab(QWidget):
 
     def _on_img_format_changed(self, index):
         """图片模式下的格式切换 — 只更新图片模式的 UI，图片模式独立于 format_combo"""
-        if index == 1:  # 扫描为Markdown
+        if index == 1:  # 扫描为SSD
             self.img_chk_ocr.setChecked(True)
         else:  # 图片压缩
             self.img_chk_ocr.setChecked(False)
@@ -776,7 +776,7 @@ class SlimTab(QWidget):
             QMessageBox.critical(self, "错误", f"压缩失败: {e}")
 
     def process_image_ocr(self):
-        """处理图片文件的 OCR 文字识别（扫描为Markdown）"""
+        """处理图片文件的 OCR 文字识别（扫描为SSD）"""
         if not self.current_file:
             return
 
