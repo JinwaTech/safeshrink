@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal
 from pathlib import Path
 import os
+import tempfile
 
 
 def _read_ooxml_text(path):
@@ -179,8 +180,8 @@ class SlimTab(QWidget):
 
         # 处理模式
         self.format_combo = QComboBox()
-        self.format_combo.addItems(["标准压缩", "激进压缩", "保留结构", "转换为SSD"])
-        self.format_combo.setToolTip("标准压缩：基础文本压缩\n深度清理：移除注释、空行等\n保留结构：只清理格式问题")
+        self.format_combo.addItems(["标准压缩", "激进压缩", "深度清理", "转换为SSD"])
+        self.format_combo.setToolTip("标准压缩：基础文本压缩\n深度清理：移除注释、空行等\n深度清理：只清理格式问题")
         self.format_combo.currentIndexChanged.connect(self.on_format_changed)
         form.addRow("处理模式:", self.format_combo)
 
@@ -515,7 +516,7 @@ class SlimTab(QWidget):
 
     def on_format_changed(self, index):
         """处理模式变化 — 只做UI切换，实际处理在按钮handler里"""
-        modes = ["标准压缩", "激进压缩", "保留结构", "转换为SSD"]
+        modes = ["标准压缩", "激进压缩", "深度清理", "转换为SSD"]
         mode = modes[index] if index < len(modes) else "标准压缩"
 
         # 隐藏/显示压缩强度滑块（SSD转换不需要）
@@ -609,17 +610,22 @@ class SlimTab(QWidget):
             QMessageBox.warning(self, "错误", f"无法读取文件: {e}")
 
     def process_file(self):
-        if not self.current_file:
-            return
+        try:
+            if not self.current_file:
+                QMessageBox.warning(self, "提示", "请先选择文件")
+                return
 
-        if self.current_mode == 'image':
-            # 图片 OCR 模式（SSD 转换）
-            if self.img_chk_ocr.isChecked():
-                self.process_image_ocr()
+            if self.current_mode == 'image':
+                # 图片 OCR 模式（SSD 转换）
+                if self.img_chk_ocr.isChecked():
+                    self.process_image_ocr()
+                else:
+                    self.compress_image()
             else:
-                self.compress_image()
-        else:
-            self.process_text_file()
+                self.process_text_file()
+        except Exception as e:
+            import traceback
+            QMessageBox.critical(self, "处理错误", f"处理文件时发生错误:\n\n{str(e)}\n\n{traceback.format_exc()}")
 
     def process_text_file(self):
         """处理文本文件"""
@@ -642,8 +648,15 @@ class SlimTab(QWidget):
                     ocr_pdf=self.chk_ocr_pdf.isChecked()
                 )
 
-                if not isinstance(result, str):
-                    raise TypeError(f"convert_format_to_ssd 返回值类型错误: 期望 str，实际 {type(result).__name__}")
+                if not isinstance(result, str) or not result.strip():
+                    if ext == ".pdf" and not self.chk_ocr_pdf.isChecked():
+                        QMessageBox.information(self, "需要开启 OCR",
+                            "该 PDF 是扫描件（纯图片格式），未包含可提取的文本层。\n\n"
+                            "如需转换，请勾选「对PDF文件进行OCR」选项后重新处理。\n"
+                            "系统将自动识别图片中的文字并生成 SSD 格式。")
+                    else:
+                        raise TypeError(f"convert_format_to_ssd 返回值类型错误: 期望 str，实际 {type(result).__name__}")
+                    return
 
                 self.processed_content = result
                 self.text_edit.setPlainText(result)
@@ -668,31 +681,113 @@ class SlimTab(QWidget):
                 QMessageBox.information(self, "完成", f"SSD 转换完成\n\nToken: ~{orig_tokens_total:,} → ~{new_tokens['total']:,}\n节省: {token_saved:,} tokens ({saved_pct}%)")
                 return
             except Exception as e:
-                QMessageBox.critical(self, "错误", f"SSD 转换失败: {e}")
+                err_msg = str(e)
+                if err_msg.startswith("NEEDS_OCR:"):
+                    QMessageBox.information(self, "需要开启 OCR", err_msg[10:])
+                else:
+                    QMessageBox.critical(self, "错误", f"SSD 转换失败: {e}")
                 return
 
-        if mode == "深度清理" and ext == '.docx':
-            # Word 深度清理
-            output = str(Path(self.current_file).with_suffix('.cleaned.docx'))
-            result = clean_docx_deep(self.current_file, output, {
-                'remove_empty_paragraphs': True,
-                'remove_bullet_runs': True,
-                'remove_non_image_shapes': True
+        if mode == "深度清理" and ext == ".docx":
+            # Word 深度清理：先写到临时文件，不动源文件
+            temp_output = os.path.join(tempfile.gettempdir(), "SafeShrink_" + Path(self.current_file).stem + ".cleaned.docx")
+            result = clean_docx_deep(self.current_file, temp_output, {
+                "remove_empty_paragraphs": True,
+                "remove_bullet_runs": True,
+                "remove_non_image_shapes": True
             })
 
-            if result['success']:
-                stats = result['stats']
-                msg = f"深度清理完成:\n"
-                msg += f"- 移除空段落: {stats['empty_paragraphs_removed']}\n"
-                msg += f"- 移除bullet字符: {stats['bullet_runs_removed']}\n"
-                msg += f"- 移除形状: {stats['shapes_removed']}\n"
-                msg += f"已保存到: {output}"
-                QMessageBox.information(self, "完成", msg)
-                self.btn_save.setEnabled(False)
+            if result["success"]:
+                stats = result["stats"]
+                # 读取结果预览
+                from docx import Document
+                doc = Document(temp_output)
+                preview_text = "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
+                self.processed_content = preview_text
+                self.deep_cleaned_path = temp_output
+                self.text_edit.setPlainText(preview_text)
+                self.btn_save.setEnabled(True)
+                self.btn_undo.setEnabled(True)
+                # 文件大小
+                orig_sz = os.path.getsize(self.current_file)
+                new_sz = os.path.getsize(temp_output)
+                cr_pct = round((1 - new_sz / orig_sz) * 100, 1) if orig_sz else 0
+                self.stats_label.setText("原文件: ~{:.1f}KB -> 清理后: ~{:.1f}KB (压缩 {}%)".format(
+                    orig_sz/1024, new_sz/1024, cr_pct))
+                self.result_label.setText("✅ 深度清理完成，请手动保存")
+                QMessageBox.information(self, "完成",
+                    "深度清理完成（预览）\n\n"
+                    "移除空段落: {}\n"
+                    "移除bullet字符: {}\n"
+                    "移除形状: {}\n\n"
+                    "原文: ~{:.1f}KB -> 清理后: ~{:.1f}KB\n"
+                    "请点击「保存」手动选择保存位置".format(
+                    stats["empty_paragraphs_removed"],
+                    stats["bullet_runs_removed"],
+                    stats["shapes_removed"],
+                    orig_sz/1024, new_sz/1024))
             else:
-                QMessageBox.critical(self, "错误", f"处理失败: {result['error']}")
-        else:
-            # 标准文本压缩
+                QMessageBox.critical(self, "错误", "处理失败: " + str(result.get("error", "未知错误")))
+            return
+
+        # 激进压缩：所有格式输出 .txt
+        if mode == "激进压缩":
+            content_txt = self.text_edit.toPlainText()
+            ratio = self.slider.value() / 100.0
+            options = {
+                'remove_comments': self.chk_remove_comments.isChecked(),
+                'remove_ai': self.chk_remove_ai.isChecked(),
+            }
+            if ext == ".md":
+                content_txt = clean_txt_md(content_txt, options, is_markdown=True)
+            elif ext == ".txt":
+                content_txt = clean_txt_md(content_txt, options, is_markdown=False)
+            try:
+                result = slim_content(content_txt, ratio, options)
+                if not isinstance(result, str):
+                    raise TypeError("slim_content returned non-str")
+                self.processed_content = result
+                self.text_edit.setPlainText(result)
+                self.btn_save.setEnabled(True)
+                self.btn_undo.setEnabled(True)
+                orig_bytes = len(self.original_content.encode("utf-8")) if self.original_content else 0
+                new_bytes = len(result.encode("utf-8"))
+                compress_rate = round((1 - new_bytes / orig_bytes) * 100, 1) if orig_bytes else 0
+                self.stats_label.setText(f"原文件: ~{orig_bytes/1024:.1f}KB -> 压缩后: ~{new_bytes/1024:.1f}KB (压缩 {compress_rate}%)")
+                self.result_label.setText("✅ 激进压缩完成，输出为 TXT")
+                QMessageBox.information(self, "完成", f"激进压缩完成\n\n原文: ~{orig_bytes/1024:.1f}KB\n压缩后: ~{new_bytes/1024:.1f}KB\n压缩率: {compress_rate}%\n格式: TXT（纯文本）")
+            except Exception as e:
+                QMessageBox.critical(self, "错误", f"处理失败: {e}")
+            return
+
+        # 标准压缩：xlsx/pptx 原生处理（保留格式）
+        if ext in (".xlsx", ".pptx") and mode == "标准压缩":
+            from safe_shrink import slim_native_xlsx, slim_native_pptx
+            import shutil
+            temp_output = str(Path(self.current_file).with_suffix(".slim" + ext))
+            shutil.copy2(self.current_file, temp_output)
+            cr = self.slider.value() / 100.0
+            rm_ai = self.chk_remove_ai.isChecked()
+            if ext == ".xlsx":
+                res = slim_native_xlsx(temp_output, compression_rate=cr, remove_ai=rm_ai)
+            else:
+                res = slim_native_pptx(temp_output, compression_rate=cr, remove_ai=rm_ai)
+            if res.get("success"):
+                orig_sz = os.path.getsize(self.current_file)
+                new_sz = os.path.getsize(temp_output)
+                cr_pct = round((1 - new_sz / orig_sz) * 100, 1) if orig_sz else 0
+                self.deep_cleaned_path = temp_output
+                self.result_label.setText(f"✅ 标准压缩完成，保留 {ext.upper()} 格式")
+                self.stats_label.setText(f"原文件: ~{orig_sz/1024:.1f}KB -> 压缩后: ~{new_sz/1024:.1f}KB (压缩 {cr_pct}%)")
+                self.btn_save.setEnabled(True)
+                self.btn_undo.setEnabled(False)
+                QMessageBox.information(self, "完成", f"标准压缩完成\n\n原文: ~{orig_sz/1024:.1f}KB\n压缩后: ~{new_sz/1024:.1f}KB\n压缩率: {cr_pct}%\n格式: {ext.upper()}（保留原始样式）")
+            else:
+                QMessageBox.critical(self, "错误", f"处理失败: {res.get('error', '未知错误')}")
+            return
+
+        # 标准文本压缩（txt/md/json/csv/html 等）
+        if mode == "标准压缩":
             content = self.text_edit.toPlainText()
             ratio = self.slider.value() / 100.0
 
@@ -833,11 +928,28 @@ class SlimTab(QWidget):
             QMessageBox.critical(self, "错误", f"OCR 处理失败: {e}")
 
     def save_result(self):
+        """保存处理结果"""
         if not self.current_file:
             return
 
+        # xlsx/pptx 标准压缩：结果在 deep_cleaned_path，直接复制
+        if hasattr(self, 'deep_cleaned_path') and self.deep_cleaned_path and os.path.exists(self.deep_cleaned_path):
+            default_name = self.deep_cleaned_path
+            file_path, _ = QFileDialog.getSaveFileName(
+                self, "保存文件", default_name, "All Files (*.*)"
+            )
+            if file_path:
+                try:
+                    import shutil
+                    shutil.copy2(self.deep_cleaned_path, file_path)
+                    self.result_label.setText(f"✅ 已保存到: {file_path}")
+                    self.btn_save.setEnabled(False)
+                except Exception as e:
+                    QMessageBox.critical(self, "错误", f"保存失败: {e}")
+            return
+
         if self.current_mode == 'image':
-            # OCR 扫描结果走文本保存逻辑（结果在 text_edit，不在 compressed_path）
+            # OCR 图片有 processed_content 则保存文本，否则保存图片
             if hasattr(self, 'processed_content') and self.processed_content:
                 self.save_text()
             else:
@@ -853,8 +965,25 @@ class SlimTab(QWidget):
             default_name = str(Path(self.current_file).with_suffix('.md'))
             file_filter = "Markdown文件 (*.md);;所有文件 (*.*)"
         else:
-            default_name = str(Path(self.current_file).with_suffix('.slim.txt'))
-            file_filter = "文本文件 (*.txt);;所有文件 (*.*)"
+            orig_ext = Path(self.current_file).suffix.lower() if self.current_file else ''
+            # 标准压缩：保留原格式；激进压缩：输出 .txt
+            if mode == "激进压缩":
+                default_name = str(Path(self.current_file).with_suffix('.slim.txt'))
+                file_filter = "文本文件 (*.txt);;所有文件 (*.*)"
+            else:
+                # 标准压缩：保留原格式（.slim.md, .slim.txt, .slim.json 等）
+                default_name = str(Path(self.current_file).with_suffix('.slim' + orig_ext))
+                # 根据原始扩展名设置文件过滤器
+                ext_filter_map = {
+                    '.md': "Markdown文件 (*.md);;所有文件 (*.*)",
+                    '.txt': "文本文件 (*.txt);;所有文件 (*.*)",
+                    '.json': "JSON文件 (*.json);;所有文件 (*.*)",
+                    '.csv': "CSV文件 (*.csv);;所有文件 (*.*)",
+                    '.html': "HTML文件 (*.html);;所有文件 (*.*)",
+                    '.htm': "HTML文件 (*.htm);;所有文件 (*.*)",
+                }
+                file_filter = ext_filter_map.get(orig_ext, "所有文件 (*.*)")
+
 
         file_path, _ = QFileDialog.getSaveFileName(
             self,
@@ -1046,7 +1175,7 @@ class SlimTab(QWidget):
         
         # 更新文本选项区域
         if hasattr(self, 'format_combo'):
-            items = [_('标准压缩'), _('激进压缩'), _('保留结构'), _('转换为SSD')]
+            items = [_('标准压缩'), _('激进压缩'), _('深度清理'), _('转换为SSD')]
             self.format_combo.clear()
             self.format_combo.addItems(items)
         

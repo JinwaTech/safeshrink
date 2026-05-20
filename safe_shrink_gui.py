@@ -528,6 +528,100 @@ def clean_docx_deep(file_path, output_path=None, options=None):
         return {'success': False, 'error': str(e)}
 
 
+def slim_docx(file_path, output_path=None, compression_rate=0.5, options=None):
+    """
+    Word 文档标准压缩 - 保留格式，只压缩文本内容
+
+    遍历所有文本节点（段落、表格、页眉、页脚），对每段文本应用 slim_content()
+    压缩，再写回原位置。文档结构、图片、样式完全保留。
+
+    Args:
+        file_path: 输入 .docx 路径
+        output_path: 输出路径，None 表示覆盖原文件
+        compression_rate: 压缩强度 (0.0-1.0)，传递给 slim_content
+        options: dict，传递给 slim_content（remove_comments/remove_ai 等）
+
+    Returns:
+        dict: {success, chars_saved, error}
+    """
+    opts = options or {}
+
+    if not DEPS.get('docx'):
+        return {'success': False, 'error': 'python-docx 未安装'}
+
+    try:
+        import docx
+        from docx.oxml.ns import qn
+
+        doc = docx.Document(file_path)
+        total_original = 0
+
+        def _slim_runs(element):
+            """递归压缩 element 下所有文本节点"""
+            original_len = 0
+            # 处理 run（<w:r>）
+            for r in element.findall(qn('w:r')):
+                for t in r.findall(qn('w:t')):
+                    if t.text:
+                        original_len += len(t.text)
+                        t.text = slim_content(t.text, compression_rate, opts)
+            # 处理表格（递归）
+            for tbl in element.findall('.//' + qn('w:tbl')):
+                for row in tbl.findall(qn('w:tr')):
+                    for cell in row.findall(qn('w:tc')):
+                        for p in cell.findall(qn('w:p')):
+                            _slim_runs(p)
+            return original_len
+
+        def _slim_para(para):
+            """压缩一个段落的所有 run"""
+            return _slim_runs(para._element)
+
+        # 1. 正文段落
+        for para in doc.paragraphs:
+            total_original += _slim_para(para)
+
+        # 2. 表格单元格
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for para in cell.paragraphs:
+                        total_original += _slim_para(para)
+
+        # 3. 页眉 / 页脚
+        for section in doc.sections:
+            for header in [section.header, section.first_page_header, section.even_page_header]:
+                if header:
+                    for para in header.paragraphs:
+                        total_original += _slim_para(para)
+                    for table in header.tables:
+                        for row in table.rows:
+                            for cell in row.cells:
+                                for para in cell.paragraphs:
+                                    total_original += _slim_para(para)
+            for footer in [section.footer, section.first_page_footer, section.even_page_footer]:
+                if footer:
+                    for para in footer.paragraphs:
+                        total_original += _slim_para(para)
+                    for table in footer.tables:
+                        for row in table.rows:
+                            for cell in row.cells:
+                                for para in cell.paragraphs:
+                                    total_original += _slim_para(para)
+
+        output = output_path or file_path
+        doc.save(output)
+
+        return {
+            'success': True,
+            'chars_original': total_original,
+            'output_path': output
+        }
+
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
+
 # ========== 举一反三：其他格式清理 ==========
 
 def clean_txt_md(content, options=None, is_markdown=False):

@@ -33,7 +33,6 @@ a = Analysis(
         'history_manager',
         'file_status',
         'translations',
-        'result_compare_dialog',
         'docx',
         'pypdf',
         'PIL',

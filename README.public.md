@@ -163,7 +163,14 @@ python start_gui.py
 
 ## 📄 License
 
-MIT-0 License — 免费使用、修改、分发，无需署名
+**专有软件许可证（Proprietary License）**
+
+© 2026 杭州金蛙信息科技有限公司 版权所有
+
+- 本软件为专有软件，受知识产权保护
+- 禁止逆向工程、反编译或修改本软件
+- 禁止分发、转让或出租本软件
+- 详细信息请参阅 LICENSES_THIRD_PARTY.txt
 
 ---
 

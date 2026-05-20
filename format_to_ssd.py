@@ -526,6 +526,8 @@ def convert_to_ssd_v2(file_path: str, embed_images: bool = False, optimize: bool
                 raise ValueError(f"zipfile 降级转换失败: {e}")
 
         if not ssd_text:
+            if ext == '.pdf' and not ocr_pdf:
+                raise ValueError("NEEDS_OCR:该 PDF 是扫描件（纯图片格式），未包含可提取的文本层。如需转换，请勾选「对PDF文件进行OCR」选项后重新处理。")
             raise ValueError("转换结果为空")
 
         # 嵌入图片（仅 embed_images 模式）
