@@ -19,6 +19,9 @@ EXE_PATH = os.path.join(DIST_NEW, 'SafeShrink.exe')
 IGNORE_DIRS = {'build', 'dist', '__pycache__', '.git', '.venv', 'venv'}
 IGNORE_FILES = {'build.py', '__init__.py'}
 
+# 测试文件模式（排除，不扫描 import）
+_TEST_FILE_RE = re.compile(r'^(test_|_test\.py|_tests\.py|.*_test\.py$)', re.IGNORECASE)
+
 # 标准库模块（不加入 hiddenimports）
 STDLIB_MODULES = {
     'sys', 'os', 'time', 'datetime', 'threading', 'queue', 'pathlib',
@@ -80,6 +83,8 @@ def auto_discover_hiddenimports(project_dir):
         dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
         for fname in files:
             if not fname.endswith('.py') or fname in IGNORE_FILES:
+                continue
+            if _TEST_FILE_RE.match(fname):
                 continue
             py_path = os.path.join(root, fname)
             imports = _scan_imports(py_path)

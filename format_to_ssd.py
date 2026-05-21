@@ -515,19 +515,32 @@ def convert_to_ssd_v2(file_path: str, embed_images: bool = False, optimize: bool
                 pass
 
         if ssd_text is None:
-            # 降级：使用纯 zipfile 实现
-            if _zipfile_ooxml_to_ssd is None:
-                raise ValueError("MarkItDown 不可用且 zipfile 降级模块未找到")
-            if ext not in ('.docx', '.xlsx', '.pptx'):
-                raise ValueError(f"MarkItDown 不可用且 {ext} 格式不支持 zipfile 降级")
-            try:
-                ssd_text = _zipfile_ooxml_to_ssd(actual_path)
-            except Exception as e:
-                raise ValueError(f"zipfile 降级转换失败: {e}")
+            # PDF：先检查是否需要 OCR，再决定能否继续
+            if ext == '.pdf':
+                if not ocr_pdf:
+                    raise ValueError(
+                        "NEEDS_OCR:该 PDF 是扫描件（纯图片格式），未包含可提取的文本层。"
+                        "如需转换，请勾选「对PDF文件进行OCR」选项后重新处理。"
+                    )
+                # PDF + OCR：无法用 zipfile fallback，直接让后续的空检查处理
+            else:
+                # 非 PDF：尝试 zipfile 降级
+                if _zipfile_ooxml_to_ssd is None:
+                    raise ValueError("MarkItDown 不可用且 zipfile 降级模块未找到")
+                if ext not in ('.docx', '.xlsx', '.pptx'):
+                    raise ValueError(f"MarkItDown 不可用且 {ext} 格式不支持 zipfile 降级")
+                try:
+                    ssd_text = _zipfile_ooxml_to_ssd(actual_path)
+                except Exception as e:
+                    raise ValueError(f"zipfile 降级转换失败: {e}")
 
         if not ssd_text:
+            # PDF 特殊情况：markitdown 可用但返回空文本 → 可能是扫描件
             if ext == '.pdf' and not ocr_pdf:
-                raise ValueError("NEEDS_OCR:该 PDF 是扫描件（纯图片格式），未包含可提取的文本层。如需转换，请勾选「对PDF文件进行OCR」选项后重新处理。")
+                raise ValueError(
+                    "NEEDS_OCR:该 PDF 是扫描件（纯图片格式），未包含可提取的文本层。"
+                    "如需转换，请勾选「对PDF文件进行OCR」选项后重新处理。"
+                )
             raise ValueError("转换结果为空")
 
         # 嵌入图片（仅 embed_images 模式）

@@ -1,4 +1,9 @@
 # 忽略构建产物
+SafeShrink/          # 旧版 onefile EXE 输出目录
+dist/                # PyInstaller onedir EXE 输出目录
+build/
+nuitka313_out/       # Nuitka 编译输出目录
+.venv*/              # Python 虚拟环境
 __pycache__/
 *.pyc
 *.pyo

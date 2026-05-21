@@ -1,5 +1,17 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
+
+# markitdown 依赖链: markitdown -> magika -> onnxruntime
+# 用 collect_submodules 获取模块名(用于 hiddenimports)
+# 用 collect_data_files(include_py_files=True) 获取 .py 文件(用于 datas)
+_markitdown_mods = collect_submodules('markitdown')
+_markitdown_datas = collect_data_files('markitdown', include_py_files=True)
+_magika_mods = collect_submodules('magika')
+_magika_datas = collect_data_files('magika', include_py_files=True)
+_onnxruntime_mods = collect_submodules('onnxruntime')
+_onnxruntime_datas = collect_data_files('onnxruntime', include_py_files=True)
+
 a = Analysis(
     ['main_window_v2.py'],
     pathex=[],
@@ -16,7 +28,7 @@ a = Analysis(
         ('batch_processor.py', '.'),
         ('format_to_ssd.py', '.'),
         ('safe_shrink.py', '.'),
-    ],
+    ] + _markitdown_datas + _magika_datas + _onnxruntime_datas,
     hiddenimports=[
         'safe_shrink',
         'safe_shrink_gui',
@@ -37,7 +49,9 @@ a = Analysis(
         'pypdf',
         'PIL',
         'markitdown',
-    ],
+        'magika',
+        'onnxruntime',
+    ] + _markitdown_mods + _magika_mods + _onnxruntime_mods,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

@@ -352,25 +352,25 @@ def process_file(
                         stats = res['stats']
 
                 except Exception as e:
-
-                    # MarkItDown 转换失败，降级到普通压缩
-
-                    print(f"      SSD 转换失败: {e}")
-
+                    err_str = str(e)
+                    if err_str.startswith('NEEDS_OCR'):
+                        result['status'] = 'error'
+                        result['error'] = '该文件是扫描件 PDF，需要勾选「对PDF文件进行OCR」选项'
+                        result['ssd_failed'] = True
+                        return result
+                    elif isinstance(e, ValueError):
+                        result['status'] = 'error'
+                        result['error'] = 'SSD ' + '转换失败' + ': ' + err_str
+                        result['ssd_failed'] = True
+                        return result
+                    print('      SSD ' + '转换失败' + ': ' + str(e))
                     processor = DocSlimmer()
-
                     res = processor.slim(
-
                         text,
-
                         compression_rate=options.get('compression_rate', 0.3),
-
                         remove_ai=options.get('remove_ai', False)
-
                     )
-
                     processed = res['result']
-
                     stats = res['stats']
 
             else:
