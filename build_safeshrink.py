@@ -7,7 +7,7 @@ SafeShrink Build Tool v2
 3. 构建检测逻辑强化（不过度依赖单一字符串）
 4. 残留进程清理增加等待重试
 """
-import ast, os, re, shutil, subprocess, sys, time
+import ast, importlib.util, json, os, re, shutil, subprocess, sys, time
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 SPEC_FILE = os.path.join(PROJECT_DIR, 'main_window_v2.spec')
@@ -421,11 +421,112 @@ def set_debug_env(value):
 # ─────────────────────────────────────────────
 # 主流程
 # ─────────────────────────────────────────────
+# ================================================
+# 构建环境验证
+# ================================================
+
+# 关键依赖的目标版本（与现有正确构建版本一致）
+REQUIRED_DEPS = {
+    'markitdown': '0.1.5',
+    'onnxruntime': '1.20.1',
+    'magika': '0.6.3',
+    'numpy': '2.4.6',
+    'pymupdf': '1.27.2.3',
+    'PySide6': '6.11.1',
+}
+
+def verify_build_env():
+    """验证构建环境：确保关键依赖仅来自 venv，且版本匹配"""
+    print('[0/5] Verifying build environment...')
+    errors = []
+    warnings = []
+    
+    # 1. 检查 markitdown 是否从 venv 加载
+    spec = importlib.util.find_spec('markitdown')
+    if spec and spec.origin:
+        venv_site = os.path.normpath(os.path.join(PROJECT_DIR, '.venv313', 'Lib', 'site-packages'))
+        global_site = os.path.normpath(os.path.expanduser(r'~\AppData\Roaming\Python\Python314\site-packages'))
+        origin_norm = os.path.normpath(spec.origin)
+        
+        if global_site in origin_norm:
+            errors.append(f"markitdown 从全局 Python 3.14 加载: {spec.origin}")
+            errors.append(r"  解决: .venv313\Scripts\pip install markitdown==0.1.5")
+        elif venv_site not in origin_norm:
+            warnings.append(f"markitdown 来源不明: {spec.origin}")
+    else:
+        errors.append("markitdown 未安装，无法构建")
+    
+    # 2. 检查关键依赖版本
+    for pkg, expected_ver in REQUIRED_DEPS.items():
+        try:
+            mod = __import__(pkg)
+            actual_ver = getattr(mod, '__version__', 'unknown')
+            if actual_ver != expected_ver:
+                if actual_ver.split('.')[:2] != expected_ver.split('.')[:2]:
+                    errors.append(f"{pkg} 版本不匹配: {actual_ver} (期待: {expected_ver})")
+                else:
+                    warnings.append(f"{pkg} patch 版本不同: {actual_ver} (期待: {expected_ver})")
+        except ImportError:
+            errors.append(f"{pkg} 未安装")
+    
+    # 3. 加载 requirements.lock.txt 进行对比
+    lock_file = os.path.join(PROJECT_DIR, 'requirements.lock.txt')
+    if os.path.exists(lock_file):
+        # 自动检测编码（可能是 utf-8 或 utf-16）
+        with open(lock_file, 'rb') as f:
+            raw = f.read()
+        if raw.startswith(b'\xff\xfe'):
+            text = raw.decode('utf-16')
+        else:
+            text = raw.decode('utf-8')
+        locked = dict(line.strip().split('==') for line in text.splitlines() if '==' in line and not line.startswith('#'))
+        for pkg, expected in REQUIRED_DEPS.items():
+            locked_ver = locked.get(pkg.lower())
+            if locked_ver and locked_ver != expected:
+                warnings.append(f"requirements.lock.txt 中{pkg}={locked_ver} 与函数定义的 {expected} 不一致")
+    
+    # 输出结果
+    if warnings:
+        for w in warnings:
+            print(f'  [WARN] {w}')
+    if errors:
+        for e in errors:
+            print(f'  [ERROR] {e}')
+        print('\n[FAIL] Environment verification failed. Fix errors before building.')
+        sys.exit(1)
+    
+    print('  [OK] Environment verified')
+    return True
+
+def save_build_manifest():
+    """保存构建快照，用于后续验证"""
+    import time
+    manifest = {
+        'timestamp': time.strftime('%Y-%m-%dT%H:%M:%S'),
+        'python': sys.version.split()[0],
+        'executable': sys.executable,
+        'dependencies': {},
+    }
+    for pkg in REQUIRED_DEPS:
+        try:
+            mod = __import__(pkg)
+            manifest['dependencies'][pkg] = getattr(mod, '__version__', 'unknown')
+        except ImportError:
+            manifest['dependencies'][pkg] = 'NOT_FOUND'
+    
+    manifest_path = os.path.join(PROJECT_DIR, 'build-manifest.json')
+    with open(manifest_path, 'w', encoding='utf-8') as f:
+        json.dump(manifest, f, indent=2, ensure_ascii=False)
+    print(f'  [OK] Build manifest saved to {manifest_path}')
+
 if __name__ == '__main__':
     os.chdir(PROJECT_DIR)
     print('=' * 50)
     print('  SafeShrink Build Tool v2')
     print('=' * 50)
+    
+    # 环境验证（失败时退出）
+    verify_build_env()
 
     # Step 0: 自动发现 hiddenimports
     print('\n[0/5] Auto-discovering hiddenimports...')
