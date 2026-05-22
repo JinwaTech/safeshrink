@@ -26,8 +26,8 @@
 | PDF 处理 | pypdf（BSD）+ pymupdf（OCR 渲染） |
 | Word 处理 | python-docx |
 | OCR 引擎 | Tesseract v5.4.0（chi_sim+chi_tra+eng） |
-| 打包 | PyInstaller 6.19（onedir 模式） |
-| 图标 | G-Sketch 单 S 素描风格，cream 背景 |
+| 打包 | PyInstaller 6.20（onedir 模式） |
+| 图标 | G-Sketch 单 S 素描风格，cream 背景，圆角透明 |
 
 ### 2.2 目录结构
 
@@ -129,6 +129,12 @@ Office/PDF → SSD（Markdown）格式转换。支持 OCR（Tesseract）预处�
 ---
 
 ## 六、版本历史
+
+### v1.1.10（2026-05-22）
+- 图标：v13 最终版 — S logo 居中（质心 123,121），圆角半径 42，四角透明化
+- 图标：背景扩展至右下边缘，硬编码 RGB(245,240,232) 纯净乳白色
+- 图标：7 种嵌入尺寸（16/24/32/48/64/128/256），同步至 19 个位置
+- 构建：EXE 18.75 MB，功能验证通过
 
 ### v1.1.9（2026-05-21）
 - 修复：扫描件PDF未勾选OCR时SSD转换报错 → 改为友好提示"需要开启OCR"
