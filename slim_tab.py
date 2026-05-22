@@ -841,9 +841,9 @@ class SlimTab(QWidget):
             max_w = self.img_spin_width.value() if self.img_chk_resize.isChecked() else None
             max_h = self.img_spin_height.value() if self.img_chk_resize.isChecked() else None
 
-            # 临时输出
+            # 临时输出到系统临时目录
             ext = os.path.splitext(self.current_file)[1].lower()
-            temp_output = self.current_file + '.compressed' + ext
+            temp_output = os.path.join(tempfile.gettempdir(), 'SafeShrink_compressed' + ext)
 
             result = compress_image_gui(
                 self.current_file,

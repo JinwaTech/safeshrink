@@ -1,0 +1,50 @@
+  0: def _read_ooxml_text(path):
+  1:     """纯 Python 读取 OOXML 格式文本，不依赖任何外部库。"""
+  2:     import zipfile, re, os
+  3:     ext = os.path.splitext(path)[1].lower()
+  4:     try:
+  5:         with zipfile.ZipFile(path) as z:
+  6:             if ext == '.docx':
+  7:                 xml = z.read('word/document.xml').decode('utf-8', errors='ignore')
+  8:                 texts = re.findall(r'<w:t[^>]*>([^<]+)</w:t>', xml)
+  9:             elif ext == '.xlsx':
+ 10:                 if 'xl/sharedStrings.xml' in z.namelist():
+ 11:                     xml = z.read('xl/sharedStrings.xml').decode('utf-8', errors='ignore')
+ 12:                     texts = re.findall(r'<t[^>]*>([^<]*)</t>', xml)
+ 13:                 else:
+ 14:                     texts = []
+ 15:             elif ext == '.pptx':
+ 16:                 texts = []
+ 17:                 for name in z.namelist():
+ 18:                     if re.match(r'ppt/slides/slide\d+\.xml', name):
+ 19:                         xml = z.read(name).decode('utf-8', errors='ignore')
+ 20:                         texts.extend(re.findall(r'<a:t[^>]*>([^<]+)</a:t>', xml))
+ 21:             else:
+ 22:                 # txt/md 等直接读
+ 23:                 with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+ 24:                     return f.read()
+ 25:             return '\n'.join(texts)
+ 26:     except Exception:
+ 27:         return None
+ 28: 
+ 29: 
+ 30: class SlimTab(QWidget):
+ 31:     file_processed = Signal(str, str)  # 原路径, 处理后内容
+ 32: 
+ 33:     def __init__(self):
+ 34:         super().__init__()
+ 35:         self.current_file = None
+ 36:         self.original_content = None
+ 37:         self.processed_content = None  # 处理后的内容（用于撤销）
+ 38:         self.current_mode = 'text'  # 'text' 或 'image'
+ 39:         self.setup_ui()
+ 40:         self.load_settings()
+ 41: 
+ 42:     def setup_ui(self):
+ 43:         layout = QVBoxLayout(self)
+ 44:         layout.setContentsMargins(0, 16, 0, 0)
+ 45:         layout.setSpacing(16)
+ 46: 
+ 47:         # 文件选择区域（固定顶部）
+ 48:         file_section = self.create_file_section()
+ 49:         layout.addWidget(file_section)

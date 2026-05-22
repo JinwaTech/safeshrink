@@ -4,6 +4,8 @@ safe_shrink_gui.py - GUI 专用接口
 """
 
 from pathlib import Path
+import re
+import json
 from safe_shrink import DocSlimmer, DocSanitizer, read_file, write_file, DEPS
 
 # SSD 转换为可选功能（在 frozen 环境中可能因 markitdown 依赖问题无法加载）

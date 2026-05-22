@@ -58,7 +58,7 @@ def _detect_tesseract():
     return False
 
 
-def _ocr_preprocess(image_data: bytes) -> bytes:
+def _ocr_preprocess(image_data):
     """图片预处理：灰度 + 去噪（提升 OCR 准确率 +5-10%）"""
     try:
         from PIL import Image, ImageFilter
@@ -82,7 +82,7 @@ def _ocr_preprocess(image_data: bytes) -> bytes:
         return image_data
 
 
-def _ocr_image_to_text(image_data: bytes, lang: str = 'chi_sim+eng') -> str:
+def _ocr_image_to_text(image_data, lang='chi_sim+eng'):
     """
     用 Tesseract OCR 提取图片中的文字。
     返回提取的文字（不含图片标记），失败时返回空字符串。
@@ -150,27 +150,43 @@ try:
 except ImportError:
     _zipfile_ooxml_to_ssd = None
 
+# ─── xlrd（用于 .xls 旧格式 Excel 文件） ────────────────────────────────
+XLRD_AVAILABLE = False
+try:
+    import xlrd
+    XLRD_AVAILABLE = True
+except ImportError:
+    pass
+
 # ─── PDF OCR 检测 ───────────────────────────────────────────────────────────
 
-def is_scanned_pdf(file_path: str) -> bool:
+def is_scanned_pdf(file_path):
     """
     检测 PDF 是否为扫描件（无文本层）
     返回 True = 扫描件，需要 OCR
     返回 False = 有文本层，正常 SSD 转换
     """
+    file_path = str(file_path)
     try:
         import fitz
         doc = fitz.open(file_path)
+        total_pages = len(doc)
+        pages_with_text = 0
         for page in doc:
-            if page.get_text().strip():
-                return False  # 有文本，不是扫描件
-        return True  # 无文本，是扫描件
+            text = page.get_text().strip()
+            if len(text) > 50:  # 超过50字符认为有实质文本层
+                pages_with_text += 1
+        doc.close()
+        # 超过一半的页面有文本 → 非扫描件
+        is_scanned = pages_with_text < total_pages / 2
+        print(f"[PDF检测] {total_pages}页, {pages_with_text}页有文本, {'扫描件' if is_scanned else '有文本层'}")
+        return is_scanned
     except Exception as e:
         print(f"[PDF检测] 无法检测文本层: {e}")
         return False  # 检测失败时按正常 PDF 处理
 
 
-def ocr_pdf_pages(file_path: str, lang: str = 'chi_sim+eng') -> str:
+def ocr_pdf_pages(file_path, lang='chi_sim+eng'):
     """
     对扫描件 PDF 逐页 OCR
     返回：纯文本流（按页分节）
@@ -234,7 +250,7 @@ def get_markitdown_instance():
     return _md_instance
 
 
-def is_ssd_convertible(file_path: str) -> bool:
+def is_ssd_convertible(file_path):
     """检查文件是否可以转换为 SSD 格式"""
     ext = Path(file_path).suffix.lower()
     return ext in MARKDOWN_CONVERTIBLE
@@ -249,7 +265,44 @@ def get_mime_type(ext: str) -> str:
     return mime_types.get(ext.lower(), 'image/png')
 
 
-def extract_images_from_office(file_path: str) -> list:
+# ─── .xls 旧格式 Excel 转 SSD ──────────────────────────────────────────
+def _xls_to_ssd(file_path):
+    """用 xlrd 读取 .xls 文件，转为 SSD 格式"""
+    if not XLRD_AVAILABLE:
+        return None
+    try:
+        wb = xlrd.open_workbook(file_path)
+        sheets_data = []
+        for sheet in wb.sheets():
+            if sheet.nrows == 0:
+                continue
+            rows = []
+            for row_idx in range(sheet.nrows):
+                row = []
+                for col_idx in range(sheet.ncols):
+                    cell = sheet.cell(row_idx, col_idx)
+                    row.append(str(cell.value) if cell.value != '' else '')
+                rows.append(row)
+            if rows:
+                # 生成 Markdown 表格
+                header = rows[0]
+                table_lines = ['| ' + ' | '.join(header) + ' |']
+                table_lines.append('| ' + ' | '.join(['---'] * len(header)) + ' |')
+                for row in rows[1:]:
+                    # 补齐列数
+                    while len(row) < len(header):
+                        row.append('')
+                    table_lines.append('| ' + ' | '.join(row[:len(header)]) + ' |')
+                sheets_data.append(f"## {sheet.name}\n\n" + '\n'.join(table_lines))
+        if not sheets_data:
+            return None
+        return '\n\n'.join(sheets_data)
+    except Exception as e:
+        print(f"[XLS] 转换失败: {e}")
+        return None
+
+
+def extract_images_from_office(file_path):
     """从 Office 文件（DOCX/PPTX/XLSX）中提取所有图片"""
     images = []
     try:
@@ -336,7 +389,7 @@ def _is_table_only(doc) -> bool:
     return len(content_paragraphs) < 3
 
 
-def convert_doc_to_ssd(file_path: str) -> str:
+def convert_doc_to_ssd(file_path):
     """
     .doc 文件专用转换：
     1. doc2docx 转为 .docx
@@ -454,7 +507,7 @@ def optimize_ssd(ssd_text: str) -> str:
 
 
 # ─── 主转换函数 ─────────────────────────────────────────────────────────────
-def convert_to_ssd_v2(file_path: str, embed_images: bool = False, optimize: bool = True, ocr_images: bool = False, ocr_pdf: bool = False) -> str:
+def convert_to_ssd_v2(file_path, embed_images=False, optimize=True, ocr_images=False, ocr_pdf=False):
     """
     统一转换入口：
     - .doc: 专用结构化解析（doc2docx + python-docx 表格）
@@ -525,14 +578,15 @@ def convert_to_ssd_v2(file_path: str, embed_images: bool = False, optimize: bool
                 # PDF + OCR：无法用 zipfile fallback，直接让后续的空检查处理
             else:
                 # 非 PDF：尝试 zipfile 降级
-                if _zipfile_ooxml_to_ssd is None:
-                    raise ValueError("MarkItDown 不可用且 zipfile 降级模块未找到")
-                if ext not in ('.docx', '.xlsx', '.pptx'):
-                    raise ValueError(f"MarkItDown 不可用且 {ext} 格式不支持 zipfile 降级")
-                try:
-                    ssd_text = _zipfile_ooxml_to_ssd(actual_path)
-                except Exception as e:
-                    raise ValueError(f"zipfile 降级转换失败: {e}")
+                if ext == '.xls' and XLRD_AVAILABLE:
+                    ssd_text = _xls_to_ssd(actual_path)
+                elif _zipfile_ooxml_to_ssd is not None and ext in ('.docx', '.xlsx', '.pptx'):
+                    try:
+                        ssd_text = _zipfile_ooxml_to_ssd(actual_path)
+                    except Exception as e:
+                        raise ValueError(f"zipfile 降级转换失败: {e}")
+                else:
+                    raise ValueError(f"SSD 转换失败: {ext} 格式不支持")
 
         if not ssd_text:
             # PDF 特殊情况：markitdown 可用但返回空文本 → 可能是扫描件

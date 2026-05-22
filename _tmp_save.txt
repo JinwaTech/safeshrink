@@ -1,0 +1,61 @@
+=== BACKUP HEAD save_text ===
+def save_text(self):
+        """保存文本文件"""
+        # 根据当前模式生成默认文件名
+        mode = self.format_combo.currentText()
+        if mode == "转换为SSD":
+            default_name = str(Path(self.current_file).with_suffix('.md'))
+            file_filter = "Markdown文件 (*.md);;所有文件 (*.*)"
+        else:
+            default_name = str(Path(self.current_file).with_suffix('.slim.txt'))
+            file_filter = "文本文件 (*.txt);;所有文件 (*.*)"
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "保存文件",
+            default_name,
+            file_filter
+        )
+        if file_path:
+            try:
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(self.text_edit.toPlainText())
+                self.result_label.setText(f"✅ 已保存到: {file_path}")
+                self.btn_save.setEnabled(False)
+
+                # 记录到历史（文本模式含 token 信息）
+                if hasattr(self, '_orig_tokens') or mode == "转换为SSD":
+                    try:
+                        main_window = self.window()
+                        orig_sz = os.path.getsize(self.current_file) if self.current_file and os.path.exists(self.current_file) else 0
+                        ne
+
+=== CURRENT DISK save_text ===
+def save_text(self):
+        """保存文本文件"""
+        # 根据当前模式生成默认文件名
+        mode = self.format_combo.currentText()
+        # 深度清理模式：从临时文件复制（不走文本写入逻辑）
+        if mode == "深度清理" and hasattr(self, 'deep_cleaned_path'):
+            ext = Path(self.current_file).suffix
+            default_name = str(Path(self.current_file).with_suffix('.cleaned.docx'))
+            save_path, _ = QFileDialog.getSaveFileName(
+                self, "保存文件", default_name, "Word文件 (*.docx);;所有文件 (*.*)"
+            )
+            if save_path:
+                import shutil
+                try:
+                    shutil.copy2(self.deep_cleaned_path, save_path)
+                    self.result_label.setText(f"✅ 已保存到: {save_path}")
+                    self.btn_save.setEnabled(False)
+                    if hasattr(self, 'deep_cleaned_path'):
+                        delattr(self, 'deep_cleaned_path')
+                except Exception as e:
+                    QMessageBox.critical(self, "错误", f"保存失败: {e}")
+            return
+
+        if mode == "转换为SSD":
+            default_name = str(Path(self.current_file).with_suffix('.md'))
+            file_filter = "Markdown文件 (*.md);;所有文件 (*.*)"
+        else:
+            default_n

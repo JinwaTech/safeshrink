@@ -13,6 +13,7 @@ def _ooxml_to_ssd(filepath, embed_images=False):
     纯 zipfile 解析 .docx/.xlsx/.pptx，返回 Markdown 文本。
     不依赖 markitdown / python-docx / openpyxl / pptx。
     """
+    filepath = str(filepath)  # Cython 编译后 zipfile 不接受 Path 对象
     ext = Path(filepath).suffix.lower()
     if ext == '.docx':
         return _docx_to_ssd(filepath)

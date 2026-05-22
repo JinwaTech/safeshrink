@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 import sys as _sys
 
@@ -2310,7 +2310,7 @@ def cmd_batch(args):
 
     """批量处理命令"""
 
-    from batch_processor import batch_process, format_size
+    from batch_processor import batch_process
 
     import shutil
 
@@ -2778,7 +2778,7 @@ def main():
 
         import shutil
 
-        from batch_processor import batch_process, format_size
+        from batch_processor import batch_process
 
 
 
@@ -3228,6 +3228,16 @@ def compress_image(input_path, output_path=None, quality=85, max_size=None):
 
 
 
+def format_size(size: int) -> str:
+    """格式化文件大小"""
+    if size < 1024:
+        return f"{size}B"
+    elif size < 1024 * 1024:
+        return f"{size/1024:.1f}KB"
+    else:
+        return f"{size/1024/1024:.1f}MB"
+
+
 def get_image_info(path):
 
     """获取图片信息"""
@@ -3266,7 +3276,19 @@ def get_image_info(path):
 
 
 
+
+# Cython 编译需要：内联 format_size 避免跨模块导入问题
+def format_size(size: int) -> str:
+    """格式化文件大小"""
+    if size < 1024:
+        return f"{size}B"
+    elif size < 1024 * 1024:
+        return f"{size/1024:.1f}KB"
+    else:
+        return f"{size/1024/1024:.1f}MB"
+
 if __name__ == "__main__":
 
     main()
+
 
