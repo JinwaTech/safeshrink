@@ -6,6 +6,8 @@ safe_shrink_gui.py - GUI 专用接口
 from pathlib import Path
 import re
 import json
+import os
+import tempfile
 from safe_shrink import DocSlimmer, DocSanitizer, read_file, write_file, DEPS
 
 # SSD 转换为可选功能（在 frozen 环境中可能因 markitdown 依赖问题无法加载）
@@ -232,32 +234,26 @@ def _validate_bank_card(card_str):
 
 
 
-def sanitize_content(content, types=None, custom_patterns=None, mode='mask'):
+def sanitize_content(content, types=None, custom_patterns=None, mode='mask', return_stats=False):
     import sys
     print(f"[DEBUG] sanitize_content called, types={types!r}, mode={mode!r}, ENHANCED_SANITIZE={ENHANCED_SANITIZE}")
-    """
-    文档脱敏 - 去除敏感信息
-    
-    现在包含：
-    - 身份证/银行卡校验和验证
-    - 中文姓名识别（基于上下文）
-    - 中文地址识别（基于上下文）
-    - 假名化替换（Faker）
-    """
     """
     文档脱敏 - 去除敏感信息
 
     Args:
         content: 文本内容
-        types: list, 要脱敏的类型列表，None 表示全部
+        types: list, 要脱敏的类型列表，null 表示全部
         custom_patterns: dict, 自定义规则 {"keywords": "词1,词2", "regex": "正则1"}
         mode: 'mask' (遮罩) | 'pseudo' (假名化)
+        return_stats: bool, 是否返回 (text, count) 元组
 
     Returns:
-        str: 脱敏后的内容
+        str or (str, int): 脱敏后的内容 (或 (内容, 脱敏处数))
     """
     if not content:
-        return content
+        return (content, 0) if return_stats else content
+
+    total_count = 0
 
     # 使用增强脱敏模块（带校验和验证 + 上下文过滤 + 假名化）
     if ENHANCED_SANITIZE:
@@ -269,17 +265,28 @@ def sanitize_content(content, types=None, custom_patterns=None, mode='mask'):
             use_context=True
         )
         sanitized = result['result']
+        # 从增强脱敏结果获取统计
+        if 'stats' in result:
+            total_count += result['stats'].get('total', 0)
+        elif 'count' in result:
+            total_count += result['count']
     else:
         sanitizer = DocSanitizer()
-        sanitized = sanitizer.sanitize(content, items=types)['result']
+        san_result = sanitizer.sanitize(content, items=types)
+        sanitized = san_result['result']
+        stats = san_result.get('stats', {})
+        total_count += stats.get('\u603b\u8ba1', 0)  # '总计'
 
     # 应用自定义脱敏规则
+    custom_count = 0
     if custom_patterns:
         if custom_patterns.get('keywords'):
             for kw in custom_patterns['keywords'].split(','):
                 kw = kw.strip()
                 if kw:
+                    cnt = sanitized.count(kw)
                     sanitized = sanitized.replace(kw, '***')
+                    custom_count += cnt
 
         if custom_patterns.get('regex'):
             import json
@@ -288,28 +295,42 @@ def sanitize_content(content, types=None, custom_patterns=None, mode='mask'):
                 if isinstance(patterns, list):
                     for p in patterns:
                         if isinstance(p, dict) and 'pattern' in p:
+                            before = sanitized
                             sanitized = re.sub(p['pattern'], p.get('replace', '***'), sanitized)
+                            if sanitized != before:
+                                custom_count += len(re.findall(p['pattern'], before))
             except:
                 for patt in custom_patterns['regex'].split(','):
                     patt = patt.strip()
                     if patt:
                         try:
+                            before = sanitized
                             sanitized = re.sub(patt, '***', sanitized)
+                            if sanitized != before:
+                                custom_count += len(re.findall(patt, before))
                         except:
                             pass
+    total_count += custom_count
 
     # 中文姓名和地址脱敏
-    if ENHANCED_SANITIZE:
+    if ENHANCED_SANITIZE and sanitize_chinese:
+        before_ner = sanitized
         sanitized, _ner_stats = sanitize_chinese(sanitized)
+        if sanitized != before_ner:
+            # 估算 NER 脱敏处数：统计变化的非空白字符块
+            import difflib
+            diff = list(difflib.unified_diff(before_ner.splitlines(), sanitized.splitlines(), lineterm=''))
+            ner_count = sum(1 for line in diff if line.startswith('-') and not line.startswith('---'))
+            total_count += max(ner_count, 0)
 
     # 如果使用语义标签模式，转换为标签
     if mode == 'tags':
         # 重新用语义标签脱敏
         sanitized, mapper = sanitize_all_with_tags(content, types=types)
         # 返回脱敏后的文本和映射信息
-        return sanitized
+        return (sanitized, total_count) if return_stats else sanitized
 
-    return sanitized
+    return (sanitized, total_count) if return_stats else sanitized
 
 
 
@@ -335,8 +356,8 @@ def process_file_gui(file_path, action, options=None):
         
         # Word 深度清理
         if ext == '.docx' and action == 'slim' and opts.get('deep_clean', False):
-            output_path = opts.get('output_path', file_path)
-            result = clean_docx_deep(file_path, output_path, {
+            temp_output = os.path.join(tempfile.gettempdir(), 'SafeShrink_' + Path(file_path).stem + '.cleaned.docx')
+            result = clean_docx_deep(file_path, temp_output, {
                 'remove_empty_paragraphs': True,
                 'remove_bullet_runs': True,
                 'remove_non_image_shapes': True,
@@ -354,19 +375,42 @@ def process_file_gui(file_path, action, options=None):
         
         # PDF 元数据清理
         if ext == '.pdf' and action == 'slim':
-            output_path = opts.get('output_path', file_path)
-            result = clean_pdf_metadata(file_path, output_path)
+            temp_output = os.path.join(tempfile.gettempdir(), 'SafeShrink_' + Path(file_path).stem + '.cleaned.pdf')
+            result = clean_pdf_metadata(file_path, temp_output)
             if result['success']:
                 return {
                     'success': True,
                     'content': None,
-                    'output_path': result.get('output_path'),
+                    'output_path': temp_output,
                     'skipped': result.get('skipped', False),
                     'stats': {},
                     'direct_write': True,
                 }
             else:
                 return {'success': False, 'error': result['error']}
+        
+        # Excel/PPT 原生压缩（保留格式）
+        if ext in ('.xlsx', '.pptx') and action == 'slim':
+            from safe_shrink import slim_native_xlsx, slim_native_pptx
+            import shutil
+            temp_output = os.path.join(tempfile.gettempdir(), 'SafeShrink_' + Path(file_path).stem + '.slim' + ext)
+            shutil.copy2(file_path, temp_output)
+            cr = opts.get('compression_rate', 0.5)
+            rm_ai = opts.get('remove_ai', False)
+            if ext == '.xlsx':
+                res = slim_native_xlsx(temp_output, compression_rate=cr, remove_ai=rm_ai)
+            else:
+                res = slim_native_pptx(temp_output, compression_rate=cr, remove_ai=rm_ai)
+            if res.get('result'):
+                return {
+                    'success': True,
+                    'content': None,
+                    'output_path': temp_output,
+                    'stats': res.get('stats', {}),
+                    'direct_write': True,
+                }
+            else:
+                return {'success': False, 'error': res.get('error', '未知错误')}
         
         # ===== 通用格式：读取文本 → 处理 → 返回文本 =====
         

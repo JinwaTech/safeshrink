@@ -21,7 +21,7 @@
 
 | 层级 | 技术 |
 |------|------|
-| 语言 | Python 3.14+ |
+| 语言 | Python 3.13（venv `.venv313`）|
 | GUI 框架 | PySide6（LGPL，可闭源） |
 | PDF 处理 | pypdf（BSD）+ pymupdf（OCR 渲染） |
 | Word 处理 | python-docx |
@@ -41,7 +41,8 @@ SafeShrink/
 ├── format_to_ssd.py       # SSD 格式转换实现
 ├── sanitize_enhanced.py   # 增强脱敏（开发中）
 ├── main_window_v2.spec    # PyInstaller spec（含 hiddenimports）
-├── build.py               # 构建脚本
+├── build_safeshrink.py    # 构建脚本（自动发现 hiddenimports）
+├── build.py               # 旧构建脚本（保留）
 └── assets/               # 图标等资源
 ```
 
@@ -88,6 +89,18 @@ Office/PDF → SSD（Markdown）格式转换。支持 OCR（Tesseract）预处�
 - 递归扫描子目录
 - `skip_names` / `skip_suffixes` 跳过已处理文件
 - 对 .md/.txt 文件调用 `_sanitize_text()` 纯文本脱敏
+- **输出命名统一**：所有模式后缀 `_减肥`（原 `_处理结果` 已废弃）
+- **Office 文件**：标准减肥走原生保留格式（`slim_native_xlsx/pptx`），不走文本提取
+
+### 3.5 单文件 vs 批量处理路径
+
+| 文件类型 | 单文件标准减肥 | 批量标准减肥 |
+|---------|--------------|------------|
+| docx | `clean_docx_deep()` 临时文件 → 手动保存 | `process_file_gui()` → 原生保留格式 |
+| xlsx/pptx | `slim_native_*()` 临时文件 → 手动保存 | `process_file_gui()` → 原生保留格式 |
+| pdf | `clean_pdf_metadata()` 临时文件 → 手动保存 | `clean_pdf_metadata()` → 自动输出 |
+| txt/md/json/csv/html/xml | `slim_content()` → 手动保存 | `process_file_gui()` → 自动输出 |
+| 图片 | `compress_image()` 临时文件 → 手动保存 | 复制原文件（跳过）|
 
 ---
 
@@ -112,6 +125,12 @@ Office/PDF → SSD（Markdown）格式转换。支持 OCR（Tesseract）预处�
 | 15 | 深度清理模式名不一致 | UI显示"保留结构"但代码比较"深度清理" | 统一三处（addItems、tooltip、on_format_changed modes列表） |
 | 16 | process_file()静默失败 | Qt事件循环吞掉异常，用户看不到任何提示 | 添加 `try/except` + `QMessageBox.critical()` 全局异常捕获 |
 | 17 | NameError: tempfile | `process_text_file()` 调用 `tempfile.mkstemp()` 但未导入 | 顶部添加 `import tempfile` |
+| 18 | 单文件状态残留 | `set_file()`/`browse_file()` 未清除 `deep_cleaned_path`/`compressed_path` | 切换文件时 delattr 清除 |
+| 19 | PPTX/XLSX 标准压缩报错 | `slim_native_pptx/xlsx()` 返回无 `success` 键，`res.get("success")` 为 None | 返回结构增加 `success: True` |
+| 20 | PPTX/XLSX 源目录污染 | 临时文件直接放 `Path(self.current_file).with_suffix(".slim"+ext)` | 改用 `tempfile.gettempdir()` |
+| 21 | 批量 SSD 命名泄漏 | `batch_processor.py` 中 `ssd_converted` 变量未初始化，残留上次值 | 在 `action == 'slim'` 前初始化 `ssd_converted = False` |
+| 22 | 脱敏计数不准确 | `detect_sensitive()` 与 `DocSanitizer.sanitize()` 匹配策略不对称 | 逐项验证法：每项检查原文本在脱敏后剩余次数 |
+| 23 | .docx 批量不处理 | `read_docx()` 调用旧 API `markitdown.convert()`，新版需 `MarkItDown().convert()` | 更新 API + 安装 `markitdown[docx]`（mammoth, cobble）|
 
 ---
 
@@ -129,6 +148,16 @@ Office/PDF → SSD（Markdown）格式转换。支持 OCR（Tesseract）预处�
 ---
 
 ## 六、版本历史
+
+### v1.1.11（2026-05-23）
+- 修复：单文件状态残留 — `set_file()`/`browse_file()` 清除 `deep_cleaned_path`/`compressed_path`
+- 修复：PPTX/XLSX 标准压缩 — `slim_native_pptx/xlsx()` 返回 `success: True`，临时文件改 `tempfile.gettempdir()`
+- 修复：批量重复文件 — PDF/docx deep clean 输出到临时文件，避免覆盖原文件
+- 修复：批量 SSD 命名泄漏 — `ssd_converted = False` 初始化
+- 修复：脱敏计数 — 逐项验证法，增强价格上下文匹配（28个关键词）
+- 修复：.docx 批量处理 — 更新 markitdown API，添加 mammoth/cobble hiddenimports
+- 统一：批量输出命名 `_减肥`（原 `_处理结果` 废弃）
+- 构建：EXE 21.65MB，Python 3.13 + PySide6 + Cython .pyd
 
 ### v1.1.10（2026-05-22）
 - 图标：v13 最终版 — S logo 居中（质心 123,121），圆角半径 42，四角透明化

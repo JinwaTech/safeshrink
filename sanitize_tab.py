@@ -4,6 +4,8 @@
 """
 
 import os
+import json
+import re
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
@@ -707,8 +709,15 @@ class SanitizeTab(QWidget):
 
     def _fallback_read(self, path):
         """回退的文本读取(用于不支持原生处理的格式)"""
-        with open(path, 'r', encoding='utf-8') as f:
-            return f.read()
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                return f.read()
+        except UnicodeDecodeError:
+            raise Exception(
+                f"无法读取文件: {Path(path).name}\n\n"
+                f"该文件是二进制格式，需要对应的处理库。\n"
+                f"请确保已安装所需依赖（pypdf、python-docx 等）。"
+            )
 
     def load_file_content(self, path):
         try:
@@ -800,11 +809,7 @@ class SanitizeTab(QWidget):
         import sys, traceback
         try:
             from safe_shrink_gui import sanitize_content
-            sanitized_text = sanitize_content(text, types, custom_patterns=custom, mode=mode)
-            # 通过 * 密度估算脱敏处数：统计 sanitized_text 中连续4+个 * 的块数
-            import re
-            mask_blocks = re.findall(r'\*{4,}', sanitized_text)
-            count = len(mask_blocks)
+            sanitized_text, count = sanitize_content(text, types, custom_patterns=custom, mode=mode, return_stats=True)
             return sanitized_text, count
         except ImportError as e:
             # 详细调试信息
@@ -829,16 +834,27 @@ class SanitizeTab(QWidget):
             from safe_shrink_gui import sanitize_content
         except ImportError as e:
             print(f"[DEBUG] _sanitize_native_docx ImportError: {e}")
-            if 'safe_shrink_gui' in sys.modules:
-                mod = sys.modules['safe_shrink_gui']
-                print(f"[DEBUG] safe_shrink_gui in sys.modules: {mod}")
-                attrs = [x for x in dir(mod) if not x.startswith('_')]
-                print(f"[DEBUG] attrs: {attrs[:15]}")
-            else:
-                print(f"[DEBUG] safe_shrink_gui NOT in sys.modules")
             traceback.print_exc()
             raise
         import re
+
+        # 先用 sanitize_content 统计精确脱敏处数
+        total_count = 0
+        try:
+            all_texts = []
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    all_texts.append(para.text)
+            for table in doc.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        if cell.text.strip():
+                            all_texts.append(cell.text)
+            full_text = '\n'.join(all_texts)
+            if full_text.strip():
+                _, total_count = sanitize_content(full_text, types, custom_patterns=custom, mode=mode, return_stats=True)
+        except Exception as e:
+            print(f"[DEBUG] sanitize_content stats for docx failed: {e}")
 
         masked = {}
         def replacer(match):
@@ -891,17 +907,6 @@ class SanitizeTab(QWidget):
                 for run in para.runs[1:]:
                     run.text = ''
 
-        # 统计脱敏处数：扫描文档中所有 __MASK_N__ 占位符
-        import re
-        mask_pattern = re.compile(r'__MASK_\d+__')
-        total_count = 0
-        for para in doc.paragraphs:
-            total_count += len(mask_pattern.findall(para.text))
-        for table in doc.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    total_count += len(mask_pattern.findall(cell.text))
-
         return total_count, 0
 
     def _sanitize_native_xlsx(self, wb, types, custom, mode):
@@ -938,6 +943,25 @@ class SanitizeTab(QWidget):
         writable_wb = _load(str(file_path), data_only=False)  # False: 保留公式,Excel打开后重算
         self._native_doc = writable_wb  # 更新引用为可写版本
 
+        # 用 sanitize_content 统计精确脱敏处数
+        total_count = 0
+        try:
+            all_texts = []
+            for sheet_name in writable_wb.sheetnames:
+                ws = writable_wb[sheet_name]
+                for row in ws.iter_rows():
+                    for cell in row:
+                        if cell.value is not None:
+                            cell_text = str(cell.value)
+                            if cell_text.strip():
+                                all_texts.append(cell_text)
+            full_text = '\n'.join(all_texts)
+            if full_text.strip():
+                _, total_count = sanitize_content(full_text, types, custom_patterns=custom, mode=mode, return_stats=True)
+        except Exception as e:
+            print(f"[DEBUG] sanitize_content stats for xlsx failed: {e}")
+
+        # 逐 cell 脱敏
         for sheet_name in writable_wb.sheetnames:
             ws = writable_wb[sheet_name]
             for row in ws.iter_rows():
@@ -947,14 +971,6 @@ class SanitizeTab(QWidget):
                         sanitized = sanitize_content(cell_text, types, custom_patterns=custom, mode=mode)
                         if sanitized != cell_text:
                             cell.value = sanitized
-        total_count = 0
-        mask_pattern = re.compile(r'__MASK_\d+__')
-        for sheet_name in writable_wb.sheetnames:
-            ws = writable_wb[sheet_name]
-            for row in ws.iter_rows():
-                for cell in row:
-                    if cell.value is not None:
-                        total_count += len(mask_pattern.findall(str(cell.value)))
         return total_count, 0
 
     def _sanitize_native_pptx(self, prs, types, custom, mode):
@@ -967,7 +983,24 @@ class SanitizeTab(QWidget):
             traceback.print_exc()
             raise
 
+        # 先用 sanitize_content 统计精确脱敏处数
         total_count = 0
+        try:
+            all_texts = []
+            for slide in prs.slides:
+                for shape in slide.shapes:
+                    if hasattr(shape, 'text_frame'):
+                        for para in shape.text_frame.paragraphs:
+                            for run in para.runs:
+                                if run.text.strip():
+                                    all_texts.append(run.text)
+            full_text = '\n'.join(all_texts)
+            if full_text.strip():
+                _, total_count = sanitize_content(full_text, types, custom_patterns=custom, mode=mode, return_stats=True)
+        except Exception as e:
+            print(f"[DEBUG] sanitize_content stats for pptx failed: {e}")
+
+        # 逐 run 脱敏
         for slide in prs.slides:
             for shape in slide.shapes:
                 if not hasattr(shape, "text_frame"):
@@ -981,8 +1014,6 @@ class SanitizeTab(QWidget):
                             )
                             if sanitized != orig_text:
                                 run.text = sanitized
-                                import re
-                                total_count += len(re.findall(r'__MASK_\d+__', sanitized))
         return total_count, 0
 
     def _update_preview_from_native(self):
@@ -1054,51 +1085,46 @@ class SanitizeTab(QWidget):
         mode = 'mask' if self.radio_mask.isChecked() else 'tags'
 
         try:
-            # 脱敏前检测统计
-            content_for_count = self.original_content
+            # 脱敏前检测，获取每项的匹配文本
             from safe_shrink_gui import detect_sensitive
-            before = detect_sensitive(content_for_count, types, custom_patterns=custom)
+            before = detect_sensitive(self.original_content or '', types, custom_patterns=custom)
             found_count = len(before)
+
+            # 按 (type, match) 统计原文中各项出现次数
+            from collections import Counter
+            before_counts = Counter((d['type'], d['match']) for d in before)
 
             # 原地脱敏
             if self._native_doc is not None:
                 ext = self._native_docx_ext
-                total_count = 0
-
                 if ext == '.docx':
-                    total_count, _ = self._sanitize_native_docx(self._native_doc, types, custom, mode)
+                    self._sanitize_native_docx(self._native_doc, types, custom, mode)
                     self._update_preview_from_native()
-
                 elif ext in ('.xlsx', '.xls'):
-                    total_count, _ = self._sanitize_native_xlsx(self._native_doc, types, custom, mode)
+                    self._sanitize_native_xlsx(self._native_doc, types, custom, mode)
                     self._update_preview_from_native()
-
                 elif ext == '.pptx':
-                    total_count, _ = self._sanitize_native_pptx(self._native_doc, types, custom, mode)
+                    self._sanitize_native_pptx(self._native_doc, types, custom, mode)
                     self._update_preview_from_native()
-
                 self.processed_content = self.text_edit.toPlainText()
-
-
             else:
-                # 纯文本文件:直接用 safe_shrink_gui 脱敏
                 content = self.text_edit.toPlainText()
-                sanitized_text, sanitized_count = self._sanitize_text(content, types, custom, mode)
-                
+                sanitized_text, _ = self._sanitize_text(content, types, custom, mode)
                 if _DEBUG:
                     if not isinstance(sanitized_text, str):
                         raise TypeError(f"_sanitize_text 返回值类型错误: 期望 str，实际 {type(sanitized_text).__name__}")
-                    if not isinstance(sanitized_count, int):
-                        raise TypeError(f"_sanitize_text 返回值类型错误: 期望 int，实际 {type(sanitized_count).__name__}")
-                
                 self.processed_content = sanitized_text
                 self.text_edit.setPlainText(sanitized_text)
 
-            # 脱敏后检测,对比差值
-            after_content = self.text_edit.toPlainText()
-            after_items = detect_sensitive(after_content, types, custom_patterns=custom)
-            sanitized_count = found_count - len(after_items)
-            total_count = sanitized_count
+            # 逐项验证：检查每个检测项的原文本是否还存在于脱敏后的文本中
+            after_text = self.processed_content or self.text_edit.toPlainText()
+            after_counts = Counter()
+            for (tp, match_text), cnt in before_counts.items():
+                remaining = after_text.count(match_text)
+                removed = cnt - remaining
+                if removed > 0:
+                    after_counts[(tp, match_text)] = removed
+            sanitized_count = sum(after_counts.values())
 
             self.btn_save.setEnabled(True)
             self.btn_undo.setEnabled(True)

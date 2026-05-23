@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import sys as _sys
 
@@ -239,8 +239,9 @@ def read_csv(filepath):
 def read_docx(filepath):
     """读取Word .docx文件 - 使用markitdown"""
     import markitdown
-    mr = markitdown.convert(filepath)
-    return mr.text_content
+    mr = markitdown.MarkItDown()
+    result = mr.convert(filepath)
+    return result.text_content
 
 def read_xlsx(filepath, sheet_index=0):
 
@@ -670,7 +671,7 @@ def slim_native_xlsx(filepath, compression_rate=0.3, remove_ai=False):
                 if remove_ai and cell.comment:
                     cell.comment = None
     wb.save(filepath)
-    return {'result': '[xlsx done]', 'stats': {'chars_removed': total}}
+    return {'success': True, 'stats': {'chars_removed': total}}
 
 def slim_native_pptx(filepath, compression_rate=0.3, remove_ai=False):
     import pptx
@@ -697,7 +698,7 @@ def slim_native_pptx(filepath, compression_rate=0.3, remove_ai=False):
         except:
             pass
     prs.save(filepath)
-    return {'result': '[pptx done]', 'stats': {'chars_removed': total}}
+    return {'success': True, 'stats': {'chars_removed': total}}
 
 def write_pdf_pdfplumber(filepath, content):
 
@@ -1996,11 +1997,13 @@ class DocSanitizer:
 
         if '投标/成交价' in items:
 
-            # 带货币符号的金额
+            price_count = 0
 
-            found_sym = re.findall(r'[¥￥$€£]\s*[\d,]+(?:\.\d+)?', result)
+            # 1. 带货币符号的金额
 
-            stats['投标/成交价'] = len(found_sym)
+            found_sym = re.findall(r'[¥￥$]\s*[\d,]+(?:\.\d+)?', result)
+
+            price_count += len(found_sym)
 
             for m in found_sym:
 
@@ -2010,9 +2013,11 @@ class DocSanitizer:
 
                 result = result.replace(m, prefix + '*' * min(len(digits), 8), 1)
 
-            # USD格式
+            # 2. USD格式
 
             found_usd = re.findall(r'USD\s*[\d,]+(?:\.\d+)?', result)
+
+            price_count += len(found_usd)
 
             for m in found_usd:
 
@@ -2020,9 +2025,11 @@ class DocSanitizer:
 
                 result = result.replace(m, 'USD ' + '*' * min(len(digits), 6), 1)
 
-            # 纯数字+单位
+            # 3. 纯数字+单位
 
             found_unit = re.findall(r'[\d,]+(?:\.\d+)?\s*(?:万|亿|美元|欧元|英镑|元)', result)
+
+            price_count += len(found_unit)
 
             for m in found_unit:
 
@@ -2032,19 +2039,47 @@ class DocSanitizer:
 
                 result = result.replace(m, '*' * min(len(digits), 8) + unit, 1)
 
-            # 人民币中文大写金额
+            # 4. 人民币中文大写金额
 
-            found_cn = re.findall(r'人民币[零壹贰叁肆伍陆柒捌玖拾佰仟萬万〇\d整兆亿万]+元整?', result)
+            found_cn = re.findall(r'人民币[零壹贰叁肆伍陆柒捌玖拾佰仟萬万〇\d\u6574\u5146\u4ebf\u4e07]+(?:元\u6574|元)?', result)
+
+            price_count += len(found_cn)
 
             for m in found_cn:
 
                 result = result.replace(m, '人民币*元整', 1)
 
-            if not found_sym and not found_usd and not found_unit and not found_cn:
+            # 5. 上下文关键词附近的数字
 
-                stats['投标/成交价'] = 0
+            price_kw = r'(?:价格|报价|投标|成交|中标|预算|金额|总价|单价|限价|底价|费率|折扣|优惠|费用|成本|售价|买价|卖价|估值|挂牌|起拍|报价单|价格表|清单|项目价|合同价|总报价|参考价)'
 
+            ctx_pattern = re.compile(price_kw + r'[^\d]{0,8}[\d,]+(?:\.\d+)?')
 
+            found_ctx = list(ctx_pattern.finditer(result))
+
+            # 从后往前替换避免位移
+
+            replaced_nums = set()
+
+            for cm in reversed(found_ctx):
+
+                num_match = re.search(r'[\d,]+(?:\.\d+)?', cm.group())
+
+                if num_match:
+
+                    num_str = num_match.group()
+
+                    digits = re.sub(r'[^\d]', '', num_str)
+
+                    if len(digits) >= 2 and num_str not in replaced_nums:
+
+                        result = result[:cm.start() + num_match.start()] + '*' * min(len(digits), 8) + result[cm.start() + num_match.end():]
+
+                        replaced_nums.add(num_str)
+
+            price_count += len(replaced_nums)
+
+            stats['投标/成交价'] = price_count
 
         if '合同编号' in items:
 

@@ -62,6 +62,8 @@ a = Analysis(
         'pypdf',
         'PIL',
         'markitdown',
+        'mammoth',
+        'cobble',
         'xlrd',
         'magika',
         'onnxruntime',

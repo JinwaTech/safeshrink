@@ -280,8 +280,8 @@ class SlimTab(QWidget):
 
         # 处理模式（图片模式专用）
         self.img_format_combo = QComboBox()
-        self.img_format_combo.addItems(["图片压缩", "扫描为SSD"])
-        self.img_format_combo.setToolTip("图片压缩：压缩图片文件大小\n扫描为SSD：自动OCR识别，输出.ssd文件")
+        self.img_format_combo.addItems(["图片压缩", "识别为SSD"])
+        self.img_format_combo.setToolTip("图片压缩：压缩图片文件大小\n识别为SSD：自动OCR识别，输出.ssd文件")
         self.img_format_combo.currentIndexChanged.connect(self._on_img_format_changed)
         layout.addWidget(self.img_format_combo)
 
@@ -437,6 +437,11 @@ class SlimTab(QWidget):
         self.btn_undo.setEnabled(False)  # 重置撤销按钮
         self.processed_content = None  # 清除处理内容
         self.result_label.setText("")
+        # 清除上次的处理结果路径，避免模式切换时交叉污染
+        if hasattr(self, 'deep_cleaned_path'):
+            delattr(self, 'deep_cleaned_path')
+        if hasattr(self, 'compressed_path'):
+            delattr(self, 'compressed_path')
 
     def browse_file(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -451,6 +456,11 @@ class SlimTab(QWidget):
             self.detect_file_type(file_path)
             self.btn_process.setEnabled(True)
             self.result_label.setText("")
+            # 清除上次的处理结果路径，避免模式切换时交叉污染
+            if hasattr(self, 'deep_cleaned_path'):
+                delattr(self, 'deep_cleaned_path')
+            if hasattr(self, 'compressed_path'):
+                delattr(self, 'compressed_path')
 
     def detect_file_type(self, path):
         """检测文件类型并切换对应界面"""
@@ -572,7 +582,7 @@ class SlimTab(QWidget):
 
     def _on_img_format_changed(self, index):
         """图片模式下的格式切换 — 只更新图片模式的 UI，图片模式独立于 format_combo"""
-        if index == 1:  # 扫描为SSD
+        if index == 1:  # 识别为SSD
             self.img_chk_ocr.setChecked(True)
         else:  # 图片压缩
             self.img_chk_ocr.setChecked(False)
@@ -764,7 +774,7 @@ class SlimTab(QWidget):
         if ext in (".xlsx", ".pptx") and mode == "标准压缩":
             from safe_shrink import slim_native_xlsx, slim_native_pptx
             import shutil
-            temp_output = str(Path(self.current_file).with_suffix(".slim" + ext))
+            temp_output = os.path.join(tempfile.gettempdir(), "SafeShrink_" + Path(self.current_file).stem + ".slim" + ext)
             shutil.copy2(self.current_file, temp_output)
             cr = self.slider.value() / 100.0
             rm_ai = self.chk_remove_ai.isChecked()
@@ -871,7 +881,7 @@ class SlimTab(QWidget):
             QMessageBox.critical(self, "错误", f"压缩失败: {e}")
 
     def process_image_ocr(self):
-        """处理图片文件的 OCR 文字识别（扫描为SSD）"""
+        """处理图片文件的 OCR 文字识别（识别为SSD）"""
         if not self.current_file:
             return
 
@@ -960,29 +970,37 @@ class SlimTab(QWidget):
     def save_text(self):
         """保存文本文件"""
         # 根据当前模式生成默认文件名
-        mode = self.format_combo.currentText()
-        if mode == "转换为SSD":
+        if self.current_mode == 'image':
+            # 图片 OCR 模式：输出 .md
             default_name = str(Path(self.current_file).with_suffix('.md'))
             file_filter = "Markdown文件 (*.md);;所有文件 (*.*)"
         else:
-            orig_ext = Path(self.current_file).suffix.lower() if self.current_file else ''
-            # 标准压缩：保留原格式；激进压缩：输出 .txt
-            if mode == "激进压缩":
-                default_name = str(Path(self.current_file).with_suffix('.slim.txt'))
-                file_filter = "文本文件 (*.txt);;所有文件 (*.*)"
+            mode = self.format_combo.currentText()
+            if mode == "转换为SSD":
+                default_name = str(Path(self.current_file).with_suffix('.md'))
+                file_filter = "Markdown文件 (*.md);;所有文件 (*.*)"
+            elif mode == "深度清理" and Path(self.current_file).suffix.lower() == ".docx":
+                default_name = str(Path(self.current_file).with_suffix('.cleaned.docx'))
+                file_filter = "Word文件 (*.docx);;所有文件 (*.*)"
             else:
-                # 标准压缩：保留原格式（.slim.md, .slim.txt, .slim.json 等）
-                default_name = str(Path(self.current_file).with_suffix('.slim' + orig_ext))
-                # 根据原始扩展名设置文件过滤器
-                ext_filter_map = {
-                    '.md': "Markdown文件 (*.md);;所有文件 (*.*)",
-                    '.txt': "文本文件 (*.txt);;所有文件 (*.*)",
-                    '.json': "JSON文件 (*.json);;所有文件 (*.*)",
-                    '.csv': "CSV文件 (*.csv);;所有文件 (*.*)",
-                    '.html': "HTML文件 (*.html);;所有文件 (*.*)",
-                    '.htm': "HTML文件 (*.htm);;所有文件 (*.*)",
-                }
-                file_filter = ext_filter_map.get(orig_ext, "所有文件 (*.*)")
+                orig_ext = Path(self.current_file).suffix.lower() if self.current_file else ''
+                # 标准压缩：保留原格式；激进压缩：输出 .txt
+                if mode == "激进压缩":
+                    default_name = str(Path(self.current_file).with_suffix('.slim.txt'))
+                    file_filter = "文本文件 (*.txt);;所有文件 (*.*)"
+                else:
+                    # 标准压缩：保留原格式（.slim.md, .slim.txt, .slim.json 等）
+                    default_name = str(Path(self.current_file).with_suffix('.slim' + orig_ext))
+                    # 根据原始扩展名设置文件过滤器
+                    ext_filter_map = {
+                        '.md': "Markdown文件 (*.md);;所有文件 (*.*)",
+                        '.txt': "文本文件 (*.txt);;所有文件 (*.*)",
+                        '.json': "JSON文件 (*.json);;所有文件 (*.*)",
+                        '.csv': "CSV文件 (*.csv);;所有文件 (*.*)",
+                        '.html': "HTML文件 (*.html);;所有文件 (*.*)",
+                        '.htm': "HTML文件 (*.htm);;所有文件 (*.*)",
+                    }
+                    file_filter = ext_filter_map.get(orig_ext, "所有文件 (*.*)")
 
 
         file_path, _ = QFileDialog.getSaveFileName(
@@ -999,7 +1017,7 @@ class SlimTab(QWidget):
                 self.btn_save.setEnabled(False)
 
                 # 记录到历史（文本模式含 token 信息）
-                if hasattr(self, '_orig_tokens') or mode == "转换为SSD":
+                if self.current_mode == 'image' or hasattr(self, '_orig_tokens') or mode == "转换为SSD":
                     try:
                         main_window = self.window()
                         orig_sz = os.path.getsize(self.current_file) if self.current_file and os.path.exists(self.current_file) else 0

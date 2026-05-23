@@ -293,6 +293,7 @@ def process_file(
         original_len = len(text)
 
         # ===== 原有逻辑 =====
+        ssd_converted = False
 
         if action == 'slim':
             orig_ext = Path(file_path).suffix.lower()

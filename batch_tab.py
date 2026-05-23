@@ -56,8 +56,16 @@ class BatchWorker(QThread):
             output_path.parent.mkdir(parents=True, exist_ok=True)
             orig_size = file_path.stat().st_size
             ext = file_path.suffix.lower()
+            try:
+                import os as _os
+                _log_path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'debug_batch.log')
+                with open(_log_path, 'a', encoding='utf-8') as _f:
+                    from datetime import datetime as _dt
+                    _f.write(f"{_dt.now().strftime('%H:%M:%S')} [process_one] {file_path.name} ext={ext} action={self.action} convert_to_ssd={self.options.get('convert_to_ssd')}\n")
+            except Exception:
+                pass
             is_supported = (
-                ext in ('.txt', '.md', '.json', '.csv', '.xml', '.html',
+                ext in ('.txt', '.md', '.json', '.csv', '.xml', '.html', '.htm',
                         '.docx', '.xlsx', '.xls', '.pptx', '.pdf',
                         '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp')
             )
@@ -193,8 +201,8 @@ class BatchWorker(QThread):
                         })
                     return (file_path.name, True, "复制", 0)
 
-            elif ext in ('.docx', '.xlsx', '.xls', '.pptx', '.ppt'):
-                # Office 文件的 SSD 转换（slim 减肥时启用，sanitize 脱敏时保持原格式）
+            elif ext in ('.docx', '.xlsx', '.xls', '.pptx', '.ppt', '.pdf'):
+                # SSD 转换（批量特有逻辑，单文件在 slim_tab 处理）
                 if self.action == 'slim' and self.options.get('convert_to_ssd', False):
                     try:
                         from format_to_ssd import convert_to_ssd_v2, is_ssd_convertible
@@ -211,8 +219,6 @@ class BatchWorker(QThread):
                                 f.write(ssd_content)
                             new_size = out_file.stat().st_size
                             saved_bytes = orig_size - new_size
-                            # Token 统计（方案F：原文纯文字×3 vs SSD的Markdown真实开销）
-                            # 用 MarkItDown 提取纯文字字符数（比文件字节大小准确得多）
                             orig_char_count = 0
                             try:
                                 from format_to_ssd import get_markitdown_instance
@@ -224,7 +230,7 @@ class BatchWorker(QThread):
                             except Exception:
                                 pass
                             if orig_char_count == 0:
-                                orig_char_count = orig_size  # fallback: 文件大小
+                                orig_char_count = orig_size
                             orig_tok = orig_char_count * 3
                             from safe_shrink import estimate_tokens
                             new_tok = estimate_tokens(ssd_content)["total"]
@@ -244,112 +250,47 @@ class BatchWorker(QThread):
                     except Exception as e:
                         import traceback
                         traceback.print_exc()
-                        print(f"[DEBUG batch_tab] Office SSD 转换失败: {e}")
+                        print(f"[DEBUG batch_tab] SSD 转换失败: {e}")
 
-                # 脱敏或普通压缩（不转换 SSD）
+                # 统一走 process_file_gui（与单文件相同的处理路径）
                 opts = dict(self.options)
                 opts['output_path'] = str(output_path)
                 result = process_file_gui(str(file_path), self.action, opts)
                 if result.get('success'):
+                    tag = '_脱敏' if self.action == 'sanitize' else '_减肥'
+                    out_file = None
                     if result.get('content') and not result.get('direct_write'):
-                        out_file = output_path.with_stem(output_path.stem + ('_脱敏' if self.action == 'sanitize' else '_处理结果')).with_suffix(output_path.suffix)
+                        out_file = output_path.with_stem(output_path.stem + tag).with_suffix(output_path.suffix)
                         with open(str(out_file), 'w', encoding='utf-8') as f:
                             f.write(result['content'])
                         new_size = out_file.stat().st_size
-                    else:
-                        new_size = output_path.stat().st_size
-                    saved_bytes = orig_size - new_size
-                    with self._lock:
-                        self._processed_records.append({
-                            'original': file_path.name,
-                            'output': out_file.name if result.get('content') else file_path.name,
-                            'type': self.action,
-                            'status': 'success'
-                        })
-                    return (file_path.name, True, "完成", saved_bytes)
-                else:
-                    shutil.copy2(file_path, output_path)
-                    with self._lock:
-                        self._processed_records.append({
-                            'original': file_path.name,
-                            'output': file_path.name,
-                            'type': 'copy',
-                            'status': 'success'
-                        })
-                    return (file_path.name, True, "复制", 0)
-
-            elif ext == '.pdf':
-                # 检查是否需要 SSD 转换
-                if self.action == 'slim' and self.options.get('convert_to_ssd', False):
-                    try:
-                        from format_to_ssd import convert_to_ssd_v2, is_ssd_convertible
-                        print(f"[DEBUG batch_tab] PDF SSD 转换已启用")
-                        if is_ssd_convertible(str(file_path)):
-                            ssd_content = convert_to_ssd_v2(
-                                str(file_path),
-                                embed_images=bool(self.options.get('embed_images', False)),
-                                ocr_images=bool(self.options.get('ocr_images', False)),
-                                ocr_pdf=bool(self.options.get('ocr_pdf', False)),
-                                optimize=True
-                            )
-                            out_file = output_path.with_stem(output_path.stem + '_SSD').with_suffix('.md')
-                            with open(str(out_file), 'w', encoding='utf-8') as f:
-                                f.write(ssd_content)
-                            new_size = out_file.stat().st_size
-                            saved_bytes = orig_size - new_size
-                            # Token 统计（方案F：原文纯文字×3 vs SSD的Markdown真实开销）
-                            orig_char_count = 0
-                            try:
-                                from format_to_ssd import get_markitdown_instance
-                                md = get_markitdown_instance()
-                                if md:
-                                    md_result = md.convert(str(file_path))
-                                    raw_text = md_result.text_content if hasattr(md_result, 'text_content') else str(md_result)
-                                    orig_char_count = len(raw_text)
-                            except Exception:
-                                pass
-                            if orig_char_count == 0:
-                                orig_char_count = orig_size  # fallback
-                            orig_tok = orig_char_count * 3
-                            from safe_shrink import estimate_tokens
-                            new_tok = estimate_tokens(ssd_content)["total"]
-                            with self._lock:
-                                self.total_orig_tokens += orig_tok
-                                self.total_new_tokens += new_tok
-                            with self._lock:
-                                self._processed_records.append({
-                                    'original': file_path.name,
-                                    'output': out_file.name,
-                                    'type': 'ssd',
-                                    'status': 'success',
-                                    'original_tokens': orig_tok,
-                                    'output_tokens': new_tok,
-                                })
-                            return (file_path.name, True, "SSD", saved_bytes)
-                    except Exception as e:
-                        import traceback
-                        traceback.print_exc()
-                        print(f"[DEBUG batch_tab] PDF SSD 转换失败: {e}")
-
-                # 脱敏或普通压缩
-                opts = dict(self.options)
-                opts['output_path'] = str(output_path)
-                result = process_file_gui(str(file_path), self.action, opts)
-                if result.get('success'):
-                    # 写入结果内容
-                    if result.get('content') and not result.get('direct_write'):
-                        # PDF 脱敏后无法保持原格式，改为 .txt
-                        out_file = output_path.with_stem(output_path.stem + '_脱敏').with_suffix('.txt')
-                        with open(str(out_file), 'w', encoding='utf-8') as f:
-                            f.write(result['content'])
+                    elif result.get('direct_write'):
+                        out_file = output_path.with_stem(output_path.stem + tag)
+                        src = Path(result.get('output_path', str(file_path)))
+                        if src != file_path:
+                            shutil.copy2(str(src), str(out_file))
+                        else:
+                            shutil.copy2(str(file_path), str(out_file))
                         new_size = out_file.stat().st_size
                     else:
-                        new_size = output_path.stat().st_size
+                        new_size = orig_size
                     saved_bytes = orig_size - new_size
+                    # 压缩无效：删除 _减肥 文件，改为复制原文件
+                    if saved_bytes <= 0 and out_file and out_file.exists():
+                        out_file.unlink()
+                        shutil.copy2(str(file_path), str(output_path))
+                        with self._lock:
+                            self._processed_records.append({
+                                'original': file_path.name,
+                                'output': file_path.name,
+                                'type': 'copy',
+                                'status': 'skipped'
+                            })
+                        return (file_path.name, True, "跳过（压缩无效）", 0)
                     with self._lock:
                         self._processed_records.append({
                             'original': file_path.name,
-                            'output': out_file.name if result.get('content') else file_path.name,
+                            'output': out_file.name,
                             'type': self.action,
                             'status': 'success'
                         })
@@ -446,37 +387,42 @@ class BatchWorker(QThread):
                     return (file_path.name, True, "复制", 0)
 
             else:
-                # 使用 batch_processor 来处理，支持 SSD 转换
-                from batch_processor import process_file
-                file_info = {
-                    'path': str(file_path),
-                    'name': file_path.name,
-                    'ext': ext,
-                    'relative_path': str(rel_path),
-                    'size': orig_size
-                }
-                result = process_file(file_info, self.action, self.options, str(output_base))
-
-                if result['status'] == 'success':
-                    new_size = result['output_size']
+                # 文本类文件（json/csv/html/xml/txt/md等）
+                # 统一走 process_file_gui（与单文件相同的处理路径）
+                opts = dict(self.options)
+                opts['output_path'] = str(output_path)
+                result = process_file_gui(str(file_path), self.action, opts)
+                if result.get('success'):
+                    tag = '_脱敏' if self.action == 'sanitize' else '_减肥'
+                    out_file = None
+                    if result.get('content') and not result.get('direct_write'):
+                        out_file = output_path.with_stem(output_path.stem + tag)
+                        with open(str(out_file), 'w', encoding='utf-8') as f:
+                            f.write(result['content'])
+                        new_size = out_file.stat().st_size
+                    else:
+                        new_size = orig_size
                     saved_bytes = orig_size - new_size
+                    # 压缩无效：删除 _减肥 文件，改为复制原文件
+                    if saved_bytes <= 0 and out_file and out_file.exists():
+                        out_file.unlink()
+                        shutil.copy2(str(file_path), str(output_path))
+                        with self._lock:
+                            self._processed_records.append({
+                                'original': file_path.name,
+                                'output': file_path.name,
+                                'type': 'copy',
+                                'status': 'skipped'
+                            })
+                        return (file_path.name, True, "跳过（压缩无效）", 0)
                     with self._lock:
                         self._processed_records.append({
                             'original': file_path.name,
-                            'output': result.get('output_name', ''),
-                            'type': result.get('type', self.action),
-                            'status': 'success',
-                            'items_found': result.get('items_found', {})
+                            'output': out_file.name,
+                            'type': self.action,
+                            'status': 'success'
                         })
-                        # 累加 token（仅文本文件）
-                        if result.get('original_tokens'):
-                            self.total_orig_tokens += result['original_tokens']
-                            self.total_new_tokens += result['output_tokens']
-                    if self.action == 'sanitize':
-                        items_found = sum(v for v in result.get('items_found', {}).values() if isinstance(v, int))
-                        return (file_path.name, True, f"脱敏 {items_found}项", 0)
-                    else:
-                        return (file_path.name, True, "完成", saved_bytes)
+                    return (file_path.name, True, "完成", saved_bytes)
                 else:
                     shutil.copy2(file_path, output_path)
                     with self._lock:
@@ -1537,7 +1483,16 @@ class BatchTab(QWidget):
             options['sanitize_items'] = sanitize_items
             print(f"[DEBUG batch_tab] action=sanitize, sanitize_items={list(sanitize_items.keys()) if sanitize_items else 'EMPTY'}")
 
-        print(f"[DEBUG batch_tab] convert_to_ssd={options.get('convert_to_ssd')}, mode_combo={self.mode_combo.currentText()}")
+        _dbg = f"[DEBUG batch_tab] convert_to_ssd={options.get('convert_to_ssd')}, mode_combo={self.mode_combo.currentText()}, deep_clean={options.get('deep_clean')}"
+        print(_dbg)
+        try:
+            import os as _os
+            _log_path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'debug_batch.log')
+            with open(_log_path, 'a', encoding='utf-8') as _f:
+                from datetime import datetime as _dt
+                _f.write(f"{_dt.now().strftime('%H:%M:%S')} {_dbg}\n")
+        except Exception:
+            pass
 
         # ========== 处理前状态检测（主线程弹窗）==========
         try:
