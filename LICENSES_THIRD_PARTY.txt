@@ -16,26 +16,9 @@ SafeShrink 使用了以下开源软件组件，特此声明并感谢这些项目
 
 ---
 
-OCR 引擎
---------
-Tesseract OCR
-- 许可证: Apache License 2.0
-- 版权所有: Google LLC (最初由 Hewlett-Packard 开发)
-- 用途: 光学字符识别（图片转文字）
-- 说明: SafeShrink 通过 subprocess 调用 Tesseract CLI，属于独立程序调用
-- 项目地址: https://github.com/tesseract-ocr/tesseract
-- 训练数据地址: https://github.com/tesseract-ocr/tessdata
-
-UB-Mannheim Windows 构建
-- 许可证: Apache License 2.0（基于官方 Tesseract 源码）
-- 用途: Windows 平台预编译包
-- 项目地址: https://github.com/UB-Mannheim/tesseract
-
----
-
 GUI 框架
 --------
-PySide6 6.11.0
+PySide6 6.11.1
 - 许可证: GNU Lesser General Public License v3 (LGPL-3.0)
 - 版权所有: Qt Company
 - 用途: 图形用户界面
@@ -46,25 +29,31 @@ PySide6 6.11.0
 
 PDF 处理
 --------
-pypdf 6.9.2
-- 许可证: BSD 3-Clause License
-- 版权所有: Mathieu Fenniak
-- 用途: PDF 读取和元数据清理
-
-pikepdf 10.5.1
-- 许可证: Mozilla Public License 2.0 (MPL-2.0)
-- 版权所有: James R. Barlow
-- 用途: PDF 底层操作
+PyMuPDF (fitz) 1.27.2.3
+- 许可证: GNU Affero General Public License v3 (AGPL-3.0) 或 Artifex 商业授权（双许可）
+- 版权所有: Artifex Software Inc.
+- 用途: PDF 扫描件 OCR 渲染、文本层检测
+- 说明: 【⚠️ 许可风险】AGPL-3.0 要求网络服务也开源。SafeShrink 为纯桌面应用，不涉及网络服务分发，不触发 AGPL 的"网络使用"条款。PyMuPDF 仅作为可选辅助功能使用（PDF 页数检测、扫描件文本层检测、逐页 OCR 渲染），非核心依赖。用户可选择仅使用 pdfplumber/pypdf 处理 PDF。
+- 项目地址: https://github.com/pymupdf/PyMuPDF
 
 pdfplumber 0.11.9
 - 许可证: MIT License
 - 版权所有: Jeremy Singer-Vine
-- 用途: PDF 表格提取
+- 用途: PDF 文本提取、表格提取
+- 依赖: pypdfium2（BSD-3-Clause/Apache-2.0）— PDFium 渲染引擎
+- 项目地址: https://github.com/jsvine/pdfplumber
+
+pypdf 6.12.1
+- 许可证: BSD 3-Clause License
+- 版权所有: Mathieu Fenniak
+- 用途: PDF 读取、元数据清理
+- 项目地址: https://github.com/py-pdf/pypdf
 
 pdfminer.six 20251230
 - 许可证: MIT License
 - 版权所有: Yusuke Shinyama, pdfminer.six team
-- 用途: PDF 文本提取
+- 用途: PDF 文本提取（备选方案）
+- 项目地址: https://github.com/pdfminer/pdfminer.six
 
 ---
 
@@ -73,63 +62,157 @@ Office 文档处理
 python-docx 1.2.0
 - 许可证: MIT License
 - 版权所有: Mike MacCana
-- 用途: Word 文档处理
+- 用途: Word .docx 文档处理
+- 项目地址: https://github.com/python-docx/python-docx
 
-openpyxl
+openpyxl 3.1.5
 - 许可证: MIT License
 - 版权所有: Eric Gazoni, Charlie Clark
-- 用途: Excel 文档处理
+- 用途: Excel .xlsx 文档处理
+- 项目地址: https://foss.heptapod.net/openpyxl/openpyxl
 
-python-pptx
+python-pptx 1.0.2
 - 许可证: MIT License
 - 版权所有: Steve Canny
-- 用途: PowerPoint 文档处理
+- 用途: PowerPoint .pptx 文档处理
+- 项目地址: https://github.com/scanny/python-pptx
 
-doc2docx 0.2.4
+xlrd 2.0.2
+- 许可证: BSD 3-Clause License
+- 版权所有: Kevin John Schwartz
+- 用途: Excel .xls 旧格式读取
+- 项目地址: https://github.com/python-excel/xlrd
+
+xlsxwriter 3.2.9
+- 许可证: BSD 2-Clause License
+- 版权所有: John McNamara
+- 用途: Excel .xlsx 写入（python-pptx 依赖）
+- 说明: python-pptx 内部依赖 xlsxwriter 用于部分写入场景
+- 项目地址: https://github.com/jmcnamara/XlsxWriter
+
+mammoth 1.11.0
 - 许可证: MIT License
-- 用途: .doc 转 .docx 格式
+- 版权所有: Michael Williamson
+- 用途: .doc 旧格式降级读取
+- 依赖: cobble（MIT）— 辅助工具
+- 项目地址: https://github.com/mwilliamson/python-mammoth
+
+cobble 0.1.4
+- 许可证: MIT License
+- 用途: mammoth 依赖
+- 项目地址: https://github.com/mwilliamson/cobble
 
 ---
 
-Markdown 转换
--------------
-MarkItDown 0.0.2
+文档转 Markdown/SSD
+-------------------
+MarkItDown 0.1.5
 - 许可证: MIT License
 - 版权所有: Microsoft
-- 用途: 文档转 Markdown
+- 用途: 多格式文档（docx/xlsx/pptx/pdf/html/md）转 Markdown
+- 说明: SafeShrink 核心转换引擎，用于 SSD 模式
+- 项目地址: https://github.com/microsoft/markitdown
+- 依赖链: markitdown → magika（Apache-2.0）→ onnxruntime（MIT）→ numpy（BSD-3-Clause）、protobuf（BSD-3-Clause）
+
+magika 0.6.3
+- 许可证: Apache License 2.0
+- 版权所有: Google LLC
+- 用途: 文件类型智能检测（markitdown 依赖）
+- 项目地址: https://github.com/google/magika
+
+onnxruntime 1.20.1
+- 许可证: MIT License
+- 版权所有: Microsoft
+- 用途: 机器学习推理引擎（magika 模型运行）
+- 项目地址: https://github.com/microsoft/onnxruntime
 
 ---
 
 图像处理
 --------
-Pillow 12.1.1
-- 许可证: HPND (Historical Permission Notice and Disclaimer)
+Pillow 12.2.0
+- 许可证: Historical Permission Notice and Disclaimer (HPND)
 - 版权所有: Jeffrey A. Clark (Alex)
-- 用途: 图像处理
+- 用途: 图片压缩、格式转换
+- 项目地址: https://github.com/python-pillow/Pillow
 
 ---
 
 编码检测
 --------
-chardet 4.0.0
-- 许可证: GNU Lesser General Public License v2.1 (LGPL-2.1)
-- 版权所有: Mark Pilgrim
-- 用途: 字符编码检测
-
-charset-normalizer 3.4.1
+charset-normalizer 3.4.7
 - 许可证: MIT License
 - 版权所有: Ahmed TAHRI
-- 用途: 字符编码检测
+- 用途: 字符编码检测（chardet 的替代方案）
+- 项目地址: https://github.com/Ousret/charset-normalizer
+
+---
+
+HTML/XML 处理
+-------------
+beautifulsoup4 4.14.3
+- 许可证: MIT License
+- 版权所有: Leonard Richardson
+- 用途: HTML 解析
+- 依赖: soupsieve（MIT）— CSS 选择器
+- 项目地址: https://www.crummy.com/software/BeautifulSoup/
+
+soupsieve 2.8.3
+- 许可证: MIT License
+- 用途: beautifulsoup4 CSS 选择器依赖
+
+lxml 6.1.0
+- 许可证: BSD 3-Clause License
+- 版权所有: lxml dev team
+- 用途: HTML/XML 解析
+- 项目地址: https://lxml.de/
+
+defusedxml 0.7.1
+- 许可证: Python Software Foundation License
+- 版权所有: Christian Heimes
+- 用途: 安全 XML 解析（防止 XXE 攻击）
+- 项目地址: https://github.com/tiran/defusedxml
 
 ---
 
 其他工具库
 ----------
-其他使用的开源库包括但不限于：
-- lxml (BSD)
-- requests (Apache-2.0)
-- click (BSD)
-- tqdm (MIT/MPL-2.0)
+requests 2.34.2
+- 许可证: Apache License 2.0
+- 版权所有: Kenneth Reitz
+- 用途: HTTP 请求
+- 依赖: certifi（Mozilla 公共证书包）、charset-normalizer、idna、urllib3
+- 项目地址: https://github.com/psf/requests
+
+click 8.4.0
+- 许可证: BSD 3-Clause License
+- 版权所有: Armin Ronacher
+- 用途: 命令行接口
+- 项目地址: https://github.com/pallets/click
+
+tqdm
+- 许可证: MIT / MPL-2.0
+- 说明: 【已废弃】当前版本未使用
+
+---
+
+构建工具
+--------
+PyInstaller 6.20.0
+- 许可证: GPL-2.0（构建工具，不随软件分发）
+- 用途: Python 打包为 EXE
+- 说明: 仅用于构建阶段，不随 SafeShrink EXE 分发
+- 项目地址: https://github.com/pyinstaller/pyinstaller
+
+Nuitka 4.1
+- 许可证: Apache License 2.0
+- 用途: Python 编译为 C（备选构建方案）
+- 项目地址: https://github.com/Nuitka/Nuitka
+
+Cython 3.2.4
+- 许可证: Apache License 2.0
+- 用途: Python C 扩展编译
+- 项目地址: https://cython.org/
 
 ---
 
@@ -137,11 +220,41 @@ charset-normalizer 3.4.1
 --------------
 各许可证全文可通过以下链接获取：
 - Apache License 2.0: https://www.apache.org/licenses/LICENSE-2.0
+- AGPL-3.0: https://www.gnu.org/licenses/agpl-3.0.txt
 - LGPL-3.0: https://www.gnu.org/licenses/lgpl-3.0.txt
-- BSD-3-Clause: https://opensource.org/licenses/BSD-3-Clause
+- BSD 3-Clause: https://opensource.org/licenses/BSD-3-Clause
+- BSD 2-Clause: https://opensource.org/licenses/BSD-2-Clause
 - MIT: https://opensource.org/licenses/MIT
 - MPL-2.0: https://www.mozilla.org/MPL/2.0/
 - HPND: https://opensource.org/licenses/HPND
+- PSF: https://opensource.org/licenses/Python-2.0
+
+---
+
+⚠️ 许可风险说明
+--------------
+
+### PyMuPDF (AGPL-3.0) — 最高风险
+
+**风险点：** AGPL-3.0 要求"通过网络与用户交互"的服务也必须开源。
+
+**SafeShrink 的实际情况：**
+1. **纯桌面应用**：SafeShrink 运行在用户本地，不涉及网络服务、API 接口或云端处理
+2. **非核心依赖**：PyMuPDF 仅用于 PDF 扫描件 OCR 渲染和文本层检测，用户可选择不使用此功能
+3. **未修改源码**：SafeShrink 未修改 PyMuPDF 源码，仅通过 import 调用
+4. **可选功能**：PDF 处理可通过 pdfplumber/pypdf 完成，PyMuPDF 功能可被绕过
+
+**结论：** SafeShrink 设计为纯桌面应用，不涉及网络服务、API 接口或云端处理，不触发 AGPL 的开源义务。PyMuPDF 仅作为可选辅助功能使用（PDF 页数检测、扫描件文本层检测、逐页 OCR 渲染），非核心依赖，用户可选择仅使用 pdfplumber/pypdf 处理 PDF。
+
+**公司决策（2026-05-23）：** SafeShrink 长期定位为桌面应用，不开发 Web 版/云版，与产品初衷不符。PyMuPDF 的 AGPL 风险在可接受范围内。如有未来变更，届时再评估。
+
+### xlsxwriter (BSD-2-Clause) — 低风险
+- BSD 许可宽松，允许商业使用、修改、分发
+- 仅作为 python-pptx 的间接依赖
+
+### PySide6 (LGPL-3.0) — 中风险
+- LGPL 允许动态链接使用，SafeShrink 未修改 PySide6 源码
+- 用户可替换 GUI 框架（如纯 Tkinter）以规避
 
 ---
 
