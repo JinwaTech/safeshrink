@@ -2,7 +2,7 @@
 
 > 一键文档减肥、脱敏、SSD转换，完全离线，保护隐私
 
-**版本：v1.2.0** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 EXE](https://github.com/JinwaTech/safeshrink/releases/latest)
+**版本：v1.1.8** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 EXE](https://github.com/JinwaTech/safeshrink/releases/latest)
 
 ---
 
