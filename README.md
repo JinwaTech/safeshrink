@@ -2,7 +2,7 @@
 
 > 一键文档减肥、脱敏、SSD转换，完全离线，保护隐私
 
-**版本：v1.1.8**  *(2026-05-12)*
+**版本：v1.2.0**  *(2026-05-23)*
 
 | 功能 | 说明 |
 |------|------|
@@ -17,15 +17,6 @@
 ## 更新日志
 
 ### v1.1.8（2026-05-12）
-- **修复**：批量处理双弹窗 — 添加 `_batch_compare_shown` 标志拦截递归调用
-- **修复**：`_processing_lock` finally 块确保所有退出路径解锁
-- **修复**：批量处理卡死 — 移除 `setDaemon` + 新增 `terminate_worker` + closeEvent 任务检测
-- **修复**：进程残留 — 托盘退出调用 cleanup + build 强制终止残留进程
-- **UI 修复**：单文件/批量 SSD 选项中 "扫描为Markdown" → "扫描为SSD"（5处）
-- **构建**：build.py v2 — `auto-discover_hiddenimports()` 自动扫描本地模块（8个），无需手动维护
-- **构建**：spec 文件恢复原始状态，由 build.py 处理 EXE 目录重命名
-
-### v1.1.7（2026-05-10）
 - **新增**：单文件 PDF OCR — `chk_ocr_pdf` 复选框，SSD 模式下显示
 - **新增**：批量 PDF OCR — `batch_processor.py` / `batch_tab.py` 支持 `ocr_pdf` 参数
 - **新增**：`is_scanned_pdf()` 智能检测扫描件，`ocr_pdf_pages()` 逐页 OCR 渲染
