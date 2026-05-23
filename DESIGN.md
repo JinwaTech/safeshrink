@@ -2,14 +2,7 @@
 
 > 项目：密小件 · 文档减肥 / 脱敏 / SSD 转换
 > 维护者：JinwaTech
-> **专有软件许可证（Proprietary License）**
-> © 2026 杭州金蛙信息科技有限公司 版权所有
-> 
-> - 本软件为专有软件，受知识产权保护
-> - 禁止逆向工程、反编译或修改本软件
-> - 禁止分发、转让或出租本软件
-> - 详细信息请参阅 LICENSES_THIRD_PARTY.txt
-> - **注意：Skill 包采用 MIT-0 许可证，软件本体为专有软件**
+> License: MIT-0
 
 ---
 
@@ -138,8 +131,6 @@ Office/PDF → SSD（Markdown）格式转换。支持 OCR（Tesseract）预处�
 | 21 | 批量 SSD 命名泄漏 | `batch_processor.py` 中 `ssd_converted` 变量未初始化，残留上次值 | 在 `action == 'slim'` 前初始化 `ssd_converted = False` |
 | 22 | 脱敏计数不准确 | `detect_sensitive()` 与 `DocSanitizer.sanitize()` 匹配策略不对称 | 逐项验证法：每项检查原文本在脱敏后剩余次数 |
 | 23 | .docx 批量不处理 | `read_docx()` 调用旧 API `markitdown.convert()`，新版需 `MarkItDown().convert()` | 更新 API + 安装 `markitdown[docx]`（mammoth, cobble）|
-| 24 | 批量标准减肥文件无 `_减肥` 后缀 | GBK→UTF-8 编码膨胀导致 `saved_bytes <= 0`，触发删除 `_减肥` 文件并复制原文件（无后缀）；图片走 `compress_image_gui` 绕过后缀逻辑；xlsx/pptx `res.get('result')` 永远为 None（应为 `res.get('success')`） | 文本文件：`compression_rate > 0.5` 改为 `> 0.7` 避免误删括号；图片：输出路径加 `_减肥` 后缀；Office：`res.get('result')` → `res.get('success')`；移除压缩无效时复制原文件逻辑 |
-| 25 | 模式切换状态残留 | `on_format_changed()` 只更新 UI 控件，未清除 `deep_cleaned_path`/`compressed_path`，`save_result()` 命中旧路径直接返回 | 在 `on_format_changed()` 末尾增加 `delattr` 清除 `deep_cleaned_path` 和 `compressed_path` |
 
 ---
 
@@ -157,34 +148,6 @@ Office/PDF → SSD（Markdown）格式转换。支持 OCR（Tesseract）预处�
 ---
 
 ## 六、版本历史
-
-### v1.2.0（2026-05-23）
-
-**从 v1.1.11 到 v1.2.0 完整变更（commit 071eaef → a74ed64 + 工作区修复）：**
-
-#### 新增功能
-- `result_compare_dialog.py`：新增结果对比对话框（文本对比含 Token 估算、图片对比接口）
-- `format_to_ssd.py`：新增 xlrd 模块支持 .xls 旧版 Excel 转 SSD（Markdown 表格输出）
-- `setup_cython.py`：新增 Cython 编译脚本（编译 safe_shrink.py、batch_processor.py、format_to_ssd.py）
-
-#### 核心修复
-- **批量 `_减肥` 后缀缺失**（#24）：GBK→UTF-8 编码膨胀导致 `saved_bytes <= 0` 触发复制原文件无后缀；图片走 `compress_image_gui` 绕过后缀逻辑；xlsx/pptx 返回键判断错误（`result` → `success`）。修复：`compression_rate > 0.7`、图片输出加后缀、Office 返回键修正、移除压缩无效时复制原文件
-- **模式切换状态残留**（#25）：`on_format_changed()` 未清除 `deep_cleaned_path`/`compressed_path`，`save_result()` 命中旧路径。修复：模式切换时 `delattr` 清除状态
-- **EXE markitdown 打包缺失**：`markitdown → magika → onnxruntime` 依赖链不完整，`MARKITDOWN_AVAILABLE=False`。修复：spec 改为 `collect_all('markitdown')` 收集全部依赖
-- **扫描件 PDF 空结果**：markitdown 可用后扫描件返回空字符串而非 None，绕过 `NEEDS_OCR` 检查。修复：`format_to_ssd.py` 增加 PDF 扩展名特殊判断
-- **batch_processor.py 错误分类**：except 块未区分错误类型
-- **脱敏增强**：价格上下文匹配增至 28 个关键词（价格、报价、投标、成交等）
-- **markitdown API 更新**：`markitdown.convert()` → `MarkItDown().convert()`
-
-#### 构建优化
-- `build_safeshrink.py`：新增 `verify_build_env()` 和 `save_build_manifest()` 函数
-- `main_window_v2.spec`：`collect_submodules` → `collect_all`，覆盖 markitdown/magika/onnxruntime 完整依赖链
-- EXE 体积：21.65 MB（onedir 模式，Python 3.13 + PySide6）
-
-#### 其他
-- 图片 OCR 输出改为 `.md`（原 `.slim.md`）
-- 临时文件统一改用 `tempfile.gettempdir()`
-- 清理 Cython 编译产物（11 个 .c 文件）
 
 ### v1.1.11（2026-05-23）
 - 修复：单文件状态残留 — `set_file()`/`browse_file()` 清除 `deep_cleaned_path`/`compressed_path`
