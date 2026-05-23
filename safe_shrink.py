@@ -2567,11 +2567,14 @@ def resolve_output_path(input_path, action, user_output, out_dir, fmt):
 
     if src.suffix.lower() in ['.docx', '.xlsx', '.xls', '.pptx', '.pdf']:
 
-        # 格式文件：提取文本后保存为.ssd
-
+        # 格式文件：根据 fmt 决定输出格式
         stem = src.stem
-
-        out_name = f"{stem}_{action_tag}.ssd"
+        if fmt and fmt in ['ssd', 'txt']:
+            out_name = f"{stem}_{action_tag}.{fmt}"
+        elif fmt == 'original':
+            out_name = f"{stem}_{action_tag}{src.suffix}"
+        else:
+            out_name = f"{stem}_{action_tag}.ssd"
 
     else:
 
@@ -2685,11 +2688,21 @@ def main():
 
     sp.add_argument('-d', '--out-dir', help='输出目录（默认使用 config.json 中的 output_dir）')
 
-    sp.add_argument('-c', '--compression', type=float, default=0.3, help='压缩率 (0.0-1.0)')
+    sp.add_argument('-m', '--mode', choices=['standard', 'aggressive', 'deep-clean', 'ssd'],
+                    default='standard', help='处理模式：standard(标准压缩) | aggressive(激进压缩) | deep-clean(深度清理) | ssd(转换为SSD)')
+
+    sp.add_argument('-c', '--compression', type=float, default=0.3, help='压缩率 (0.0-1.0，仅 standard/aggressive 模式生效)')
 
     sp.add_argument('--ai', action='store_true', help='去除AI写作痕迹')
 
     sp.add_argument('--sheet', type=int, default=0, help='Excel sheet索引')
+
+    # SSD 模式子选项
+    sp.add_argument('--embed-images', action='store_true', help='SSD 模式：将图片转为 Base64 嵌入')
+
+    sp.add_argument('--ocr-images', action='store_true', help='SSD 模式：OCR 识别文档内图片文字')
+
+    sp.add_argument('--ocr-pdf', action='store_true', help='SSD 模式：对 PDF 扫描件进行 OCR（需要 Tesseract）')
 
     sp.add_argument('--json', dest='json_output', action='store_true',
 
@@ -2733,9 +2746,19 @@ def main():
 
     bp.add_argument('-o', '--out-dir', help='输出目录')
 
-    bp.add_argument('-c', '--compression', type=float, default=0.3, help='压缩率')
+    bp.add_argument('-m', '--mode', choices=['standard', 'aggressive', 'deep-clean', 'ssd'],
+                    default='standard', help='处理模式：standard(标准压缩) | aggressive(激进压缩) | deep-clean(深度清理) | ssd(转换为SSD)')
+
+    bp.add_argument('-c', '--compression', type=float, default=0.3, help='压缩率（仅 standard/aggressive 模式生效）')
 
     bp.add_argument('--ai', action='store_true', help='去除AI味')
+
+    # SSD 模式子选项
+    bp.add_argument('--embed-images', action='store_true', help='SSD 模式：将图片转为 Base64 嵌入')
+
+    bp.add_argument('--ocr-images', action='store_true', help='SSD 模式：OCR 识别图片文件文字')
+
+    bp.add_argument('--ocr-pdf', action='store_true', help='SSD 模式：对 PDF 扫描件进行 OCR（需要 Tesseract）')
 
     bp.add_argument('-w', '--workers', type=int, help='并行线程数（默认4）')
 
@@ -2839,7 +2862,31 @@ def main():
 
             options['remove_ai'] = args.ai
 
-            options['output_ext'] = '.ssd'
+            # 模式映射
+            mode_map = {
+                'standard': {'compression': 0.3, 'deep_clean': False, 'convert_to_ssd': False},
+                'aggressive': {'compression': 0.7, 'deep_clean': False, 'convert_to_ssd': False},
+                'deep-clean': {'compression': 0.3, 'deep_clean': True, 'convert_to_ssd': False},
+                'ssd': {'compression': 0.3, 'deep_clean': False, 'convert_to_ssd': True},
+            }
+            mode_opts = mode_map.get(args.mode, mode_map['standard'])
+            options['compression'] = mode_opts['compression']
+            options['deep_clean'] = mode_opts['deep_clean']
+            options['convert_to_ssd'] = mode_opts['convert_to_ssd']
+
+            # SSD 子选项
+            options['embed_images'] = args.embed_images
+            options['ocr_images'] = args.ocr_images
+            options['ocr_images_files'] = args.ocr_images
+            options['ocr_pdf'] = args.ocr_pdf
+
+            # 根据模式调整 output_ext
+            if args.mode == 'ssd':
+                options['output_ext'] = '.ssd'
+            elif args.mode == 'deep-clean':
+                options['output_ext'] = '.txt'
+            else:
+                options['output_ext'] = '.ssd'
 
             action = 'slim'
 
@@ -2965,17 +3012,61 @@ def main():
 
     if args.command == 'slim':
 
-        processor = DocSlimmer()
+        # 根据模式选择处理路径
+        if args.mode == 'ssd':
+            # SSD 模式：调用 convert_to_ssd_v2
+            from format_to_ssd import convert_to_ssd_v2
 
-        result = processor.slim(text, args.compression, args.ai)
+            ssd_result = convert_to_ssd_v2(
+                args.input,
+                optimize=True,
+                embed_images=args.embed_images,
+                ocr_images=args.ocr_images,
+                ocr_pdf=args.ocr_pdf,
+            )
 
-        stats = result['stats']
+            if ssd_result.get('status') == 'success':
+                output_path = ssd_result.get('output_path', '')
+                stats = {
+                    'compression_rate': 0,
+                    'reduced_chars': 0,
+                    'output_path': output_path,
+                }
+                if not json_mode:
+                    print(f"[SSD 转换] 输出: {output_path}")
+                    if ssd_result.get('note'):
+                        print(f"         备注: {ssd_result['note']}")
+            else:
+                error_msg = ssd_result.get('error', '未知错误')
+                print(f"[错误] SSD 转换失败: {error_msg}", file=sys.stderr)
+                sys.exit(1)
 
-        if not json_mode:
+        elif args.mode == 'deep-clean':
+            # 深度清理：高压缩率 + 去除 AI 痕迹
+            processor = DocSlimmer()
+            result = processor.slim(text, 0.7, True)
+            stats = result['stats']
+            if not json_mode:
+                print(f"[深度清理] 压缩率: {stats.get('compression_rate', 0)}%")
+                print(f"           减少字符: {stats.get('reduced_chars', 0)}")
 
-            print(f"[减肥] 压缩率: {stats.get('compression_rate', 0)}%")
+        elif args.mode == 'aggressive':
+            # 激进压缩：高压缩率
+            processor = DocSlimmer()
+            result = processor.slim(text, 0.7, args.ai)
+            stats = result['stats']
+            if not json_mode:
+                print(f"[激进压缩] 压缩率: {stats.get('compression_rate', 0)}%")
+                print(f"           减少字符: {stats.get('reduced_chars', 0)}")
 
-            print(f"       减少字符: {stats.get('reduced_chars', 0)}")
+        else:
+            # standard 模式（默认）
+            processor = DocSlimmer()
+            result = processor.slim(text, args.compression, args.ai)
+            stats = result['stats']
+            if not json_mode:
+                print(f"[标准压缩] 压缩率: {stats.get('compression_rate', 0)}%")
+                print(f"           减少字符: {stats.get('reduced_chars', 0)}")
 
         
 
@@ -3001,6 +3092,13 @@ def main():
 
     # 输出（核心：永远不覆盖源文件）
 
+    # 根据 slim 模式确定输出格式
+    slim_fmt = None
+    if args.command == 'slim' and args.mode == 'ssd':
+        slim_fmt = 'ssd'
+    elif args.command == 'slim' and args.mode == 'deep-clean':
+        slim_fmt = 'txt'
+
     output_path = resolve_output_path(
 
         input_path=input_file or '.',
@@ -3011,7 +3109,7 @@ def main():
 
         out_dir=args.out_dir,
 
-        fmt=args.format if hasattr(args, 'format') else None
+        fmt=slim_fmt or (args.format if hasattr(args, 'format') else None)
 
     )
 
@@ -3051,7 +3149,7 @@ def main():
 
     try:
 
-        fmt = args.format if (hasattr(args, 'format') and args.format) else output_path.suffix.lstrip('.') or 'txt'
+        fmt = slim_fmt or (args.format if (hasattr(args, 'format') and args.format) else output_path.suffix.lstrip('.') or 'txt')
 
         write_file(str(output_path), result['result'], fmt)
 
