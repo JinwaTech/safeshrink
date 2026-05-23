@@ -236,6 +236,6 @@ AI：[调用 SafeShrink batch-slim] → 输出所有 _减肥 文件
 
 1. **标准减肥保留原格式**：Office 文件标准压缩输出仍为 .docx/.xlsx/.pptx，不转文本
 2. **深度清理为预览模式**：输出到临时文件，用户需手动保存
-3. **SSD 需要 markitdown**：PDF 转 SSD 依赖 markitdown 库，EXE 中已打包
+3. **SSD 转换需要额外依赖**：EXE 中已完整打包，无需用户手动安装
 4. **OCR 需要 Tesseract**：扫描件 PDF 转 SSD 需要额外安装 Tesseract OCR
 5. **批量处理静默降级**：批量模式下，不支持的文件类型会静默跳过
