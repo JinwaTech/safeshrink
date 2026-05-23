@@ -3023,8 +3023,6 @@ def main():
 
         elif target_fmt in ('txt', 'md'):
 
-            from safe_shrink import read_file
-
             try:
 
                 text = read_file(input_file, {})
