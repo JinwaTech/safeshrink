@@ -562,6 +562,12 @@ class SlimTab(QWidget):
         # 强制刷新布局
         self.text_options.layout().update()
 
+        # 模式切换时清除旧的处理结果路径，避免 save_result() 误用旧文件
+        if hasattr(self, 'deep_cleaned_path'):
+            delattr(self, 'deep_cleaned_path')
+        if hasattr(self, 'compressed_path'):
+            delattr(self, 'compressed_path')
+
     def on_slider_changed(self, value):
         """滑块变化时更新显示"""
         self.slider_value.setText(f"{value}%")
