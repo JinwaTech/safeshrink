@@ -1514,7 +1514,7 @@ class DocSlimmer:
 
         
 
-        if compression_rate > 0.5:
+        if compression_rate > 0.7:
 
             # 移除某些冗余词汇
 

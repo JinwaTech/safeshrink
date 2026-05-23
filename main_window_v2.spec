@@ -12,6 +12,13 @@ _magika_datas = collect_data_files('magika', include_py_files=True)
 _onnxruntime_mods = collect_submodules('onnxruntime')
 _onnxruntime_datas = collect_data_files('onnxruntime', include_py_files=True)
 _fitz_mods = collect_submodules('fitz')
+# Office 文件处理依赖
+_pptx_mods = collect_submodules('pptx')
+_pptx_datas = collect_data_files('pptx', include_py_files=True)
+_openpyxl_mods = collect_submodules('openpyxl')
+_openpyxl_datas = collect_data_files('openpyxl', include_py_files=True)
+_pypdf_mods = collect_submodules('pypdf')
+_pypdf_datas = collect_data_files('pypdf', include_py_files=True)
 
 a = Analysis(
     ['main_window_v2.py'],
@@ -37,7 +44,10 @@ a = Analysis(
         ('assets/icon14_64x64_dark.png', 'assets'),
         ('.venv313/Lib/site-packages/fitz', 'fitz'),
         ('.venv313/Lib/site-packages/onnxruntime/capi', 'onnxruntime/capi'),
-    ] + _markitdown_datas + _magika_datas + _onnxruntime_datas,
+        ('.venv313/Lib/site-packages/pptx', 'pptx'),
+        ('.venv313/Lib/site-packages/openpyxl', 'openpyxl'),
+        ('.venv313/Lib/site-packages/pypdf', 'pypdf'),
+    ] + _markitdown_datas + _magika_datas + _onnxruntime_datas + _pptx_datas + _openpyxl_datas + _pypdf_datas,
     hiddenimports=[
         'safe_shrink',
         'safe_shrink_gui',
@@ -67,7 +77,25 @@ a = Analysis(
         'xlrd',
         'magika',
         'onnxruntime',
-    ] + _markitdown_mods + _magika_mods + _onnxruntime_mods + _fitz_mods,
+        'pptx',
+        'pptx.dmlc',
+        'pptx.oxml',
+        'pptx.presentation',
+        'pptx.slide',
+        'pptx.shape',
+        'pptx.text',
+        'pptx.table',
+        'pptx.chart',
+        'pptx.media',
+        'pptx.util',
+        'openpyxl',
+        'openpyxl.worksheet',
+        'openpyxl.workbook',
+        'openpyxl.cell',
+        'openpyxl.styles',
+        'openpyxl.utils',
+        'openpyxl.xml',
+    ] + _markitdown_mods + _magika_mods + _onnxruntime_mods + _fitz_mods + _pptx_mods + _openpyxl_mods + _pypdf_mods,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

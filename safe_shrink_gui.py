@@ -401,7 +401,7 @@ def process_file_gui(file_path, action, options=None):
                 res = slim_native_xlsx(temp_output, compression_rate=cr, remove_ai=rm_ai)
             else:
                 res = slim_native_pptx(temp_output, compression_rate=cr, remove_ai=rm_ai)
-            if res.get('result'):
+            if res.get('success'):
                 return {
                     'success': True,
                     'content': None,

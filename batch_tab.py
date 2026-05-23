@@ -56,14 +56,6 @@ class BatchWorker(QThread):
             output_path.parent.mkdir(parents=True, exist_ok=True)
             orig_size = file_path.stat().st_size
             ext = file_path.suffix.lower()
-            try:
-                import os as _os
-                _log_path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'debug_batch.log')
-                with open(_log_path, 'a', encoding='utf-8') as _f:
-                    from datetime import datetime as _dt
-                    _f.write(f"{_dt.now().strftime('%H:%M:%S')} [process_one] {file_path.name} ext={ext} action={self.action} convert_to_ssd={self.options.get('convert_to_ssd')}\n")
-            except Exception:
-                pass
             is_supported = (
                 ext in ('.txt', '.md', '.json', '.csv', '.xml', '.html', '.htm',
                         '.docx', '.xlsx', '.xls', '.pptx', '.pdf',
@@ -275,8 +267,10 @@ class BatchWorker(QThread):
                     else:
                         new_size = orig_size
                     saved_bytes = orig_size - new_size
-                    # 压缩无效：删除 _减肥 文件，改为复制原文件
-                    if saved_bytes <= 0 and out_file and out_file.exists():
+                    # 压缩无效：文本内容文件删除 _减肥 文件，复制原文件；
+                    # direct_write 文件（Office/PDF）保留 _减肥 后缀（已执行处理）
+                    is_direct = result.get('direct_write', False)
+                    if saved_bytes <= 0 and out_file and out_file.exists() and not is_direct:
                         out_file.unlink()
                         shutil.copy2(str(file_path), str(output_path))
                         with self._lock:
@@ -341,30 +335,29 @@ class BatchWorker(QThread):
                 if self.action == 'slim':
                     from safe_shrink_gui import compress_image_gui
                     quality = self.options.get('image_quality', 60)
-                    result = compress_image_gui(str(file_path), str(output_path), quality=quality)
+                    # 压缩结果写入带 _减肥 后缀的路径
+                    slim_path = output_path.with_stem(output_path.stem + '_减肥')
+                    result = compress_image_gui(str(file_path), str(slim_path), quality=quality)
                     if result['success']:
                         saved_bytes = result.get('size_reduced', 0)
                         saved = result.get('saved_percent', 0)
+                        # 无论压缩是否有效，都保留 _减肥 后缀（标记已处理）
+                        # 压缩有效：slim_path 就是最终输出
+                        # 压缩无效：slim_path 大小不变，但仍保留作为处理标识
+                        with self._lock:
+                            self._processed_records.append({
+                                'original': file_path.name,
+                                'output': slim_path.name,
+                                'type': 'slim',
+                                'status': 'success'
+                            })
                         if saved > 0:
-                            with self._lock:
-                                self._processed_records.append({
-                                    'original': file_path.name,
-                                    'output': file_path.name,
-                                    'type': 'slim',
-                                    'status': 'success'
-                                })
                             return (file_path.name, True, f"压缩 {saved}%", saved_bytes)
                         else:
-                            shutil.copy2(file_path, output_path)
-                            with self._lock:
-                                self._processed_records.append({
-                                    'original': file_path.name,
-                                    'output': file_path.name,
-                                    'type': 'copy',
-                                    'status': 'success'
-                                })
-                            return (file_path.name, True, "复制", 0)
+                            return (file_path.name, True, "已处理（压缩无效）", 0)
                     else:
+                        if slim_path.exists():
+                            slim_path.unlink()
                         shutil.copy2(file_path, output_path)
                         with self._lock:
                             self._processed_records.append({
@@ -1481,18 +1474,6 @@ class BatchTab(QWidget):
         if action == 'sanitize':
             sanitize_items = self.get_sanitize_types()
             options['sanitize_items'] = sanitize_items
-            print(f"[DEBUG batch_tab] action=sanitize, sanitize_items={list(sanitize_items.keys()) if sanitize_items else 'EMPTY'}")
-
-        _dbg = f"[DEBUG batch_tab] convert_to_ssd={options.get('convert_to_ssd')}, mode_combo={self.mode_combo.currentText()}, deep_clean={options.get('deep_clean')}"
-        print(_dbg)
-        try:
-            import os as _os
-            _log_path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'debug_batch.log')
-            with open(_log_path, 'a', encoding='utf-8') as _f:
-                from datetime import datetime as _dt
-                _f.write(f"{_dt.now().strftime('%H:%M:%S')} {_dbg}\n")
-        except Exception:
-            pass
 
         # ========== 处理前状态检测（主线程弹窗）==========
         try:
