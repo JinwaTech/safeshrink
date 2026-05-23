@@ -160,7 +160,7 @@ except ImportError:
 
 def check_dep(name, pkg_name=None):
 
-    """检查依赖，打印警告"""
+    """检查依赖,打印警告"""
 
     if DEPS.get(name):
 
@@ -168,7 +168,7 @@ def check_dep(name, pkg_name=None):
 
     pkg = pkg_name or name
 
-    print(f"[警告] 缺少 {pkg}，相关功能不可用。安装: pip install {pkg}", file=sys.stderr)
+    print(f"[警告] 缺少 {pkg},相关功能不可用。安装: pip install {pkg}", file=sys.stderr)
 
     return False
 
@@ -204,7 +204,7 @@ def read_txt(filepath):
 
 def read_json(filepath):
 
-    """读取JSON文件，返回原始文本"""
+    """读取JSON文件,返回原始文本"""
 
     with open(filepath, 'r', encoding='utf-8') as f:
 
@@ -290,7 +290,7 @@ def read_xlsx(filepath, sheet_index=0):
 
 def read_xls(filepath, sheet_index=0):
 
-    """读取Excel .xls文件（老格式）"""
+    """读取Excel .xls文件(老格式)"""
 
     if not check_dep('xlrd', 'xlrd'):
 
@@ -324,7 +324,7 @@ def read_xls(filepath, sheet_index=0):
 
                 pass
 
-        raise ImportError("xlrd 未安装，无法读取.xls文件")
+        raise ImportError("xlrd 未安装,无法读取.xls文件")
 
     import xlrd
 
@@ -448,11 +448,11 @@ def read_pdf_pypdf(filepath):
 
 def read_pdf(filepath):
 
-    """读取PDF，尝试多种方式"""
+    """读取PDF,尝试多种方式"""
 
     errors = []
 
-    # 优先 pdfplumber（表格支持好）
+    # 优先 pdfplumber(表格支持好)
 
     if DEPS.get('pdfplumber'):
 
@@ -702,7 +702,7 @@ def slim_native_pptx(filepath, compression_rate=0.3, remove_ai=False):
 
 def write_pdf_pdfplumber(filepath, content):
 
-    """用pdfplumber写入PDF（实际上是文本到PDF）"""
+    """用pdfplumber写入PDF(实际上是文本到PDF)"""
 
     try:
 
@@ -720,7 +720,7 @@ def write_pdf_pdfplumber(filepath, content):
 
     except ImportError:
 
-        # 没有reportlab，用备选方案：保存为同名txt
+        # 没有reportlab,用备选方案:保存为同名txt
 
         alt = str(Path(filepath).with_suffix('.txt'))
 
@@ -728,15 +728,15 @@ def write_pdf_pdfplumber(filepath, content):
 
             f.write(content)
 
-        raise RuntimeError(f"PDF写入需要reportlab，已保存为: {alt}")
+        raise RuntimeError(f"PDF写入需要reportlab,已保存为: {alt}")
 
     import pdfplumber
 
     pdf = pdfplumber.open(filepath)
 
-    # 实际pdfplumber不支持创建PDF，这里只是保留接口
+    # 实际pdfplumber不支持创建PDF,这里只是保留接口
 
-    raise RuntimeError("pdfplumber不支持创建PDF，请使用文本输出")
+    raise RuntimeError("pdfplumber不支持创建PDF,请使用文本输出")
 
 
 
@@ -798,7 +798,7 @@ def read_file(filepath, options=None):
 
     ext = Path(filepath).suffix.lower()
 
-    
+
 
     if ext == '.xlsx' and 'sheet' in opts:
 
@@ -808,13 +808,13 @@ def read_file(filepath, options=None):
 
         return read_xls(filepath, sheet_index=opts['sheet'])
 
-    
+
 
     if ext not in READERS:
 
         raise ValueError(f"不支持的格式: {ext}。支持: {', '.join(READERS.keys())}")
 
-    
+
 
     return READERS[ext](filepath)
 
@@ -828,7 +828,7 @@ def write_file(filepath, content, fmt=None):
 
     ext = Path(filepath).suffix.lower() if fmt is None else f'.{fmt}'
 
-    
+
 
     writers = {
 
@@ -850,7 +850,7 @@ def write_file(filepath, content, fmt=None):
 
     }
 
-    
+
 
     if ext not in writers:
 
@@ -860,11 +860,11 @@ def write_file(filepath, content, fmt=None):
 
         alt_path = str(Path(filepath).with_suffix('.txt'))
 
-        print(f"[注意] 此格式不支持直接写入，已保存为: {alt_path}", file=sys.stderr)
+        print(f"[注意] 此格式不支持直接写入,已保存为: {alt_path}", file=sys.stderr)
 
         filepath = alt_path
 
-    
+
 
     writers[ext](filepath, content)
 
@@ -884,15 +884,15 @@ def estimate_tokens(text):
 
     """
 
-    估算文本的 Token 消耗（基于 GPT-4o / Claude 等主流大模型）
+    估算文本的 Token 消耗(基于 GPT-4o / Claude 等主流大模型)
 
-    
+
 
     参数:
 
-        text (str): 输入文本（纯文本或 Markdown）
+        text (str): 输入文本(纯文本或 Markdown)
 
-    
+
 
     返回:
 
@@ -916,7 +916,7 @@ def estimate_tokens(text):
 
             'links': int,       # 链接 token
 
-            'images': int,      # 图片 token（仅 Markdown 图片标记）
+            'images': int,      # 图片 token(仅 Markdown 图片标记)
 
             'lists': int,       # 列表 token
 
@@ -948,15 +948,15 @@ def estimate_tokens(text):
 
         return _empty_token_result()
 
-    
+
 
     stats = _empty_token_result()
 
-    
 
-    # --- 先统计 Markdown 结构元素（这些不参与基础字符统计）---
 
-    
+    # --- 先统计 Markdown 结构元素(这些不参与基础字符统计)---
+
+
 
     # 1. 图片: Base64 data URI 精确计算 + 非 base64 图片按 170 估算
     _b64_pat = r'data:image/[a-zA-Z]+;base64,[A-Za-z0-9+/=]+'
@@ -966,17 +966,17 @@ def estimate_tokens(text):
         stats['images'] = _b64_chars // 4
     else:
         stats['images'] = 0
-    # 非 base64 图片（URL 引用），按 170 token 估算
+    # 非 base64 图片(URL 引用),按 170 token 估算
     for m in _re.finditer(r'!\[[^\]]*\]\((?!data:image)[^)]+\)', text):
         stats['images'] += 170
 
-# 2. 超链接: [text](url) — 非图片
+# 2. 超链接: [text](url) - 非图片
 
     link_matches = _re.findall(r'(?<!!)\[([^\]]+)\]\(([^)]+)\)', text)
 
     stats['links'] = len(link_matches) * 15
 
-    
+
 
     # 3. 代码块: ```...```
 
@@ -994,7 +994,7 @@ def estimate_tokens(text):
 
     stats['code_blocks'] += len(inline_codes) * 2
 
-    
+
 
     # 4. 表格: 含 | 的连续行
 
@@ -1012,7 +1012,7 @@ def estimate_tokens(text):
 
                 stats['tables'] += 5
 
-    
+
 
     # 5. 标题: # ~ ######
 
@@ -1020,15 +1020,15 @@ def estimate_tokens(text):
 
     stats['headings'] = len(headings) * 3
 
-    
 
-    # 6. 列表项: - * + 开头，或 1. 2. 编号
+
+    # 6. 列表项: - * + 开头,或 1. 2. 编号
 
     list_items = _re.findall(r'^(\s*)([-*+]|\d+\.)\s+', text, _re.MULTILINE)
 
     stats['lists'] = len(list_items) * 4
 
-    
+
 
     # 7. 引用块: > 开头
 
@@ -1036,7 +1036,7 @@ def estimate_tokens(text):
 
     stats['quotes'] = len(quotes) * 5
 
-    
+
 
     # 8. 水平线: --- 或 *** 或 ___
 
@@ -1044,7 +1044,7 @@ def estimate_tokens(text):
 
     stats['hr'] = len(hrs) * 3
 
-    
+
 
     # 9. 加粗: **text** 或 __text__
 
@@ -1052,15 +1052,15 @@ def estimate_tokens(text):
 
     stats['emphasis'] += len(bolds) * 3
 
-    
 
-    # 10. 斜体: *text* 或 _text_（排除已匹配的加粗）
+
+    # 10. 斜体: *text* 或 _text_(排除已匹配的加粗)
 
     italics = _re.findall(r'(?<!\*)\*(?!\*)([^*]+?)(?<!\*)\*(?!\*)|(?<!_)_(?!_)([^_]+?)(?<!_)_(?!_)', text)
 
     stats['emphasis'] += len(italics) * 2
 
-    
+
 
     # 11. 删除线: ~~text~~
 
@@ -1068,7 +1068,7 @@ def estimate_tokens(text):
 
     stats['strikethrough'] = len(strikethroughs) * 3
 
-    
+
 
     # 12. 脚注: [^n]
 
@@ -1076,9 +1076,9 @@ def estimate_tokens(text):
 
     stats['footnotes'] = len(footnotes) * 10
 
-    
 
-    # 13. 数学公式（块级）: $$...$$
+
+    # 13. 数学公式(块级): $$...$$
 
     math_blocks = _re.findall(r'\$\$(.*?)\$\$', text, _re.DOTALL)
 
@@ -1086,15 +1086,15 @@ def estimate_tokens(text):
 
         stats['math'] += 20 + block.count('\n') * 5
 
-    
 
-    # 14. 数学公式（行内）: $...$（排除已匹配的块级）
+
+    # 14. 数学公式(行内): $...$(排除已匹配的块级)
 
     inline_math = _re.findall(r'(?<!\$)\$(?!\$)([^$]+?)(?<!\$)\$(?!\$)', text)
 
     stats['math'] += len(inline_math) * 10
 
-    
+
 
     # 15. HTML 标签
 
@@ -1102,7 +1102,7 @@ def estimate_tokens(text):
 
     stats['html'] = len(html_tags) * 5
 
-    
+
 
     # 16. Checkbox: - [ ] 或 - [x]
 
@@ -1110,7 +1110,7 @@ def estimate_tokens(text):
 
     stats['checkboxes'] = len(checkboxes) * 5
 
-    
+
 
     # 17. 目录标记: [[toc]] 或 [TOC]
 
@@ -1118,9 +1118,9 @@ def estimate_tokens(text):
 
     stats['toc'] = len(tocs) * 8
 
-    
 
-    # --- 从原文本中移除 Markdown 标记，得到纯文本用于基础字符统计 ---
+
+    # --- 从原文本中移除 Markdown 标记,得到纯文本用于基础字符统计 ---
 
     clean = text
 
@@ -1128,11 +1128,11 @@ def estimate_tokens(text):
 
     clean = _re.sub(r'```[^\n]*\n.*?```', '', clean, flags=_re.DOTALL)
 
-    # 移除图片标记（保留 alt 文本作为纯文本，已在图片 token 中计费）
+    # 移除图片标记(保留 alt 文本作为纯文本,已在图片 token 中计费)
 
     clean = _re.sub(r'!\[([^\]]*)\]\([^)]+\)', r'\1', clean)
 
-    # 移除链接（保留文本）
+    # 移除链接(保留文本)
 
     clean = _re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', clean)
 
@@ -1160,7 +1160,7 @@ def estimate_tokens(text):
 
     clean = _re.sub(r'^(\s*)(---+|\*\*\*+|___+)(\s*)$', '', clean, flags=_re.MULTILINE)
 
-    # 移除格式标记（加粗/斜体/删除线）
+    # 移除格式标记(加粗/斜体/删除线)
 
     clean = _re.sub(r'\*\*([^*]+)\*\*', r'\1', clean)
 
@@ -1198,7 +1198,7 @@ def estimate_tokens(text):
 
     clean = _re.sub(r'\[\[toc\]\]|\[TOC\]', '', clean, flags=_re.IGNORECASE)
 
-    
+
 
     # --- 基础字符统计 ---
 
@@ -1208,7 +1208,7 @@ def estimate_tokens(text):
 
     stats['chinese'] = len(chinese_chars) * 1.5
 
-    
+
 
     # 英文单词
 
@@ -1216,7 +1216,7 @@ def estimate_tokens(text):
 
     stats['english'] = len(english_words) * 1.0
 
-    
+
 
     # 数字串
 
@@ -1224,15 +1224,15 @@ def estimate_tokens(text):
 
     stats['numbers'] = len(number_groups) * 0.5
 
-    
+
 
     # 标点
 
-    punct = _re.findall(r'[，。！？、；：\u201c\u201d\u2018\u2019（）【】《》…—·\u3000\uff01\uff0c\uff0e\uff1f\uff1b\uff1a\uff08\uff09\u300a\u300b\u2026\u2014\u00b7,.\-!?;:\'"()\[\]{}]', clean)
+    punct = _re.findall(r'[,。!?、;:\u201c\u201d\u2018\u2019()【】《》...-·\u3000\uff01\uff0c\uff0e\uff1f\uff1b\uff1a\uff08\uff09\u300a\u300b\u2026\u2014\u00b7,.\-!?;:\'"()\[\]{}]', clean)
 
     stats['punctuation'] = len(punct) * 0.5
 
-    
+
 
     # 空白
 
@@ -1240,7 +1240,7 @@ def estimate_tokens(text):
 
     stats['whitespace'] = len(whitespace) * 0.3
 
-    
+
 
     # 汇总
 
@@ -1252,7 +1252,7 @@ def estimate_tokens(text):
 
         stats[k] = int(round(stats[k]))
 
-    
+
 
     return stats
 
@@ -1290,7 +1290,7 @@ def format_token_summary(stats, label=""):
 
         return "0 tokens"
 
-    
+
 
     prefix = f"[{label}] " if label else ""
 
@@ -1300,7 +1300,7 @@ def format_token_summary(stats, label=""):
 
     ]
 
-    
+
 
     # Top 分类
 
@@ -1324,7 +1324,7 @@ def format_token_summary(stats, label=""):
 
             cats.append(f"{name}: {v:,}{unit}")
 
-    
+
 
     if cats:
 
@@ -1334,7 +1334,7 @@ def format_token_summary(stats, label=""):
 
             lines.append("  " + " | ".join(cats[4:]))
 
-    
+
 
     return '\n'.join(lines)
 
@@ -1348,11 +1348,11 @@ def format_token_summary(stats, label=""):
 
 class DocSlimmer:
 
-    """文档减肥器 - 精简文本，去除冗余"""
+    """文档减肥器 - 精简文本,去除冗余"""
 
-    
 
-    # 压缩词汇映射（先处理，避免与AI痕迹冲突）
+
+    # 压缩词汇映射(先处理,避免与AI痕迹冲突)
 
     REDUNDANT_PATTERNS = [
 
@@ -1398,21 +1398,21 @@ class DocSlimmer:
 
         (r'[。]{2,}', '。'),
 
-        (r'[，]{2,}', '，'),
+        (r'[,]{2,}', ','),
 
-        (r'[！]{2,}', '！'),
+        (r'[!]{2,}', '!'),
 
-        (r'[？]{2,}', '？'),
+        (r'[?]{2,}', '?'),
 
         # 清理连续标点+空格
 
-        (r'[。！？，；]\s*', lambda m: m.group()[:-1] + ' ' if m.group().endswith('，') or m.group().endswith('。') else m.group()),
+        (r'[。!?,;]\s*', lambda m: m.group()[:-1] + ' ' if m.group().endswith(',') or m.group().endswith('。') else m.group()),
 
     ]
 
-    
 
-    # AI写作痕迹（后处理）
+
+    # AI写作痕迹(后处理)
 
     AI_PATTERNS = [
 
@@ -1456,7 +1456,7 @@ class DocSlimmer:
 
     ]
 
-    
+
 
     def slim(self, text, compression_rate=0.3, remove_ai=False):
 
@@ -1464,23 +1464,23 @@ class DocSlimmer:
 
             return {"result": "", "stats": {}}
 
-        
+
 
         original_length = len(text)
 
         result = text
 
-        
+
 
         # 根据压缩强度决定应用的规则数量
 
-        # compression_rate: 0.0-1.0，表示目标压缩比例
+        # compression_rate: 0.0-1.0,表示目标压缩比例
 
-        # 0.0 = 不压缩，1.0 = 最大压缩
+        # 0.0 = 不压缩,1.0 = 最大压缩
 
-        
 
-        # 基础清理（总是应用）
+
+        # 基础清理(总是应用)
 
         for pattern, replacement in self.REDUNDANT_PATTERNS:
 
@@ -1492,7 +1492,7 @@ class DocSlimmer:
 
                 result = re.sub(pattern, replacement, result)
 
-        
+
 
         # 根据压缩强度应用额外的压缩
 
@@ -1502,7 +1502,7 @@ class DocSlimmer:
 
             result = re.sub(r'(\w)\1{2,}', r'\1', result)
 
-        
+
 
         if compression_rate > 0.3:
 
@@ -1512,27 +1512,27 @@ class DocSlimmer:
 
             result = re.sub(r'\t+', ' ', result)
 
-        
+
 
         if compression_rate > 0.7:
 
             # 移除某些冗余词汇
 
-            result = re.sub(r'（[^）]*）', '', result)  # 移除括号内容
+            result = re.sub(r'([^)]*)', '', result)  # 移除括号内容
 
             result = re.sub(r'\([^)]*\)', '', result)   # 移除英文括号内容
 
-        
+
 
         if compression_rate > 0.7:
 
-            # 激进压缩：移除更多内容
+            # 激进压缩:移除更多内容
 
             result = re.sub(r'【[^】]*】', '', result)  # 移除方括号
 
             result = re.sub(r'\[[^\]]*\]', '', result)
 
-        
+
 
         # 去AI味
 
@@ -1542,15 +1542,15 @@ class DocSlimmer:
 
                 result = re.sub(pattern, replacement, result)
 
-        
+
 
         # 清理残留的连续标点和空格
 
-        result = re.sub(r'[，。；！？\s]+', lambda m: ' ' if ' ' in m.group() and len(m.group()) > 1 else m.group(), result)
+        result = re.sub(r'[,。;!?\s]+', lambda m: ' ' if ' ' in m.group() and len(m.group()) > 1 else m.group(), result)
 
         result = result.strip()
 
-        
+
 
         result = result.strip()
 
@@ -1558,7 +1558,7 @@ class DocSlimmer:
 
         actual_rate = (original_length - new_length) / original_length if original_length > 0 else 0
 
-        
+
 
         return {
 
@@ -1588,11 +1588,11 @@ class DocSlimmer:
 
 class DocSanitizer:
 
-    """文档脱敏器 - 去除个人信息，可选择性脱敏"""
+    """文档脱敏器 - 去除个人信息,可选择性脱敏"""
 
-    
 
-    # 敏感信息正则（按分类）
+
+    # 敏感信息正则(按分类)
 
     PATTERNS = {
 
@@ -1616,7 +1616,7 @@ class DocSanitizer:
 
         '开户许可证号': r'(?<!\d)[A-Z0-9]{14,16}(?!\d)',  # 14-16位开户许可
 
-        '投标/成交价': r'[¥￥]?\d{1,12}(?:\.\d{2})?(?![元])',  # 金额（需配合上下文判断）
+        '投标/成交价': r'[¥¥]?\d{1,12}(?:\.\d{2})?(?![元])',  # 金额(需配合上下文判断)
 
         '合同编号': r'(?<![a-zA-Z])[A-Z]{2,4}[-#]?\d{2,4}[-]?\d{2,8}(?![a-zA-Z])',  # HT/HT-2026-XXXX类
 
@@ -1634,7 +1634,7 @@ class DocSanitizer:
 
     }
 
-    
+
 
     # 名称映射
 
@@ -1652,7 +1652,7 @@ class DocSanitizer:
 
     }
 
-    
+
 
     @staticmethod
 
@@ -1660,7 +1660,7 @@ class DocSanitizer:
 
         return list(DocSanitizer.PATTERNS.keys())
 
-    
+
 
     def _mask_phone(self, m):
 
@@ -1668,7 +1668,7 @@ class DocSanitizer:
 
         return f"{p[:3]}****{p[7:]}"
 
-    
+
 
     def _mask_email(self, m):
 
@@ -1696,7 +1696,7 @@ class DocSanitizer:
 
         return e
 
-    
+
 
     def _mask_id(self, m):
 
@@ -1704,7 +1704,7 @@ class DocSanitizer:
 
         return f"{i[:6]}**********{i[-1] if len(i)==18 else ''}"
 
-    
+
 
     def _mask_bank(self, m):
 
@@ -1712,13 +1712,13 @@ class DocSanitizer:
 
         return f"{b[:4]}****{b[-4:]}"
 
-    
+
 
     def _mask_ip(self, m):
 
         return 'xxx.xxx.xxx.xxx'
 
-    
+
 
     def _mask_passport(self, m):
 
@@ -1730,7 +1730,7 @@ class DocSanitizer:
 
         return '*' * len(p)
 
-    
+
 
     def _mask_mac(self, m):
 
@@ -1744,7 +1744,7 @@ class DocSanitizer:
 
         return '**:**:**:**:**:**'
 
-    
+
 
     def _mask_imei(self, m):
 
@@ -1756,7 +1756,7 @@ class DocSanitizer:
 
         return '*' * len(e)
 
-    
+
 
     def _mask_plate(self, m):
 
@@ -1764,7 +1764,7 @@ class DocSanitizer:
 
         return p[:2] + '*' * (len(p) - 2)
 
-    
+
 
     def _mask_social_card(self, m):
 
@@ -1772,7 +1772,7 @@ class DocSanitizer:
 
         return c[:4] + '*' * (len(c) - 8) + c[-4:]
 
-    
+
 
     def _mask_medical_record(self, m):
 
@@ -1784,7 +1784,7 @@ class DocSanitizer:
 
         return prefix + '*' * len(digits)
 
-    
+
 
     def _mask_docnum(self, m):
 
@@ -1796,7 +1796,7 @@ class DocSanitizer:
 
         return prefix + '*' * len(digits)
 
-    
+
 
     def _mask_doclevel(self, m):
 
@@ -1812,7 +1812,7 @@ class DocSanitizer:
 
         return re.sub(r'[*☆★\d]+', '*', c)
 
-    
+
 
     def _mask_docref(self, m):
 
@@ -1820,7 +1820,7 @@ class DocSanitizer:
 
         return re.sub(r'\d+(?=号)', lambda x: '*' * len(x.group()), c)
 
-    
+
 
     def sanitize(self, text, custom_words=None, items=None):
 
@@ -1831,19 +1831,19 @@ class DocSanitizer:
 
             return {"result": "", "stats": {"total": 0}}
 
-        
+
 
         stats = {}
 
         result = text
 
-        
+
 
         if items is None:
 
             items = list(self.PATTERNS.keys())
 
-        
+
 
         def mask_code(m):
 
@@ -2001,7 +2001,7 @@ class DocSanitizer:
 
             # 1. 带货币符号的金额
 
-            found_sym = re.findall(r'[¥￥$]\s*[\d,]+(?:\.\d+)?', result)
+            found_sym = re.findall(r'[¥¥$]\s*[\d,]+(?:\.\d+)?', result)
 
             price_count += len(found_sym)
 
@@ -2231,7 +2231,7 @@ class DocSanitizer:
 
         if '病历号' in items:
 
-            found = re.findall(r'(?:(?:BL|MR|EMR|MZ|ZY|门诊号?|住院号?|病历号?|病案号?)[：:\-]?\d{4,}|\b[A-Z]{2,3}[-]?\d{6,12}\b)', result)
+            found = re.findall(r'(?:(?:BL|MR|EMR|MZ|ZY|门诊号?|住院号?|病历号?|病案号?)[::\-]?\d{4,}|\b[A-Z]{2,3}[-]?\d{6,12}\b)', result)
 
             stats['病历号'] = len(found)
 
@@ -2247,7 +2247,7 @@ class DocSanitizer:
 
         if '公文份号' in items:
 
-            found = re.findall(r'(?:(?:No|NO|Nr|№)[-:\s]*\d{4,}|份号[：:\s]+\d+|第\d{2,4}[-]\d{4,}号|文件编号[：:\s]*[A-Z]{2,3}[-_]\d{2,4}[-_]\d{3,})', result)
+            found = re.findall(r'(?:(?:No|NO|Nr|No)[-:\s]*\d{4,}|份号[::\s]+\d+|第\d{2,4}[-]\d{4,}号|文件编号[::\s]*[A-Z]{2,3}[-_]\d{2,4}[-_]\d{3,})', result)
 
             stats['公文份号'] = len(found)
 
@@ -2295,7 +2295,7 @@ class DocSanitizer:
 
 
 
-        # 自定义敏感词（始终处理）
+        # 自定义敏感词(始终处理)
 
         custom_count = 0
 
@@ -2441,7 +2441,7 @@ def cmd_batch(args):
 
     print(f"{'='*50}")
 
-    print(f"  完成！耗时 {s['elapsed_seconds']}秒")
+    print(f"  完成!耗时 {s['elapsed_seconds']}秒")
 
     print(f"  成功: {s['success']}  失败: {s['error']}  跳过: {s['skip']}")
 
@@ -2499,11 +2499,11 @@ def load_config():
 
 def resolve_output_path(input_path, action, user_output, out_dir, fmt):
 
-    """解析输出路径，支持：手动指定 / 默认output目录 / 同目录"""
+    """解析输出路径,支持:手动指定 / 默认output目录 / 同目录"""
 
     Path_like = type(Path())
 
-    
+
 
     # 如果用户直接指定了完整路径
 
@@ -2511,7 +2511,7 @@ def resolve_output_path(input_path, action, user_output, out_dir, fmt):
 
         return Path(user_output)
 
-    
+
 
     # 确定输出目录
 
@@ -2531,13 +2531,13 @@ def resolve_output_path(input_path, action, user_output, out_dir, fmt):
 
         else:
 
-            # 默认：源文件同目录
+            # 默认:源文件同目录
 
             out = Path(input_path).parent
 
-    
 
-    # 创建输出目录（如果不存在）
+
+    # 创建输出目录(如果不存在)
 
     if not out.exists():
 
@@ -2547,7 +2547,7 @@ def resolve_output_path(input_path, action, user_output, out_dir, fmt):
 
         except PermissionError:
 
-            print(f"[提示] 无法创建输出目录 '{out}'，将输出到控制台", file=sys.stderr)
+            print(f"[提示] 无法创建输出目录 '{out}',将输出到控制台", file=sys.stderr)
 
             out = None
 
@@ -2555,7 +2555,7 @@ def resolve_output_path(input_path, action, user_output, out_dir, fmt):
 
             out = None
 
-    
+
 
     # 生成文件名
 
@@ -2563,11 +2563,11 @@ def resolve_output_path(input_path, action, user_output, out_dir, fmt):
 
     action_tag = '减肥' if action == 'slim' else '脱敏'
 
-    
+
 
     if src.suffix.lower() in ['.docx', '.xlsx', '.xls', '.pptx', '.pdf']:
 
-        # 格式文件：根据 fmt 决定输出格式
+        # 格式文件:根据 fmt 决定输出格式
         stem = src.stem
         if fmt and fmt in ['ssd', 'txt']:
             out_name = f"{stem}_{action_tag}.{fmt}"
@@ -2578,7 +2578,7 @@ def resolve_output_path(input_path, action, user_output, out_dir, fmt):
 
     else:
 
-        # 文本文件：保持原扩展名
+        # 文本文件:保持原扩展名
 
         stem = src.stem
 
@@ -2586,7 +2586,7 @@ def resolve_output_path(input_path, action, user_output, out_dir, fmt):
 
         out_name = f"{stem}_{action_tag}{ext}"
 
-    
+
 
     return out / out_name
 
@@ -2600,11 +2600,11 @@ def main():
 
     cfg = load_config()
 
-    
+
 
     parser = argparse.ArgumentParser(
 
-        description='SafeShrink v2.0 - 文档减肥 & 脱敏（支持Office/PDF）',
+        description='SafeShrink v2.0 - 文档减肥 & 脱敏(支持Office/PDF)',
 
         formatter_class=argparse.RawDescriptionHelpFormatter,
 
@@ -2620,9 +2620,9 @@ def main():
 
 保存策略:
 
-  - 不覆盖源文件，自动另存
+  - 不覆盖源文件,自动另存
 
-  - 默认保存到 output/ 子目录（可在 config.json 中修改）
+  - 默认保存到 output/ 子目录(可在 config.json 中修改)
 
   - 也可用 --out-dir 指定输出目录
 
@@ -2630,7 +2630,7 @@ def main():
 
 示例:
 
-  # 文档减肥（自动保存到 output/）
+  # 文档减肥(自动保存到 output/)
 
   safeshrink slim input.pdf
 
@@ -2638,15 +2638,15 @@ def main():
 
   safeshrink slim "要精简的文本" -o custom.txt
 
-  
 
-  # 文档脱敏（自动保存到 output/）
+
+  # 文档脱敏(自动保存到 output/)
 
   safeshrink sanitize input.xlsx --out-dir D:\\输出
 
   safeshrink sanitize "文本..." --words 张三
 
-  
+
 
   # 查看依赖
 
@@ -2656,23 +2656,23 @@ def main():
 
     )
 
-    
+
 
     parser.add_argument('--check', action='store_true', help='检查依赖状态')
 
     parser.add_argument('--version', action='version', version='SafeShrink v1.0.0')
 
-    
+
 
     subparsers = parser.add_subparsers(dest='command', help='子命令')
 
-    
 
-    # 全局 JSON 输出标志（顶级参数，对 slim/sanitize 生效）
+
+    # 全局 JSON 输出标志(顶级参数,对 slim/sanitize 生效)
 
     parser.add_argument('--json', dest='json_output', action='store_true',
 
-                        help='以 JSON 格式输出结果（供程序调用）')
+                        help='以 JSON 格式输出结果(供程序调用)')
 
 
 
@@ -2684,31 +2684,31 @@ def main():
 
     sp.add_argument('-i', '--input', help='输入文件')
 
-    sp.add_argument('-o', '--output', help='输出文件路径（完整路径）')
+    sp.add_argument('-o', '--output', help='输出文件路径(完整路径)')
 
-    sp.add_argument('-d', '--out-dir', help='输出目录（默认使用 config.json 中的 output_dir）')
+    sp.add_argument('-d', '--out-dir', help='输出目录(默认使用 config.json 中的 output_dir)')
 
     sp.add_argument('-m', '--mode', choices=['standard', 'aggressive', 'deep-clean', 'ssd'],
-                    default='standard', help='处理模式：standard(标准压缩) | aggressive(激进压缩) | deep-clean(深度清理) | ssd(转换为SSD)')
+                    default='standard', help='处理模式:standard(标准压缩) | aggressive(激进压缩) | deep-clean(深度清理) | ssd(转换为SSD)')
 
-    sp.add_argument('-c', '--compression', type=float, default=0.3, help='压缩率 (0.0-1.0，仅 standard/aggressive 模式生效)')
+    sp.add_argument('-c', '--compression', type=float, default=0.3, help='压缩率 (0.0-1.0,仅 standard/aggressive 模式生效)')
 
     sp.add_argument('--ai', action='store_true', help='去除AI写作痕迹')
 
     sp.add_argument('--sheet', type=int, default=0, help='Excel sheet索引')
 
     # SSD 模式子选项
-    sp.add_argument('--embed-images', action='store_true', help='SSD 模式：将图片转为 Base64 嵌入')
+    sp.add_argument('--embed-images', action='store_true', help='SSD 模式:将图片转为 Base64 嵌入')
 
-    sp.add_argument('--ocr-images', action='store_true', help='SSD 模式：OCR 识别文档内图片文字')
+    sp.add_argument('--ocr-images', action='store_true', help='SSD 模式:OCR 识别文档内图片文字')
 
-    sp.add_argument('--ocr-pdf', action='store_true', help='SSD 模式：对 PDF 扫描件进行 OCR（需要 Tesseract）')
+    sp.add_argument('--ocr-pdf', action='store_true', help='SSD 模式:对 PDF 扫描件进行 OCR(需要 Tesseract)')
 
     sp.add_argument('--json', dest='json_output', action='store_true',
 
-                    help='以 JSON 格式输出结果（供程序调用）')
+                    help='以 JSON 格式输出结果(供程序调用)')
 
-    
+
 
     # sanitize
 
@@ -2718,15 +2718,15 @@ def main():
 
     ep.add_argument('-i', '--input', help='输入文件')
 
-    ep.add_argument('-o', '--output', help='输出文件路径（完整路径）')
+    ep.add_argument('-o', '--output', help='输出文件路径(完整路径)')
 
     ep.add_argument('-d', '--out-dir', help='输出目录')
 
     ep.add_argument('--words', nargs='*', help='自定义敏感词')
 
-    ep.add_argument('--items', nargs='*', 
+    ep.add_argument('--items', nargs='*',
 
-        help='指定要处理的脱敏项，可用值: 手机号,邮箱,身份证,银行卡,IP地址')
+        help='指定要处理的脱敏项,可用值: 手机号,邮箱,身份证,银行卡,IP地址')
 
     ep.add_argument('--sheet', type=int, default=0, help='Excel sheet索引')
 
@@ -2734,41 +2734,41 @@ def main():
 
     ep.add_argument('--json', dest='json_output', action='store_true',
 
-                    help='以 JSON 格式输出结果（供程序调用）')
+                    help='以 JSON 格式输出结果(供程序调用)')
 
-    
+
 
     # batch-slim
 
-    bp = subparsers.add_parser('batch-slim', help='批量文档减肥（文件夹）')
+    bp = subparsers.add_parser('batch-slim', help='批量文档减肥(文件夹)')
 
     bp.add_argument('folder', help='输入文件夹路径')
 
     bp.add_argument('-o', '--out-dir', help='输出目录')
 
     bp.add_argument('-m', '--mode', choices=['standard', 'aggressive', 'deep-clean', 'ssd'],
-                    default='standard', help='处理模式：standard(标准压缩) | aggressive(激进压缩) | deep-clean(深度清理) | ssd(转换为SSD)')
+                    default='standard', help='处理模式:standard(标准压缩) | aggressive(激进压缩) | deep-clean(深度清理) | ssd(转换为SSD)')
 
-    bp.add_argument('-c', '--compression', type=float, default=0.3, help='压缩率（仅 standard/aggressive 模式生效）')
+    bp.add_argument('-c', '--compression', type=float, default=0.3, help='压缩率(仅 standard/aggressive 模式生效)')
 
     bp.add_argument('--ai', action='store_true', help='去除AI味')
 
     # SSD 模式子选项
-    bp.add_argument('--embed-images', action='store_true', help='SSD 模式：将图片转为 Base64 嵌入')
+    bp.add_argument('--embed-images', action='store_true', help='SSD 模式:将图片转为 Base64 嵌入')
 
-    bp.add_argument('--ocr-images', action='store_true', help='SSD 模式：OCR 识别图片文件文字')
+    bp.add_argument('--ocr-images', action='store_true', help='SSD 模式:OCR 识别图片文件文字')
 
-    bp.add_argument('--ocr-pdf', action='store_true', help='SSD 模式：对 PDF 扫描件进行 OCR（需要 Tesseract）')
+    bp.add_argument('--ocr-pdf', action='store_true', help='SSD 模式:对 PDF 扫描件进行 OCR(需要 Tesseract)')
 
-    bp.add_argument('-w', '--workers', type=int, help='并行线程数（默认4）')
+    bp.add_argument('-w', '--workers', type=int, help='并行线程数(默认4)')
 
     bp.add_argument('--no-recursive', action='store_true', help='不递归子文件夹')
 
-    
+
 
     # batch-sanitize
 
-    bx = subparsers.add_parser('batch-sanitize', help='批量文档脱敏（文件夹）')
+    bx = subparsers.add_parser('batch-sanitize', help='批量文档脱敏(文件夹)')
 
     bx.add_argument('folder', help='输入文件夹路径')
 
@@ -2778,15 +2778,102 @@ def main():
 
     bx.add_argument('--items', nargs='*', help='指定脱敏项')
 
-    bx.add_argument('-w', '--workers', type=int, help='并行线程数（默认4）')
+    bx.add_argument('-w', '--workers', type=int, help='并行线程数(默认4)')
 
     bx.add_argument('--no-recursive', action='store_true', help='不递归子文件夹')
 
-    
+
+    # convert
+    cv = subparsers.add_parser('convert', help='文件格式转换')
+
+    cv.add_argument('-i', '--input', required=True, help='输入文件路径')
+
+    cv.add_argument('-o', '--output', help='输出文件路径（完整路径）')
+
+    cv.add_argument('-d', '--out-dir', help='输出目录')
+
+    cv.add_argument('-f', '--format', choices=['ssd', 'txt', 'md', 'pdf', 'docx', 'xlsx', 'pptx'],
+                    required=True, help='目标格式：ssd | txt | md | pdf | docx | xlsx | pptx')
+
+    cv.add_argument('--ocr-pdf', action='store_true', help='对 PDF 扫描件进行 OCR（需要 Tesseract）')
+
+    cv.add_argument('--embed-images', action='store_true', help='SSD 模式：将图片转为 Base64 嵌入')
+
+    cv.add_argument('--ocr-images', action='store_true', help='SSD 模式：OCR 识别文档内图片文字')
+
+    cv.add_argument('--json', dest='json_output', action='store_true',
+
+                    help='以 JSON 格式输出结果（供程序调用）')
+
+
+    # compress-image
+    ci = subparsers.add_parser('compress-image', help='图片压缩')
+
+    ci.add_argument('-i', '--input', required=True, help='输入图片路径')
+
+    ci.add_argument('-o', '--output', help='输出图片路径（完整路径）')
+
+    ci.add_argument('-q', '--quality', type=int, default=60, help='压缩质量 (1-100，默认60)')
+
+    ci.add_argument('--max-width', type=int, help='最大宽度（像素）')
+
+    ci.add_argument('--max-height', type=int, help='最大高度（像素）')
+
+    ci.add_argument('--json', dest='json_output', action='store_true',
+
+                    help='以 JSON 格式输出结果（供程序调用）')
+
+
+    # batch-convert
+    bc = subparsers.add_parser('batch-convert', help='批量格式转换（文件夹）')
+
+    bc.add_argument('folder', help='输入文件夹路径')
+
+    bc.add_argument('-o', '--out-dir', required=True, help='输出目录')
+
+    bc.add_argument('-f', '--format', choices=['ssd', 'txt', 'md'],
+                    required=True, help='目标格式：ssd | txt | md')
+
+    bc.add_argument('--ocr-pdf', action='store_true', help='对 PDF 扫描件进行 OCR（需要 Tesseract）')
+
+    bc.add_argument('--embed-images', action='store_true', help='SSD 模式：将图片转为 Base64 嵌入')
+
+    bc.add_argument('--ocr-images', action='store_true', help='SSD 模式：OCR 识别文档内图片文字')
+
+    bc.add_argument('-w', '--workers', type=int, help='并行线程数（默认4）')
+
+    bc.add_argument('--no-recursive', action='store_true', help='不递归子文件夹')
+
+    bc.add_argument('--json', dest='json_output', action='store_true',
+
+                    help='以 JSON 格式输出结果（供程序调用）')
+
+
+    # batch-compress-image
+    bci = subparsers.add_parser('batch-compress-image', help='批量图片压缩（文件夹）')
+
+    bci.add_argument('folder', help='输入文件夹路径')
+
+    bci.add_argument('-o', '--out-dir', required=True, help='输出目录')
+
+    bci.add_argument('-q', '--quality', type=int, default=60, help='压缩质量 (1-100，默认60)')
+
+    bci.add_argument('--max-width', type=int, help='最大宽度（像素）')
+
+    bci.add_argument('--max-height', type=int, help='最大高度（像素）')
+
+    bci.add_argument('-w', '--workers', type=int, help='并行线程数（默认4）')
+
+    bci.add_argument('--no-recursive', action='store_true', help='不递归子文件夹')
+
+    bci.add_argument('--json', dest='json_output', action='store_true',
+
+                    help='以 JSON 格式输出结果（供程序调用）')
+
 
     args = parser.parse_args()
 
-    
+
 
     # 检查依赖
 
@@ -2816,11 +2903,11 @@ def main():
 
             print(f"  {status} {desc:12} ({pkg})")
 
-        print(f"\n[配置] output_dir: {cfg.get('output_dir', '未设置（输出到源文件目录）')}")
+        print(f"\n[配置] output_dir: {cfg.get('output_dir', '未设置(输出到源文件目录)')}")
 
         return
 
-    
+
 
     if not args.command:
 
@@ -2828,7 +2915,611 @@ def main():
 
         return
 
-    
+
+
+    # ===== 单文件格式转换 =====
+
+    if args.command == 'convert':
+
+        json_mode = getattr(args, 'json_output', False)
+
+        from format_to_ssd import convert_to_ssd_v2, is_ssd_convertible
+
+        input_file = args.input
+
+        target_fmt = args.format
+
+        # 确定输出路径
+
+        if args.output:
+
+            output_path = Path(args.output)
+
+        elif args.out_dir:
+
+            output_path = Path(args.out_dir) / f"{Path(input_file).stem}.{target_fmt}"
+
+        else:
+
+            output_path = Path(input_file).parent / f"{Path(input_file).stem}_{target_fmt}.{target_fmt}"
+
+        # SSD 模式
+
+        if target_fmt == 'ssd':
+
+            try:
+
+                ssd_text = convert_to_ssd_v2(
+
+                    input_file,
+
+                    optimize=True,
+
+                    embed_images=args.embed_images,
+
+                    ocr_images=args.ocr_images,
+
+                    ocr_pdf=args.ocr_pdf,
+
+                )
+
+                # 写入输出文件
+
+                output_path = Path(str(output_path).replace('.ssd', '.ssd') if str(output_path).endswith('.ssd') else f"{output_path}.ssd")
+
+                output_path.write_text(ssd_text, encoding='utf-8')
+
+                if not json_mode:
+
+                    print(f"[转换] {input_file} -> {output_path} ({len(ssd_text)} 字符)")
+
+                result_json = {
+
+                    'success': True,
+
+                    'action': 'convert',
+
+                    'output_path': str(output_path),
+
+                    'format': 'ssd',
+
+                    'chars': len(ssd_text),
+
+                }
+
+            except ValueError as e:
+
+                error_msg = str(e)
+
+                if json_mode:
+
+                    result_json = {'success': False, 'error': error_msg}
+
+                    print(json.dumps(result_json, ensure_ascii=False))
+
+                else:
+
+                    print(f"[错误] 转换失败: {error_msg}", file=sys.stderr)
+
+                sys.exit(1)
+
+            except Exception as e:
+
+                error_msg = f"SSD 转换失败: {e}"
+
+                if json_mode:
+
+                    result_json = {'success': False, 'error': error_msg}
+
+                    print(json.dumps(result_json, ensure_ascii=False))
+
+                else:
+
+                    print(f"[错误] {error_msg}", file=sys.stderr)
+
+                sys.exit(1)
+
+        # TXT/MD 模式（纯文本提取）
+
+        elif target_fmt in ('txt', 'md'):
+
+            from safe_shrink import read_file
+
+            try:
+
+                text = read_file(input_file, {})
+
+                output_path = Path(str(output_path).replace('.ssd', f'.{target_fmt}'))
+
+                output_path.write_text(text, encoding='utf-8')
+
+                if not json_mode:
+
+                    print(f"[转换] {input_file} -> {output_path} ({len(text)} 字符)")
+
+                result_json = {
+
+                    'success': True,
+
+                    'action': 'convert',
+
+                    'output_path': str(output_path),
+
+                    'format': target_fmt,
+
+                    'chars': len(text),
+
+                }
+
+            except Exception as e:
+
+                if json_mode:
+
+                    result_json = {'success': False, 'error': str(e)}
+
+                    print(json.dumps(result_json, ensure_ascii=False))
+
+                else:
+
+                    print(f"[错误] 转换失败: {e}", file=sys.stderr)
+
+                sys.exit(1)
+
+        # 其他格式（pdf/docx/xlsx/pptx）- 需要额外依赖
+
+        else:
+
+            print(f"[错误] 目标格式 '{target_fmt}' 暂不支持，仅支持: ssd | txt | md", file=sys.stderr)
+
+            sys.exit(1)
+
+        # JSON 输出
+
+        if json_mode:
+
+            print(json.dumps(result_json, ensure_ascii=False))
+
+        return
+
+
+    # ===== 单张图片压缩 =====
+
+    if args.command == 'compress-image':
+
+        json_mode = getattr(args, 'json_output', False)
+
+        input_file = args.input
+
+        quality = args.quality
+
+        max_size = None
+
+        if args.max_width or args.max_height:
+
+            max_size = (args.max_width or 999999, args.max_height or 999999)
+
+        # 确定输出路径
+
+        if args.output:
+
+            output_path = args.output
+
+        else:
+
+            stem = Path(input_file).stem
+
+            suffix = Path(input_file).suffix
+
+            output_path = str(Path(input_file).parent / f"{stem}_减肥{suffix}")
+
+        result = compress_image(input_file, output_path, quality=quality, max_size=max_size)
+
+        if json_mode:
+
+            print(json.dumps(result, ensure_ascii=False))
+        else:
+
+            if result.get('success'):
+
+                print(f"[压缩] {input_file} -> {result['output_path']}")
+
+                print(f"        原始: {format_size(result['original_size'])} -> 处理后: {format_size(result['new_size'])}")
+
+                print(f"        节省: {format_size(result['saved'])} ({result['saved_percent']}%)")
+
+            else:
+
+                print(f"[错误] 压缩失败: {result.get('error', '未知错误')}", file=sys.stderr)
+
+                sys.exit(1)
+
+        return
+
+
+    # ===== 批量格式转换 =====
+
+    if args.command == 'batch-convert':
+
+        json_mode = getattr(args, 'json_output', False)
+
+        import shutil
+
+        from format_to_ssd import convert_to_ssd_v2
+
+        IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.tiff', '.tif'}
+
+        SUPPORTED_EXT = {'.txt', '.md', '.json', '.csv', '.xml', '.html', '.log',
+                         '.docx', '.xlsx', '.xls', '.pptx', '.pdf'}
+
+        src_folder = Path(args.folder)
+
+        if not src_folder.is_dir():
+
+            print(f"[错误] 输入路径不是目录: {src_folder}", file=sys.stderr)
+
+            sys.exit(1)
+
+        out_dir = Path(args.out_dir)
+
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        # 收集文件
+
+        files_to_convert = []
+
+        if args.no_recursive:
+
+            for f in src_folder.iterdir():
+
+                if f.is_file() and f.suffix.lower() in SUPPORTED_EXT:
+
+                    files_to_convert.append(f)
+
+        else:
+
+            for f in src_folder.rglob('*'):
+
+                if f.is_file() and f.suffix.lower() in SUPPORTED_EXT:
+
+                    files_to_convert.append(f)
+
+        if not files_to_convert:
+
+            print(f"[批量转换] 未找到可转换的文件（支持: {', '.join(SUPPORTED_EXT)}）")
+
+            if json_mode:
+
+                print(json.dumps({'success': True, 'total': 0, 'converted': 0, 'errors': 0, 'files': []}, ensure_ascii=False))
+
+            return
+
+        print(f"[批量转换] 文件夹: {src_folder}")
+
+        print(f"[目标格式] {args.format}")
+
+        print(f"[输出] {out_dir}\n")
+
+        results = []
+
+        success_count = 0
+
+        error_count = 0
+
+        for file_path in files_to_convert:
+
+            rel_path = file_path.relative_to(src_folder)
+
+            target_name = f"{file_path.stem}.{args.format}"
+
+            target_path = out_dir / rel_path.parent / target_name
+
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+
+            try:
+
+                if args.format == 'ssd':
+
+                    ssd_text = convert_to_ssd_v2(
+
+                        str(file_path),
+
+                        optimize=True,
+
+                        embed_images=args.embed_images,
+
+                        ocr_images=args.ocr_images,
+
+                        ocr_pdf=args.ocr_pdf,
+
+                    )
+
+                    target_path.write_text(ssd_text, encoding='utf-8')
+
+                    success_count += 1
+
+                    results.append({
+
+                        'source': str(file_path),
+
+                        'output': str(target_path),
+
+                        'status': 'success',
+
+                        'chars': len(ssd_text),
+
+                    })
+
+                    if not json_mode:
+
+                        print(f"  [OK] {rel_path} -> {target_path.name} ({len(ssd_text)} 字符)")
+
+                else:
+
+                    text = read_file(str(file_path), {})
+
+                    target_path.write_text(text, encoding='utf-8')
+
+                    success_count += 1
+
+                    results.append({
+
+                        'source': str(file_path),
+
+                        'output': str(target_path),
+
+                        'status': 'success',
+
+                        'chars': len(text),
+
+                    })
+
+                    if not json_mode:
+
+                        print(f"  [OK] {rel_path} -> {target_path.name} ({len(text)} 字符)")
+
+            except Exception as e:
+
+                error_count += 1
+
+                results.append({
+
+                    'source': str(file_path),
+
+                    'output': '',
+
+                    'status': 'error',
+
+                    'error': str(e),
+
+                })
+
+                if not json_mode:
+
+                    print(f"  [ERROR] {rel_path}: {e}")
+
+        if not json_mode:
+
+            print(f"\n{'='*50}")
+
+            print(f"  完成！成功: {success_count}  失败: {error_count}  总计: {len(files_to_convert)}")
+
+            print(f"  输出: {out_dir}")
+
+            print(f"{'='*50}")
+
+        if json_mode:
+
+            print(json.dumps({
+
+                'success': True,
+
+                'action': 'batch-convert',
+
+                'total': len(files_to_convert),
+
+                'converted': success_count,
+
+                'errors': error_count,
+
+                'output_dir': str(out_dir),
+
+                'files': results,
+
+            }, ensure_ascii=False))
+
+        return
+
+
+    # ===== 批量图片压缩 =====
+
+    if args.command == 'batch-compress-image':
+
+        json_mode = getattr(args, 'json_output', False)
+
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.tiff', '.tif'}
+
+        src_folder = Path(args.folder)
+
+        if not src_folder.is_dir():
+
+            print(f"[错误] 输入路径不是目录: {src_folder}", file=sys.stderr)
+
+            sys.exit(1)
+
+        out_dir = Path(args.out_dir)
+
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        # 收集图片文件
+
+        image_files = []
+
+        if args.no_recursive:
+
+            for f in src_folder.iterdir():
+
+                if f.is_file() and f.suffix.lower() in IMAGE_EXTENSIONS:
+
+                    image_files.append(f)
+
+        else:
+
+            for f in src_folder.rglob('*'):
+
+                if f.is_file() and f.suffix.lower() in IMAGE_EXTENSIONS:
+
+                    image_files.append(f)
+
+        if not image_files:
+
+            print(f"[批量压缩] 未找到图片文件（支持: {', '.join(IMAGE_EXTENSIONS)}）")
+
+            if json_mode:
+
+                print(json.dumps({'success': True, 'total': 0, 'compressed': 0, 'errors': 0, 'files': []}, ensure_ascii=False))
+
+            return
+
+        workers = args.workers or 4
+
+        max_size = None
+
+        if args.max_width or args.max_height:
+
+            max_size = (args.max_width or 999999, args.max_height or 999999)
+
+        print(f"[批量压缩] 文件夹: {src_folder}")
+
+        print(f"[质量] {args.quality}  [线程] {workers}")
+
+        print(f"[输出] {out_dir}\n")
+
+        results = []
+
+        def _compress_one(file_path):
+
+            rel_path = file_path.relative_to(src_folder)
+
+            target_path = out_dir / rel_path.parent / f"{file_path.stem}_减肥{file_path.suffix}"
+
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+
+            try:
+
+                result = compress_image(str(file_path), str(target_path),
+
+                                        quality=args.quality, max_size=max_size)
+
+                if result.get('success'):
+
+                    return {
+
+                        'source': str(file_path),
+
+                        'output': str(target_path),
+
+                        'status': 'success',
+
+                        'original_size': result['original_size'],
+
+                        'new_size': result['new_size'],
+
+                        'saved_percent': result['saved_percent'],
+
+                    }
+
+                else:
+
+                    return {
+
+                        'source': str(file_path),
+
+                        'output': '',
+
+                        'status': 'error',
+
+                        'error': result.get('error', '未知错误'),
+
+                    }
+
+            except Exception as e:
+
+                return {
+
+                    'source': str(file_path),
+
+                    'output': '',
+
+                    'status': 'error',
+
+                    'error': str(e),
+
+                }
+
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+
+            futures = {executor.submit(_compress_one, f): f for f in image_files}
+
+            for future in as_completed(futures):
+
+                result = future.result()
+
+                results.append(result)
+
+                if not json_mode:
+
+                    if result['status'] == 'success':
+
+                        print(f"  [OK] {Path(result['source']).relative_to(src_folder)} -> "
+
+                              f"{Path(result['output']).name} "
+
+                              f"({format_size(result['original_size'])} -> {format_size(result['new_size'])}, "
+
+                              f"节省 {result['saved_percent']}%)")
+
+                    else:
+
+                        print(f"  [ERROR] {Path(result['source']).relative_to(src_folder)}: {result['error']}")
+
+        success_count = sum(1 for r in results if r['status'] == 'success')
+
+        error_count = sum(1 for r in results if r['status'] == 'error')
+
+        if not json_mode:
+
+            print(f"\n{'='*50}")
+
+            print(f"  完成！成功: {success_count}  失败: {error_count}  总计: {len(image_files)}")
+
+            print(f"  输出: {out_dir}")
+
+            print(f"{'='*50}")
+
+        if json_mode:
+
+            print(json.dumps({
+
+                'success': True,
+
+                'action': 'batch-compress-image',
+
+                'total': len(image_files),
+
+                'compressed': success_count,
+
+                'errors': error_count,
+
+                'output_dir': str(out_dir),
+
+                'files': results,
+
+            }, ensure_ascii=False))
+
+        return
+
 
     # 批量处理
 
@@ -2938,7 +3629,7 @@ def main():
 
         print(f"\n{'='*50}")
 
-        print(f"  完成！耗时 {s['elapsed_seconds']}秒")
+        print(f"  完成!耗时 {s['elapsed_seconds']}秒")
 
         print(f"  成功: {s['success']}  失败: {s['error']}  跳过: {s['skip']}")
 
@@ -2958,7 +3649,7 @@ def main():
 
         return
 
-    
+
 
     # 获取输入文本
 
@@ -3000,7 +3691,7 @@ def main():
 
         sys.exit(1)
 
-    
+
 
     # 处理
 
@@ -3014,7 +3705,7 @@ def main():
 
         # 根据模式选择处理路径
         if args.mode == 'ssd':
-            # SSD 模式：调用 convert_to_ssd_v2
+            # SSD 模式:调用 convert_to_ssd_v2
             from format_to_ssd import convert_to_ssd_v2
 
             ssd_result = convert_to_ssd_v2(
@@ -3042,7 +3733,7 @@ def main():
                 sys.exit(1)
 
         elif args.mode == 'deep-clean':
-            # 深度清理：高压缩率 + 去除 AI 痕迹
+            # 深度清理:高压缩率 + 去除 AI 痕迹
             processor = DocSlimmer()
             result = processor.slim(text, 0.7, True)
             stats = result['stats']
@@ -3051,7 +3742,7 @@ def main():
                 print(f"           减少字符: {stats.get('reduced_chars', 0)}")
 
         elif args.mode == 'aggressive':
-            # 激进压缩：高压缩率
+            # 激进压缩:高压缩率
             processor = DocSlimmer()
             result = processor.slim(text, 0.7, args.ai)
             stats = result['stats']
@@ -3060,7 +3751,7 @@ def main():
                 print(f"           减少字符: {stats.get('reduced_chars', 0)}")
 
         else:
-            # standard 模式（默认）
+            # standard 模式(默认)
             processor = DocSlimmer()
             result = processor.slim(text, args.compression, args.ai)
             stats = result['stats']
@@ -3068,7 +3759,7 @@ def main():
                 print(f"[标准压缩] 压缩率: {stats.get('compression_rate', 0)}%")
                 print(f"           减少字符: {stats.get('reduced_chars', 0)}")
 
-        
+
 
     elif args.command == 'sanitize':
 
@@ -3088,9 +3779,9 @@ def main():
 
             print(f"[脱敏] 共脱敏 {total} 项: {detail if detail else '无'}")
 
-    
 
-    # 输出（核心：永远不覆盖源文件）
+
+    # 输出(核心:永远不覆盖源文件)
 
     # 根据 slim 模式确定输出格式
     slim_fmt = None
@@ -3113,7 +3804,7 @@ def main():
 
     )
 
-    
+
 
     # 如果输出目录无法创建
 
@@ -3133,11 +3824,11 @@ def main():
 
             if len(result['result']) > 3000:
 
-                print(f"\n... (共 {len(result['result'])} 字符，已截断)")
+                print(f"\n... (共 {len(result['result'])} 字符,已截断)")
 
         return
 
-    
+
 
     # 写入文件
 
@@ -3183,13 +3874,13 @@ def main():
 
             print(f"[错误] 保存失败: {e}", file=sys.stderr)
 
-            print("[提示] 权限不足时，可尝试指定其他输出目录：--out-dir D:\\输出")
+            print("[提示] 权限不足时,可尝试指定其他输出目录:--out-dir D:\\输出")
 
             print('\n' + '='*50)
 
             print(result['result'][:3000])
 
-    
+
 
     # JSON 输出
 
@@ -3227,19 +3918,19 @@ def compress_image(input_path, output_path=None, quality=85, max_size=None):
 
     压缩图片文件
 
-    
+
 
     Args:
 
         input_path: 输入图片路径
 
-        output_path: 输出图片路径，None 则覆盖原文件
+        output_path: 输出图片路径,None 则覆盖原文件
 
         quality: JPEG 质量 (1-100)
 
-        max_size: 最大尺寸 (width, height)，None 则保持原尺寸
+        max_size: 最大尺寸 (width, height),None 则保持原尺寸
 
-    
+
 
     Returns:
 
@@ -3251,7 +3942,7 @@ def compress_image(input_path, output_path=None, quality=85, max_size=None):
 
     import os
 
-    
+
 
     try:
 
@@ -3259,13 +3950,13 @@ def compress_image(input_path, output_path=None, quality=85, max_size=None):
 
         original_size = os.path.getsize(input_path)
 
-        
+
 
         # 打开图片
 
         img = Image.open(input_path)
 
-        
+
 
         # 转换 RGBA/RGB
 
@@ -3279,7 +3970,7 @@ def compress_image(input_path, output_path=None, quality=85, max_size=None):
 
             img = img.convert('RGB')
 
-        
+
 
         # 调整尺寸
 
@@ -3287,7 +3978,7 @@ def compress_image(input_path, output_path=None, quality=85, max_size=None):
 
             img.thumbnail(max_size, Image.Resampling.LANCZOS)
 
-        
+
 
         # 确定输出路径
 
@@ -3295,13 +3986,13 @@ def compress_image(input_path, output_path=None, quality=85, max_size=None):
 
             output_path = input_path
 
-        
+
 
         # 确定格式
 
         input_ext = os.path.splitext(input_path)[1].lower()
 
-        
+
 
         if input_ext in ['.jpg', '.jpeg']:
 
@@ -3321,13 +4012,13 @@ def compress_image(input_path, output_path=None, quality=85, max_size=None):
 
             img.save(output_path, quality=quality, optimize=True)
 
-        
+
 
         # 获取新文件大小
 
         new_size = os.path.getsize(output_path)
 
-        
+
 
         return {
 
@@ -3345,7 +4036,7 @@ def compress_image(input_path, output_path=None, quality=85, max_size=None):
 
         }
 
-        
+
 
     except Exception as e:
 
@@ -3379,7 +4070,7 @@ def get_image_info(path):
 
     import os
 
-    
+
 
     try:
 
@@ -3410,7 +4101,7 @@ def get_image_info(path):
 
 
 
-# Cython 编译需要：内联 format_size 避免跨模块导入问题
+# Cython 编译需要:内联 format_size 避免跨模块导入问题
 def format_size(size: int) -> str:
     """格式化文件大小"""
     if size < 1024:
