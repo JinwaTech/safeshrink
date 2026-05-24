@@ -9,7 +9,7 @@ description: 文档减肥、脱敏、格式转换桌面工具。当用户上传 
 
 ## 基本信息
 
-- **版本**：v1.2.0
+- **版本**：v1.2.1
 - **许可证**：专有软件（© 杭州金蛙信息科技有限公司）
 - **GitHub**：https://github.com/JinwaTech/safeshrink
 - **适用平台**：Windows 10/11
@@ -107,6 +107,11 @@ SafeShrink sanitize -i contract.docx -o contract_脱敏.ssd --format ssd
 SafeShrink batch-sanitize <输入文件夹> -o <输出文件夹> [--format original|ssd|txt]
 ```
 
+**示例：**
+```
+SafeShrink batch-sanitize C:\contracts -o C:\output -f ssd
+```
+
 ### convert — 格式转换
 
 ```
@@ -127,6 +132,12 @@ SafeShrink convert -i scan.pdf -f md -o scan.md
 SafeShrink batch-convert <输入文件夹> -f <目标格式> -o <输出文件夹>
 ```
 
+**示例：**
+```
+SafeShrink batch-convert C:\docs -f ssd -o C:\ssd
+SafeShrink batch-convert C:\reports -f md -o C:\markdown
+```
+
 ### compress-image — 单张图片压缩
 
 ```
@@ -143,6 +154,11 @@ SafeShrink compress-image -i screenshot.png -o screenshot_减肥.png --max-width
 
 ```
 SafeShrink batch-compress-image <输入文件夹> -o <输出文件夹> [--quality <1-100>] [--max-width <px>] [--max-height <px>]
+```
+
+**示例：**
+```
+SafeShrink batch-compress-image C:\screenshots -o C:\compressed --quality 60 --max-width 1920
 ```
 
 ### 通用参数
@@ -221,10 +237,14 @@ AI：[调用 SafeShrink batch-slim] → 输出所有 _减肥 文件
 ## EXE 下载与缓存
 
 首次使用时，AI 会自动从 GitHub 下载最新 EXE 并缓存到本地：
-- **下载 URL**：`https://github.com/JinwaTech/safeshrink/releases/download/v1.2.0/SafeShrink.exe`
+- **下载 URL**：`https://github.com/JinwaTech/safeshrink/releases/download/v1.2.1/SafeShrink.exe`
 - **缓存路径**：AI 会自动缓存到本地，后续调用直接使用缓存，无需重复下载
 
 后续调用直接使用缓存路径，无需重复下载。
+
+## 源码保护
+
+v1.2.1 起，11 个核心模块已编译为 Cython .pyd 二进制文件，源码不公开。
 
 ## 黑盒原则
 
