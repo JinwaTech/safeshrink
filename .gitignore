@@ -24,3 +24,6 @@ SafeShrink_测试图片/
 # 忽略临时文件
 *.tmp
 *.log
+
+# 忽略 Cython 生成的 C 中间文件（可重新生成）
+*.c
