@@ -726,6 +726,7 @@ class SanitizeTab(QWidget):
             self.processed_content = None
             self._native_doc = native_obj  # 可能是 Document / Workbook / Presentation 或 None
             self._native_docx_ext = actual_ext  # .doc 转换后为 .docx
+            self._current_file_path = path  # 保存当前文件路径，供后续脱敏使用
             self.text_edit.setPlainText(content)
             self.btn_undo.setEnabled(False)
         except Exception as e:
@@ -932,6 +933,14 @@ class SanitizeTab(QWidget):
             except Exception:
                 pass
             raise Exception("无法确定 xlsx 文件路径,请重新打开文件")
+        
+        # 验证文件路径有效性
+        if not os.path.exists(file_path):
+            try:
+                wb.close()
+            except Exception:
+                pass
+            raise Exception(f"文件不存在或无法访问: {file_path}")
 
         # 保存预览用的只读 workbook(如果可迭代)
         try:
@@ -940,7 +949,10 @@ class SanitizeTab(QWidget):
             pass
 
         # 用可写模式加载
-        writable_wb = _load(str(file_path), data_only=False)  # False: 保留公式,Excel打开后重算
+        try:
+            writable_wb = _load(str(file_path), data_only=False)  # False: 保留公式,Excel打开后重算
+        except Exception as e:
+            raise Exception(f"无法重新加载 xlsx 文件 '{file_path}': {e}")
         self._native_doc = writable_wb  # 更新引用为可写版本
 
         # 用 sanitize_content 统计精确脱敏处数
@@ -1132,7 +1144,16 @@ class SanitizeTab(QWidget):
             msg = f"脱敏完成!\n\n发现: {found_count} 处\n已脱敏: {sanitized_count} 处"
             QMessageBox.information(self, "完成", msg)
         except Exception as e:
-            QMessageBox.critical(self, "错误", f"处理失败: {e}")
+            import traceback, os
+            error_msg = str(e)
+            # 针对 Windows Errno 22 提供更详细的诊断信息
+            if "Errno 22" in error_msg or "Invalid argument" in error_msg:
+                file_path = getattr(self, '_current_file_path', None) or getattr(self, 'current_file', '')
+                debug_info = f"\n\n诊断信息:\n- 文件路径: {file_path}\n- 路径存在: {os.path.exists(file_path) if file_path else 'N/A'}\n- 路径长度: {len(file_path) if file_path else 0}\n- 原生文档类型: {type(self._native_doc).__name__ if self._native_doc else 'None'}"
+                error_msg += debug_info
+                print(f"[ERROR] sanitize_file Errno 22: {debug_info}")
+            QMessageBox.critical(self, "错误", f"处理失败: {error_msg}")
+            traceback.print_exc()
 
     def save_result(self):
         """保存脱敏结果(使用原生对象保存,完全保持格式)"""
