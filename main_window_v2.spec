@@ -29,10 +29,13 @@ a = Analysis(
         ('safe_shrink.cp313-win_amd64.pyd', '.'),
         ('safe_shrink_gui.cp313-win_amd64.pyd', '.'),
         ('batch_processor.cp313-win_amd64.pyd', '.'),
+        ('batch_tab.cp313-win_amd64.pyd', '.'),
         ('format_to_ssd.cp313-win_amd64.pyd', '.'),
         ('sanitize_ssd.cp313-win_amd64.pyd', '.'),
         ('ssd_embed_images.cp313-win_amd64.pyd', '.'),
         ('file_status.cp313-win_amd64.pyd', '.'),
+        ('slim_tab.cp313-win_amd64.pyd', '.'),
+        ('sanitize_tab.cp313-win_amd64.pyd', '.'),
         ('_ooxml_to_ssd.cp313-win_amd64.pyd', '.'),
     ],
     datas=[
