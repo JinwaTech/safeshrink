@@ -7,7 +7,6 @@ nuitka313_out/       # Nuitka 编译输出目录
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
 dist/
 build/
 *.spec.bak/
