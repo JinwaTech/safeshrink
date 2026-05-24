@@ -2,7 +2,7 @@
 
 > 一键文档减肥、脱敏、SSD转换，完全离线，保护隐私
 
-**版本：v1.2.1** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 EXE](https://github.com/JinwaTech/safeshrink/releases/latest)
+**版本：v1.2.1** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载完整版](https://github.com/JinwaTech/safeshrink/releases/tag/v1.2.1)
 
 ---
 
@@ -95,9 +95,14 @@
 
 ## 🚀 快速开始
 
-### 方式一：下载 EXE（推荐）
+### 方式一：下载完整版（推荐）
 
-前往 [GitHub Releases](https://github.com/JinwaTech/safeshrink/releases/latest) 下载 `SafeShrink.exe`，双击运行，无需安装。
+前往 [GitHub Releases](https://github.com/JinwaTech/safeshrink/releases/tag/v1.2.1) 下载 `SafeShrink-v1.2.1.zip`（约 115MB）：
+1. 下载并解压 zip 文件
+2. 进入 `SafeShrink` 文件夹
+3. 双击 `SafeShrink.exe` 运行
+
+> ⚠️ 请勿单独下载 `SafeShrink.exe`（21MB），缺少依赖文件无法运行。
 
 ### 方式二：SkillHub 安装
 
