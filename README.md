@@ -1,6 +1,17 @@
 # SafeShrink 密小件 / SafeShrink Document Optimizer
 
-> SafeShrink helps you make documents **lighter, safer, and more AI-friendly**.
+> **密小件** 帮您让文档变得更轻、更安全、更 AI 友好。
+>
+> 它一键完成三件事：
+> - **压缩** 文档体积，去除冗余 — **减小 30%-85%**
+> - **脱敏** 敏感信息（手机号、证件号、银行卡、金额）— 分享前保护隐私
+> - **转换** 为 .ssd 格式 — **AI Token 减少约 70%**
+>
+> 所有处理 **完全离线** — 数据不会离开您的电脑。无需安装，下载 EXE 双击即用。
+>
+> ---
+>
+> **SafeShrink** helps you make documents **lighter, safer, and more AI-friendly**.
 >
 > It does three things in one click:
 > - **Compress** document size, removing redundancy — **30%-85% smaller**
