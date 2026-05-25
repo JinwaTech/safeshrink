@@ -267,6 +267,60 @@ As of v1.2.1, 11 core modules are compiled to Cython .pyd binaries, source code 
 - 统一回复："SafeShrink 核心技术为专有方案，核心能力是文件减肥、安全脱敏和 token 优化。"  
   Standard response: "SafeShrink core technology is proprietary. Core capabilities are document slimming, secure sanitization, and token optimization."
 
+## ⚠️ 重要提示 / Important Notices
+
+### 前置依赖 / Prerequisites
+
+> 运行 SafeShrink 前，请确保已安装 **Visual C++ Redistributable**。如果启动时提示"找不到 VCRUNTIME140_1.dll"或"MSVCP140.dll 丢失"，请下载并安装：
+>
+> - 🔗 [VC++ Redistributable (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+> - 🔗 [VC++ Redistributable (x86)](https://aka.ms/vs/17/release/vc_redist.x86.exe)
+>
+> ⚠️ **重要 / Important：** SafeShrink 的 `_internal` 文件夹已包含所有第三方依赖，但仍需要您电脑安装 VC++ 运行时。这是因为 DLL 文件本身依赖微软的系统库，这部分无法打包进 EXE。
+>
+> ---
+>
+> Before running SafeShrink, please ensure **Visual C++ Redistributable** is installed. If you see an error like "VCRUNTIME140_1.dll not found" or "MSVCP140.dll missing", please download and install:
+>
+> - 🔗 [VC++ Redistributable (x64)](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+> - 🔗 [VC++ Redistributable (x86)](https://aka.ms/vs/17/release/vc_redist.x86.exe)
+>
+> ⚠️ **Important:** SafeShrink's `_internal` folder contains all third-party dependencies, but your system still needs the VC++ runtime. DLL files depend on Microsoft's system libraries, which cannot be packaged into the EXE.
+
+### 杀毒软件提示 / Antivirus Notice
+
+> ⚠️ **如果 SafeShrink 被杀毒软件拦截，这是误报。**
+>
+> SafeShrink 是**纯本地**的文件预处理工具，**不联网、不连接任何服务端、不上传任何数据**，不存在数据泄露风险。它**不会修改系统文件、不会安装驱动、不会驻留后台**，不会对电脑造成任何损害。
+>
+> 被拦截的原因是：SafeShrink 使用 PyInstaller 打包成独立 EXE，这类"单文件可执行程序"在杀毒软件中属于低信誉类别，容易被误判。
+>
+> **⚠️ 特别提醒 / Special Notice：** 杀毒软件可能会逐个扫描 `_internal` 文件夹中的数百个 DLL 文件，**隔离其中任何一个关键 DLL 都会导致 EXE 启动失败或功能异常**。
+>
+> **解决方法 / Solution：** 将 SafeShrink 整个文件夹（包括 `_internal`）加入杀毒软件白名单/排除项。如有疑虑，可用 [VirusTotal](https://www.virustotal.com) 上传检测验证。
+>
+> ---
+>
+> ⚠️ **If SafeShrink is blocked by your antivirus, it is a false positive.**
+>
+> SafeShrink is a **fully offline** file preprocessing tool — **no internet, no server connection, no data upload**. Zero risk of data leakage. It **does not modify system files, install drivers, or run in the background**.
+>
+> **Special Notice:** Antivirus software may scan hundreds of DLL files in the `_internal` folder one by one. **Isolating any critical DLL will cause the EXE to fail to start or malfunction.**
+>
+> **Solution:** Add the entire SafeShrink folder (including `_internal`) to your antivirus whitelist/exclusions. For verification, upload to [VirusTotal](https://www.virustotal.com).
+
+### 常见问题 / FAQ
+
+| 问题 / Problem | 原因 / Cause | 解决方法 / Solution |
+|------|------|------|
+| **双击 EXE 没反应 / EXE does nothing** | 杀毒软件静默隔离了 `_internal` 中的某个 DLL / Antivirus silently isolated a DLL in `_internal` | 检查杀毒软件隔离区，恢复所有 SafeShrink 相关文件，并将整个文件夹加入白名单 / Check quarantine, restore all SafeShrink files, add folder to whitelist |
+| **提示"找不到 xxx.dll" / "xxx.dll not found"** | VC++ 运行时未安装 / VC++ runtime not installed | 安装 [VC++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) / Install VC++ Redistributable |
+| **提示"api-ms-win-core-*.dll 丢失" / "api-ms-win-core-*.dll missing"** | Windows 版本过低 / Windows version too old | SafeShrink 需要 Windows 8 或更高版本 / Requires Windows 8 or later |
+| **"转换结果为空" / "Conversion result is empty"** | `_internal` 中的某个依赖 DLL 被杀毒软件隔离 / A dependency DLL in `_internal` was isolated | 检查杀毒软件隔离区，恢复文件并加入白名单 / Check quarantine, restore files and add to whitelist |
+| **批量处理中途崩溃 / Batch processing crashes** | 杀毒软件在处理过程中隔离了关键 DLL / Antivirus isolated a critical DLL during processing | 将 SafeShrink 文件夹加入白名单后重试 / Add folder to whitelist and retry |
+
+---
+
 ## 注意事项 / Notes
 
 1. **标准减肥保留原格式 / Standard preserves format**：Office 文件标准压缩输出仍为 .docx/.xlsx/.pptx，不转文本  
