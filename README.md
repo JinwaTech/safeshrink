@@ -39,6 +39,42 @@
 
 ---
 
+## 🖼️ 功能展示 / Features
+
+### 主界面 / Main Interface
+
+![主界面](docs/screenshot/01-main-interface.png)
+
+### 单文件减肥 / Single-File Slimming
+
+![单文件减肥](docs/screenshot/02-single-file-slim-standard.png)
+
+### 批量处理报告 / Batch Processing Report
+
+![批量处理](docs/screenshot/03-batch-slim-report.png)
+
+### 脱敏前后对比 / Sanitization Compare
+
+![脱敏对比](docs/screenshot/04-sanitize-compare.png)
+
+### PDF 转 SSD / PDF to SSD
+
+![PDF转SSD](docs/screenshot/05-pdf-to-ssd.png)
+
+### 结果对比对话框 / Result Compare Dialog
+
+![结果对比](docs/screenshot/06-result-compare-dialog.png)
+
+### 设置面板 / Settings Panel
+
+![设置面板](docs/screenshot/07-settings-panel.png)
+
+### CLI 命令行 / Command Line Interface
+
+![CLI](docs/screenshot/08-cli-version.png)
+
+---
+
 ## 💰 使用效果 / Usage Results
 
 ### 📉 Token 节省对比 / Token Savings
