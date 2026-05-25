@@ -1,22 +1,46 @@
 # -*- coding: utf-8 -*-
 """
 SafeShrink 依赖列表
-Python 3.14+
+Python 3.13+
 """
 
-# 核心
-PyQt6>=6.6.0
-markitdown>=0.0.1
-mammoth>=1.0.1
-python-docx>=1.1.0
-openpyxl>=3.1.0
-python-pptx>=0.6.23
-pdfplumber>=0.10.3
-Pillow>=10.0.0
+# GUI
+PySide6>=6.11.0
 
-# 可选增强
+# Office 文档处理
+python-docx>=1.2.0
+openpyxl>=3.1.0
+python-pptx>=1.0.0
+mammoth>=1.0.1
+
+# PDF 处理
+PyMuPDF>=1.27.0
+pypdfium2>=5.8.0
+
+# 文本提取与格式转换
+markitdown>=0.1.5
+pdfplumber>=0.11.0
+
+# OCR 依赖（markitdown → magika → onnxruntime）
+magika>=0.6.0
+onnxruntime>=1.20.0
+numpy>=2.4.0
+
+# 文本处理
 beautifulsoup4>=4.12.0
 lxml>=4.9.0
+defusedxml>=0.7.0
+soupsieve>=2.5
+
+# 表格处理
+xlsxwriter>=3.0.0
+xlrd>=2.0.0
+
+# 通用
+Pillow>=12.0.0
+protobuf>=7.0.0
+requests>=2.31.0
+click>=8.1.0
 
 # 构建工具
 pyinstaller>=6.0.0
