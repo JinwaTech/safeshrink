@@ -115,6 +115,9 @@ OCR scanned PDFs, output searchable text
 
 前往 [GitHub Releases](https://github.com/JinwaTech/safeshrink/releases/latest) 下载 `SafeShrink.exe`，双击运行，无需安装。
 
+> ⚠️ **系统要求 / System Requirements**：Windows 8 或更高版本 / Windows 8 or later。不支持 Windows 7（缺少必要的系统 API）。
+> ⚠️ **System Requirements**: Windows 8 or later. Windows 7 is not supported (missing required system APIs).
+
 ### 方式二：SkillHub 安装 / Option 2: Install via SkillHub
 
 ```bash
