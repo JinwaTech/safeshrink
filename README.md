@@ -1,7 +1,16 @@
 # SafeShrink 密小件 / SafeShrink Document Optimizer
 
-> 一键文档减肥、脱敏、SSD转换，完全离线，保护隐私  
-> One-click document slimming, sanitization, and SSD conversion. Fully offline, privacy-first.
+> SafeShrink helps you make documents **lighter, safer, and more AI-friendly**.
+>
+> It does three things in one click:
+> - **Compress** document size, removing redundancy — **30%-85% smaller**
+> - **Sanitize** sensitive info (phone numbers, IDs, bank cards, amounts) — privacy protected before sharing
+> - **Convert** to .ssd format — **~70% fewer AI tokens**
+>
+> All processing is **fully offline** — your data never leaves your computer. No installation needed, just download the EXE and double-click.
+
+---
+
 
 **版本：v1.2.1** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 EXE](https://github.com/JinwaTech/safeshrink/releases/latest)
 
