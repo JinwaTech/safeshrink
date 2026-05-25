@@ -18,6 +18,8 @@ test_cli.py
 
 # 内部文档
 docs/
+!docs/screenshot/
+!docs/screenshot/*
 
 # 构建产物
 dist/
