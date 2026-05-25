@@ -773,7 +773,7 @@ class MainWindow(QMainWindow):
 
         # 版本信息
 
-        footer = QLabel("v0.9.0  SafeShrink")
+        footer = QLabel("v1.2.1  SafeShrink")
 
         footer.setObjectName("footer")
 

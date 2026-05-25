@@ -1,29 +1,32 @@
-# 忽略构建产物
-SafeShrink/          # 旧版 onefile EXE 输出目录
-dist/                # PyInstaller onedir EXE 输出目录
-build/
-nuitka313_out/       # Nuitka 编译输出目录
-.venv*/              # Python 虚拟环境
-__pycache__/
-*.pyc
-*.pyo
+# 构建脚本
+build.py
+build_safeshrink.py
+fix_version.py
+setup_cython.py
+runtime_hook.py
+
+# CLI 辅助/测试文件
+cli_show.py
+cli_output.txt
+test_cli.py
+
+# Cython 中间文件
+*.c
+*.pyd
+*.so
+*.dll
+
+# 内部文档
+docs/
+
+# 构建产物
 dist/
 build/
-*.spec.bak/
+__pycache__/
+*.pyc
 
-# 忽略测试图片目录
-SafeShrink_测试图片/
-
-# 忽略 IDE 配置
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# 忽略临时文件
-*.tmp
+# 其他
+*.bak
 *.log
-
-# 忽略 Cython 生成的 C 中间文件（可重新生成）
-*.c
+*.tmp
+.ssd
