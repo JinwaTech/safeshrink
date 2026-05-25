@@ -23,7 +23,7 @@
 ---
 
 
-**版本：v1.2.1** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 EXE](https://github.com/JinwaTech/safeshrink/releases/latest)
+**版本：v1.2.7** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 EXE](https://github.com/JinwaTech/safeshrink/releases/latest)
 
 ---
 
