@@ -16,10 +16,13 @@ test_cli.py
 *.so
 *.dll
 
-# 内部文档
-docs/
+# 内部文档（但保留截图）
+# Internal docs (but keep screenshots)
 !docs/screenshot/
 !docs/screenshot/*
+!docs/README.internal.md
+docs/*
+!docs/.gitkeep
 
 # 构建产物
 dist/
