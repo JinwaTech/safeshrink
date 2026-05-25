@@ -172,6 +172,26 @@ python start_gui.py
 
 ---
 
+## 📁 文件说明 / File Index
+
+| 文件 / File | 说明 / Description |
+|------|------|
+| `README.md` | 用户指南 / User Guide |
+| `SKILL.md` | Skill 插件文档 / Skill Plugin Documentation |
+| `main_window_v2.py` | 主窗口 UI 源码 / Main Window UI Source |
+| `settings_tab.py` | 设置面板源码 / Settings Panel Source |
+| `history_manager.py` | 历史记录管理器 / History Manager |
+| `history_tab.py` | 历史记录面板 / History Panel |
+| `theme_manager.py` | 主题管理器 / Theme Manager |
+| `translations.py` | 多语言翻译 / Translations |
+| `result_compare_dialog.py` | 结果对比对话框 / Result Compare Dialog |
+| `assets/` | 图标与资源文件 / Icons & Resources |
+| `requirements.txt` | Python 依赖列表 / Python Dependencies |
+| `.gitignore` | Git 忽略规则 / Git Ignore Rules |
+| `LICENSES_THIRD_PARTY.txt` | 第三方许可证 / Third-Party Licenses |
+
+---
+
 ## 🤝 贡献与支持 / Contributing
 
 - 🐛 [提交 Issue](https://github.com/JinwaTech/safeshrink/issues) / [Submit Issue](https://github.com/JinwaTech/safeshrink/issues)
