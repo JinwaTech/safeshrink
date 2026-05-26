@@ -336,3 +336,12 @@ python start_gui.py
 [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 EXE](https://github.com/JinwaTech/safeshrink/releases/latest) · [问题反馈](https://github.com/JinwaTech/safeshrink/issues)
 
 </div>
+
+---
+
+## 反馈与联系我们 / Feedback & Contact
+
+- 📧 邮箱 / Email: lssclty@jinwakeji.cn（全球用户 / Global）
+- 📞 电话 / Phone: +86-186-6700-8029（国内用户 / China）
+- 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.1/qr_wechat_work.png)
+- 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.1/qr_lark.png)
