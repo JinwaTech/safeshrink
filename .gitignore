@@ -35,3 +35,17 @@ __pycache__/
 *.log
 *.tmp
 .ssd
+
+# 核心源码保护（本地开发用，不push到GitHub）
+_ooxml_to_ssd.py
+batch_processor.py
+batch_tab.py
+file_status.py
+format_to_ssd.py
+safe_shrink.py
+safe_shrink_gui.py
+sanitize_ssd.py
+sanitize_tab.py
+slim_tab.py
+ssd_embed_images.py
+src_backup/
