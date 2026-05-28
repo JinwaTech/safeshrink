@@ -16,3 +16,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Scope of License
+
+This MIT-0 license applies ONLY to the SafeShrink Skill package
+(SKILL.md, _meta.json, and related Skill distribution files).
+
+The SafeShrink application software itself (EXE, source code, GUI, CLI)
+is proprietary software owned by JinwaTech. See README.md for details.
