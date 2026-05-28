@@ -7,7 +7,7 @@
 > - **脱敏** 敏感信息（手机号、证件号、银行卡、金额）— 分享前保护隐私
 > - **转换** 为 .ssd 格式 — **AI Token 减少约 70%**
 >
-> 所有处理 **完全离线** — 数据不会离开您的电脑。无需安装，下载 EXE 双击即用。
+> 所有处理 **完全离线** — 数据不会离开您的电脑。无需安装，下载 zip 包，解压后双击 EXE 运行。
 >
 > ---
 >
@@ -18,12 +18,12 @@
 > - **Sanitize** sensitive info (phone numbers, IDs, bank cards, amounts) — privacy protected before sharing
 > - **Convert** to .ssd format — **~70% fewer AI tokens**
 >
-> All processing is **fully offline** — your data never leaves your computer. No installation needed, just download the EXE and double-click.
+> All processing is **fully offline** — your data never leaves your computer. No installation needed, just download the zip, extract, and double-click the EXE.
 
 ---
 
 
-**版本：v1.2.7** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 EXE](https://github.com/JinwaTech/safeshrink/releases/latest)
+**版本：v1.2.2** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 zip](https://github.com/JinwaTech/safeshrink/releases/latest)
 
 ---
 
@@ -43,35 +43,35 @@
 
 ### 主界面 / Main Interface
 
-![主界面](docs/screenshot/01-main-interface.png)
+![主界面](https://raw.githubusercontent.com/JinwaTech/safeshrink/main/docs/screenshot/01-main-interface.png)
 
 ### 单文件减肥 / Single-File Slimming
 
-![单文件减肥](docs/screenshot/02-single-file-slim-standard.png)
+![单文件减肥](https://raw.githubusercontent.com/JinwaTech/safeshrink/main/docs/screenshot/02-single-file-slim-standard.png)
 
 ### 批量处理报告 / Batch Processing Report
 
-![批量处理](docs/screenshot/03-batch-slim-report.png)
+![批量处理](https://raw.githubusercontent.com/JinwaTech/safeshrink/main/docs/screenshot/03-batch-slim-report.png)
 
 ### 脱敏前后对比 / Sanitization Compare
 
-![脱敏对比](docs/screenshot/04-sanitize-compare.png)
+![脱敏对比](https://raw.githubusercontent.com/JinwaTech/safeshrink/main/docs/screenshot/04-sanitize-compare.png)
 
 ### PDF 转 SSD / PDF to SSD
 
-![PDF转SSD](docs/screenshot/05-pdf-to-ssd.png)
+![PDF转SSD](https://raw.githubusercontent.com/JinwaTech/safeshrink/main/docs/screenshot/05-pdf-to-ssd.png)
 
 ### 结果对比对话框 / Result Compare Dialog
 
-![结果对比](docs/screenshot/06-result-compare-dialog.png)
+![结果对比](https://raw.githubusercontent.com/JinwaTech/safeshrink/main/docs/screenshot/06-result-compare-dialog.png)
 
 ### 设置面板 / Settings Panel
 
-![设置面板](docs/screenshot/07-settings-panel.png)
+![设置面板](https://raw.githubusercontent.com/JinwaTech/safeshrink/main/docs/screenshot/07-settings-panel.png)
 
 ### CLI 命令行 / Command Line Interface
 
-![CLI](docs/screenshot/08-cli-version.png)
+![CLI](https://raw.githubusercontent.com/JinwaTech/safeshrink/main/docs/screenshot/08-cli-version.png)
 
 ---
 
@@ -167,9 +167,9 @@ OCR scanned PDFs, output searchable text
 
 ## 🚀 快速开始 / Quick Start
 
-### 方式一：下载 EXE（推荐）/ Option 1: Download EXE (Recommended)
+### 方式一：下载 zip 包（推荐）/ Option 1: Download zip (Recommended)
 
-前往 [GitHub Releases](https://github.com/JinwaTech/safeshrink/releases/latest) 下载 `SafeShrink.exe`，双击运行，无需安装。
+前往 [GitHub Releases](https://github.com/JinwaTech/safeshrink/releases/latest) 下载 `SafeShrink-v1.2.2.zip`，解压后双击 `SafeShrink.exe` 运行，无需安装。
 
 > ⚠️ **系统要求 / System Requirements**：Windows 8 或更高版本 / Windows 8 or later。不支持 Windows 7（缺少必要的系统 API）。
 > ⚠️ **System Requirements**: Windows 8 or later. Windows 7 is not supported (missing required system APIs).
@@ -194,6 +194,85 @@ python start_gui.py
 ```
 
 ---
+
+## 📋 更新日志 / Changelog
+
+### v1.2.2（2026-05-28）
+
+#### 新增 / New Features
+
+- **结构化安全脱敏 / Structured Sanitization**：JSON/XML/YAML/CSV/HTML 等结构化文件支持安全脱敏，递归遍历只替换 string value，不破坏 key 和数据结构 / Structured files (JSON/XML/YAML/CSV/HTML) support safe sanitization — recursive traversal replaces only string values, preserving keys and structure
+- **XLS 旧格式支持 / XLS Legacy Support**：通过 xlrd 支持 .xls（OLE2 格式）的预览、压缩跳过和脱敏处理 / .xls (OLE2) format supported via xlrd for preview, compression skip, and sanitization
+
+#### 修复 / Bug Fixes
+
+- **XLS 预览乱码 / XLS Preview Garbled**：OLE2 二进制文件被当 UTF-8 读取导致显示乱码，现用 xlrd 正确读取 / OLE2 binary files were read as UTF-8 causing garbled display; now correctly read with xlrd
+- **XLS 压缩损坏 / XLS Compression Corruption**：标准/激进压缩对结构化数据执行文本压缩导致损坏，结构化格式统一跳过压缩 / Standard/aggressive compression on structured data caused corruption; structured formats now skip compression
+- **XLS SSD 转换丢失内容 / XLS SSD Conversion Data Loss**：数字值被错误当作 shared string 索引查表，修复为正确区分属性值和字符串值 / Numeric values were incorrectly treated as shared string indices; now properly distinguished
+- **批量脱敏 CSV/XLSX 无效 / Batch Sanitize CSV/XLSX Ineffective**：CSV 未加入原生脱敏列表，dummy SanitizeTab 实例缺少属性导致 fallback / CSV missing from native sanitize list; dummy SanitizeTab instance missing attributes
+- **批量脱敏跳过逻辑 / Batch Sanitize Skip Logic**：`_减肥` 文件被同等跳过，无法二次脱敏；修复后 `_减肥` 可再脱敏，`_脱敏` 可再减肥 / `_减肥` files were skipped during sanitization; now `_减肥` can be re-sanitized, `_脱敏` can be re-slimmed
+- **GUI 单文件 CSV/JSON 压缩 / GUI Single-File CSV/JSON Compression**：slim_tab 独立流程未跳过结构化格式，导致 CSV/JSON 被错误压缩 / slim_tab's independent flow didn't skip structured formats
+
+#### 改进 / Improvements
+
+- **PyInstaller 打包优化 / PyInstaller Packaging Optimization**：18 个模块编译为 .pyd，1079 文件/168MB（旧版 1552 文件/186MB）/ 18 modules compiled to .pyd, 1079 files/168MB (was 1552/186MB)
+- **版本号统一 / Version Unified**：CLI `--version`、GUI 状态栏、文件标记三处版本号统一为 v1.2.2 / Version number unified across CLI, GUI footer, and file status marker
+
+---
+
+### v1.2.1（2026-05-24）
+
+- **源码保护 / Source Code Protection**: 11 个核心模块编译为 Cython .pyd（safe_shrink、batch_processor、slim_tab 等） / 11 core modules compiled to Cython .pyd
+- **源码保护 / Source Code Protection**: GitHub 历史版本（v1.0.0~v1.2.0）已删除，仅保留 v1.2.1 Release / GitHub history versions (v1.0.0~v1.2.0) removed, only v1.2.1 Release retained
+- **修复 / Fix**: 单文档脱敏 `[Errno 22] Invalid argument` — `load_file_content()` 未设置 `self._current_file_path` / Single-document sanitization error
+- **修复 / Fix**: Cython 循环依赖 — `safe_shrink.py` 自引用导入导致编译失败 / Cython circular import
+- **新增 / New**: CLI 命令体系（slim/batch-slim/convert/compress-image/batch-convert/batch-compress-image）/ CLI command system
+- **新增 / New**: `result_compare_dialog.py` 结果对比对话框 / Result comparison dialog
+- **构建 / Build**: EXE 20.67MB，Python 3.13 + PySide6 + Cython .pyd
+
+### v1.2.0（2026-05-23）
+
+- **修复 / Fix**: 批量减肥 `_减肥` 后缀缺失 / Batch slimming `_减肥` suffix missing
+- **修复 / Fix**: PPTX/XLSX 标准压缩报错 / PPTX/XLSX standard compression error
+- **修复 / Fix**: 模式切换状态残留 / Mode switch state leakage
+- **修复 / Fix**: SSD 命名泄漏 / SSD naming leakage
+- **修复 / Fix**: sanitize 逐项目验证 / Sanitize item-by-item verification
+- **修复 / Fix**: markitdown EXE 打包 / markitdown EXE packaging
+
+### v1.1.8（2026-05-12）
+
+- **修复 / Fix**: 批量处理双弹窗 / Batch processing double popup
+- **修复 / Fix**: 批量处理卡死 / Batch processing freeze
+- **修复 / Fix**: 进程残留 / Process residue
+- **UI 修复 / UI Fix**: "扫描为Markdown" → "扫描为SSD"（5处）/ "Scan to Markdown" → "Scan to SSD"
+
+### v1.1.7（2026-05-10）
+
+- **新增 / New**: 单文件 PDF OCR / Single-file PDF OCR
+- **新增 / New**: 批量 PDF OCR / Batch PDF OCR
+- **新增 / New**: `is_scanned_pdf()` 智能检测扫描件 / Scanned PDF detection
+
+### v1.1.6（2026-05-09）
+
+- **修复 / Fix**: 尺寸限制区域布局 / Size limit area layout
+- **新增 / New**: QSpinBox:disabled 样式 / QSpinBox:disabled style
+
+### v1.1.5（2026-05-09）
+
+- **修复 / Fix**: 选"扫描为SSD"后跳回"文件减肥"页面 / Jump back to slimming page after selecting SSD
+- **新增 / New**: build.py 自动同步 EXE 到桌面 / build.py auto-sync EXE to desktop
+
+### v1.1.4（2026-05-09）
+
+- **新增 / New**: 图片模式 OCR — Tesseract v5.4.0 集成 / Image mode OCR with Tesseract v5.4.0
+- **新增 / New**: `img_format_combo` 两选项 / Two image format options
+- **修复 / Fix**: 隐藏 Tesseract 黑窗口 / Hide Tesseract console window
+
+### v1.1.3（2026-05-08）
+
+- **新增 / New**: 批量处理 Tab — 多线程并行 / Batch processing Tab
+- **修复 / Fix**: SSD 转换默认 `embed_images=False` / SSD default `embed_images=False`
+
 
 ## ⚠️ 重要提示 / Important Notices
 
@@ -253,10 +332,11 @@ python start_gui.py
 
 | 类型 / Type | 格式 / Formats | 减肥 / Slim | 脱敏 / Sanitize | SSD |
 |------|------|:----:|:----:|:--------:|
-| **Office** | .docx, .xlsx, .pptx | ✅ | ✅ | ✅ |
+| **Office** | .docx, .xlsx, .xls, .pptx | ✅ | ✅ | ✅ |
 | **PDF** | .pdf | ✅ | ✅ | ✅ |
 | **网页 / Web** | .html, .htm | ✅ | ✅ | ✅ |
 | **文本 / Text** | .txt, .ssd, .json, .csv | ✅ | ✅ | — |
+| **结构化 / Structured** | .json, .xml, .yaml, .csv, .html | — | ✅ | — |
 | **图片 / Image** | .jpg, .png, .gif, .webp | ✅ | — | — |
 | **代码 / Code** | .js, .py, .ts, .css, .sql | ✅ | ✅ | ✅ |
 
@@ -333,7 +413,7 @@ python start_gui.py
 **SafeShrink 密小件 — 让文档更轻、更安全、更 AI 友好**
 **SafeShrink — Lighter Docs, Safer Data, More AI-Friendly**
 
-[GitHub](https://github.com/JinwaTech/safeshrink) · [下载 EXE](https://github.com/JinwaTech/safeshrink/releases/latest) · [问题反馈](https://github.com/JinwaTech/safeshrink/issues)
+[GitHub](https://github.com/JinwaTech/safeshrink) · [下载 zip](https://github.com/JinwaTech/safeshrink/releases/latest) · [问题反馈](https://github.com/JinwaTech/safeshrink/issues)
 
 </div>
 
