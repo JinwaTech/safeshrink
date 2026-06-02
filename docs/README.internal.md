@@ -7,7 +7,7 @@
 > - **脱敏** 敏感信息（手机号、证件号、银行卡、金额）— 分享前保护隐私
 > - **转换** 为 .ssd 格式 — **AI Token 减少约 70%**
 >
-> 所有处理 **完全离线** — 数据不会离开您的电脑。无需安装，下载 EXE 双击即用。
+> 所有处理 **完全离线** — 数据不会离开您的电脑。无需安装，下载 zip 包解压后双击 EXE 即可运行。
 >
 > ---
 >
@@ -18,12 +18,12 @@
 > - **Sanitize** sensitive info (phone numbers, IDs, bank cards, amounts) — privacy protected before sharing
 > - **Convert** to .ssd format — **~70% fewer AI tokens**
 >
-> All processing is **fully offline** — your data never leaves your computer. No installation needed, just download the EXE and double-click.
+> All processing is **fully offline** — your data never leaves your computer. No installation needed, just download the zip, extract, and double-click the EXE.
 
 ---
 
 
-**版本：v1.2.1 / Version: v1.2.1** *(2026-05-24)*
+**版本：v1.2.3 / Version: v1.2.3** *(2026-06-02)*
 
 | 功能 / Feature | 说明 / Description | 效果 / Effect |
 |------|------|------|
@@ -36,6 +36,64 @@
 ---
 
 ## 更新日志 / Changelog
+
+### v1.2.3（2026-06-02）
+
+#### 新增 / New Features
+
+- **GUI 全面英文支持 / Full GUI English Support**：全部界面元素支持中英双语切换，启动时自动检测系统语言。`translations.py` 扩展至 331 条翻译，6 个 UI 文件 `update_language()` 全面扩展（48→196 处 gettext 调用）。QCalendarWidget 通过 `setLocale(QLocale.English)` 切换内置文本。5 个模块编译为 .pyd 部署 / All UI elements support Chinese/English switching with auto-detect. `translations.py` expanded to 331 entries, 6 UI files expanded `update_language()` (48→196 gettext calls). QCalendarWidget switched via `setLocale(QLocale.English)`. 5 modules compiled to .pyd
+
+#### 修复 / Bug Fixes
+
+- **QSpinBox 高度压缩 / QSpinBox Height Compression**（slim_tab.py）：`minimumHeight=0`，布局系统压缩高度 30%（27px→39px）。修复为 `setMinimumHeight(36)` + size_group 最小高度 120→140 / `minimumHeight=0`, layout compressed height 30%. Fixed with `setMinimumHeight(36)` + size_group min 120→140
+- **关闭对话框硬编码中文 / Close Dialog Hardcoded Chinese**（main_window_v2.py）：退出确认对话框 3 处硬编码中文，用 `_()` 包裹 / 3 exit confirmation dialog strings hardcoded, wrapped with `_()`
+- **Settings Tab hasattr 双前缀 / Settings Tab hasattr Double Prefix**（settings_tab.py L1150/1152）：`hasattr(self, 'self.xxx')` 导致永远返回 False / `hasattr(self, 'self.xxx')` caused always False
+- **i18n 启动不生效 / i18n Not Working on Startup**：`__init__()` 末尾未调用 `apply_language()` + `_get_init_lang()` 错误调用类方法 / `__init__()` missing `apply_language()` call + `_get_init_lang()` wrong class method call
+
+#### 改进 / Improvements
+
+- **版本号统一 / Version Unified**：CLI `--version`、GUI 状态栏、文件标记三处统一为 v1.2.3 / Version number unified across CLI, GUI footer, and file status marker
+
+#### 关键教训 / Key Lessons
+
+- QSpinBox 截断问题需同时检查宽度和高度，运行时调试（print geometry + grab screenshot）是确认实际渲染尺寸的唯一可靠方法 / QSpinBox truncation requires checking both width and height; runtime debug (print geometry + grab) is the only reliable way to confirm actual rendered size
+
+---
+
+### v1.2.2（2026-05-28）
+
+#### 新增 / New Features
+
+- **结构化安全脱敏 / Structured Sanitization**：新增 `struct_sanitizer.py`，为 JSON/XML/YAML/CSV/HTML 提供结构安全脱敏。递归遍历只替换 string value，不动 key 和数据结构。Cython 编译为 97.5KB .pyd / New `struct_sanitizer.py` provides safe sanitization for structured formats. Recursive traversal replaces only string values, preserving keys and structure. Compiled to 97.5KB .pyd
+- **XLS 旧格式支持 / XLS Legacy Support**：通过 xlrd 支持 .xls（OLE2 格式）。`slim_tab.py` 的 `_read_ooxml_text` 新增 xlrd 分支，`sanitize_tab.py` 的 `_get_preview_text` 新增 xlrd 独立处理 / .xls (OLE2) format supported via xlrd. `slim_tab.py` and `sanitize_tab.py` both gain xlrd branches for proper XLS handling
+- **CLI 英文输出 / CLI English Output**：~54 处 print / 15 处 warning 包装为 `msg()` 函数，LANG 字典 fallback，locale 自动检测 / ~54 print / 15 warning statements wrapped in `msg()` function, LANG dictionary fallback, locale auto-detect
+- **英文脱敏规则 / English Sanitization Rules**：新增 EN_PATTERNS（US Phone、UK Phone、SSN、Credit Card），与中文 PATTERNS 并列，EN 掩码函数保留末 4 位 / Added EN_PATTERNS (US Phone, UK Phone, SSN, Credit Card) alongside Chinese PATTERNS, EN mask function preserves last 4 digits
+- **XLS 写入支持 / XLS Write Support**：新增 `write_xls()` 函数（xlwt 库写 OLE2 格式），writers 字典注册 .xls / New `write_xls()` function (xlwt for OLE2 format), .xls registered in writers dict
+
+#### 修复 / Bug Fixes（11 个）
+
+- **XLS 预览乱码 / XLS Preview Garbled**（slim_tab.py）：`zipfile.ZipFile()` 能打开 OLE2 格式（不抛异常），导致 xlrd 分支永远不执行。修复为在 zipfile 之前显式检查 `.xls` 后缀 / `zipfile.ZipFile()` silently opens OLE2 files without raising, so xlrd branch never executes. Fixed by explicit `.xls` check before zipfile
+- **XLS 标准/激进压缩损坏 / XLS Compression Corruption**（slim_tab.py）：结构化格式（含新增 `.xls`）统一跳过压缩 / Structured formats (including `.xls`) now skip compression
+- **XLS SSD 转换丢失内容 / XLS SSD Conversion Data Loss**（_ooxml_to_ssd.py）：regex 不检查 `t="s"` 属性，数字值被当 shared string 索引查表导致错误 / Regex didn't check `t="s"` attribute; numeric values were incorrectly used as shared string indices
+- **批量脱敏 CSV/XLSX 无效 / Batch Sanitize CSV/XLSX Ineffective**（batch_tab.py, batch_processor.py, safe_shrink_gui.py）：CSV 未加入原生脱敏列表；dummy SanitizeTab 实例缺少属性 / CSV missing from native sanitize list; dummy SanitizeTab instance missing attributes
+- **批量脱敏跳过逻辑 / Batch Sanitize Skip Logic**（batch_tab.py）：`_should_skip` 按 action 类型区分，sanitize 跳过 `_脱敏` 不跳过 `_减肥`，反之亦然 / Skip logic differentiates by action type
+- **GUI 单文件 CSV/JSON 压缩 / GUI Single-File CSV/JSON Compression**（slim_tab.py）：slim_tab 独立流程绕过结构化格式跳过逻辑 / slim_tab's independent flow bypasses structured format skip logic
+- **Qt platform plugin 初始化失败 / Qt Platform Plugin Init Failure**：缺 qt.conf + VCRUNTIME140.dll 多版本冲突。添加 76 字节 qt.conf 指定插件路径 / Missing qt.conf + VCRUNTIME140.dll conflict. Added 76-byte qt.conf
+- **批量 SSD 后脱敏缺失 / Batch SSD then Sanitize Missing**：同批量脱敏 CSV/XLSX 根因，自动解决 / Same root cause as batch sanitize CSV/XLSX issue
+
+#### 改进 / Improvements
+
+- **PyInstaller 打包优化 / PyInstaller Packaging Optimization**：18 个模块编译为 .pyd（含新增 struct_sanitizer），spec 使用 `collect_all()` 收集 10 个第三方包。构建结果：1079 文件/168MB，EXE 10.5MB / 18 modules compiled to .pyd, spec uses `collect_all()`. Build: 1079 files/168MB, EXE 10.5MB
+- **Cython 编译修复 / Cython Compilation Fix**：venv 无 Python.h，改用系统 Python include + libs 路径 / venv missing Python.h; switched to system Python paths
+- **源码保护增强 / Source Code Protection Enhanced**：备份机制 `versions/{文件名}/` + `src_backup/` + git commit，修改前强制 4 项 checklist / Backup mechanism + mandatory 4-item checklist before edits
+
+#### 关键教训 / Key Lessons
+
+- `zipfile.ZipFile()` 能静默打开 OLE2 格式文件（不抛异常），不能依赖异常检测做格式判断 / `zipfile.ZipFile()` silently opens OLE2 files; can't rely on exception for format detection
+- 批量处理的跳过逻辑需按操作类型区分 / Batch skip logic must differentiate by operation type
+- git show 恢复 = 丢失全部工作区修改，绝对禁止对未 commit 文件执行 / git show restore = lose all workspace changes, absolutely forbidden for uncommitted files
+
+---
 
 ### v1.2.1（2026-05-24）
 
@@ -156,10 +214,11 @@
 
 | 类型 / Type | 格式 / Formats | 减肥 / Slim | 脱敏 / Sanitize | SSD |
 |------|------|:----:|:----:|:--------:|
-| **Office** | .docx, .xlsx, .pptx | ✅ | ✅ | ✅ |
+| **Office** | .docx, .xlsx, .xls, .pptx | ✅ | ✅ | ✅ |
 | **PDF** | .pdf | ✅ | ✅ | ✅ |
 | **网页 / Web** | .html, .htm | ✅ | ✅ | ✅ |
 | **文本 / Text** | .txt, .ssd, .json, .csv | ✅ | ✅ | — |
+| **结构化 / Structured** | .json, .xml, .yaml, .csv, .html | — | ✅ | — |
 | **图片 / Image** | .jpg, .png, .gif, .webp | ✅ | — | — |
 | **代码 / Code** | .js, .py, .ts, .css, .sql | ✅ | ✅ | ✅ |
 
@@ -228,11 +287,11 @@ OCR scanned PDFs to searchable text
 
 ## 🚀 快速开始 / Quick Start
 
-### 下载 EXE（推荐）/ Download EXE (Recommended)
+### 下载 zip 包（推荐）/ Download zip (Recommended)
 
 ```bash
-# 下载 SafeShrink.exe，双击运行
-# Download SafeShrink.exe, double-click to run
+# 下载 SafeShrink-v1.2.3.zip，解压后双击 SafeShrink.exe 运行
+# Download SafeShrink-v1.2.3.zip, extract, then double-click SafeShrink.exe
 https://github.com/JinwaTech/safeshrink/releases
 ```
 
@@ -274,6 +333,7 @@ SafeShrink/
 ├── theme_manager.py       # 主题管理 / Theme management
 ├── history_manager.py     # 历史记录管理 / History management
 ├── file_status.py         # 处理状态检测 / File status detection
+├── struct_sanitizer.py    # 结构化格式安全脱敏 / Structured format safe sanitization
 ├── _ooxml_to_ssd.py       # Office 降级后备方案 / Office fallback
 ├── main_window_v2.spec    # PyInstaller spec
 ├── build.py               # 构建脚本（auto-discover hiddenimports）/ Build script
@@ -288,7 +348,7 @@ SafeShrink/
 |------|------|
 | Python 3.14 + PySide6（LGPL）| GUI 界面 / GUI |
 | pypdf / pdfplumber / PyMuPDF | PDF 处理 / PDF processing |
-| python-docx / openpyxl / python-pptx | Office 处理 / Office processing |
+| python-docx / openpyxl / python-pptx / xlrd | Office 处理（含 .xls 旧格式）/ Office processing (incl. .xls legacy) |
 | pdfminer.six | PDF 文本提取 / PDF text extraction |
 | Pillow | 图片处理 / Image processing |
 | Tesseract v5.4.0（chi_sim+chi_tra+eng）| OCR 引擎 / OCR engine |

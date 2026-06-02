@@ -563,7 +563,7 @@ class ThemeManager:
                 color: {c['text_secondary']};
                 border: none;
                 border-bottom: 2px solid {c['border']};
-                padding: 10px 14px;
+                padding: 16px 14px;
                 font-weight: 600;
                 font-size: 12px;
             }}

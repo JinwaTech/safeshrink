@@ -49,3 +49,5 @@ sanitize_tab.py
 slim_tab.py
 ssd_embed_images.py
 src_backup/
+
+versions/
