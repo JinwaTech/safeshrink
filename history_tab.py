@@ -74,9 +74,9 @@ class HistoryTab(QWidget):
 
         
 
-        title = QLabel("📋 处理历史")
+        self.history_title = QLabel("📋 处理历史")
 
-        title.setObjectName("pageTitle")
+        self.history_title.setObjectName("pageTitle")
 
         
 
@@ -90,39 +90,39 @@ class HistoryTab(QWidget):
 
         # 按钮
 
-        btn_refresh = QPushButton("刷新")
+        self.btn_refresh = QPushButton("刷新")
 
-        btn_refresh.clicked.connect(self.load_history)
-
-        
-
-        btn_export = QPushButton("导出报告")
-
-        btn_export.setObjectName("secondary")
-
-        btn_export.clicked.connect(self.export_report)
+        self.btn_refresh.clicked.connect(self.load_history)
 
         
 
-        btn_clear = QPushButton("清空历史")
+        self.btn_export = QPushButton("导出报告")
 
-        btn_clear.setObjectName("danger")
+        self.btn_export.setObjectName("secondary")
 
-        btn_clear.clicked.connect(self.clear_history)
+        self.btn_export.clicked.connect(self.export_report)
 
         
 
-        title_layout.addWidget(title)
+        self.btn_clear = QPushButton("清空历史")
+
+        self.btn_clear.setObjectName("danger")
+
+        self.btn_clear.clicked.connect(self.clear_history)
+
+        
+
+        title_layout.addWidget(self.history_title)
 
         title_layout.addWidget(self.stats_label)
 
         title_layout.addStretch()
 
-        title_layout.addWidget(btn_export)
+        title_layout.addWidget(self.btn_export)
 
-        title_layout.addWidget(btn_refresh)
+        title_layout.addWidget(self.btn_refresh)
 
-        title_layout.addWidget(btn_clear)
+        title_layout.addWidget(self.btn_clear)
 
         
 
@@ -162,7 +162,8 @@ class HistoryTab(QWidget):
 
         filter_layout.setSpacing(12)
 
-        filter_layout.addWidget(QLabel("筛选日期："))
+        self.date_label = QLabel("筛选日期：")
+        filter_layout.addWidget(self.date_label)
 
         self.filter_date_from = QDateEdit()
 
@@ -208,11 +209,11 @@ class HistoryTab(QWidget):
 
         filter_layout.addWidget(self.filter_name)
 
-        btn_reset = QPushButton("重置")
+        self.btn_reset = QPushButton("重置")
 
-        btn_reset.clicked.connect(self._reset_filter)
+        self.btn_reset.clicked.connect(self._reset_filter)
 
-        filter_layout.addWidget(btn_reset)
+        filter_layout.addWidget(self.btn_reset)
 
         filter_layout.addStretch()
 
@@ -288,13 +289,13 @@ class HistoryTab(QWidget):
 
         
 
-        hint = QLabel("💡 提示：右键点击记录可以打开或删除")
+        self.hint_label = QLabel("💡 提示：右键点击记录可以打开或删除")
 
-        hint.setStyleSheet("color: #8b92a5; font-size: 12px;")
+        self.hint_label.setStyleSheet("color: #8b92a5; font-size: 12px;")
 
         
 
-        bottom_layout.addWidget(hint)
+        bottom_layout.addWidget(self.hint_label)
 
         bottom_layout.addStretch()
 
@@ -544,7 +545,10 @@ class HistoryTab(QWidget):
 
         self.table.resizeColumnsToContents()
 
-        self.stats_label.setText(f"共 {len(history)} 条记录")
+        self._record_count = len(history)
+        lang = getattr(self, '_lang', 'zh-CN')
+        from translations import get_translation
+        self.stats_label.setText(get_translation('共 {n} 条记录', lang).format(n=self._record_count))
 
     
 
@@ -1163,6 +1167,7 @@ class HistoryTab(QWidget):
                     writer.writerow(headers)
 
                     for item in history:
+                        action_tag = ""
 
                         orig_sz_col, new_sz_col = get_size_cols(item)
 
@@ -1329,31 +1334,62 @@ class HistoryTab(QWidget):
     def update_language(self, lang):
 
         """更新语言"""
-
+        self._lang = lang  # ★ i18n: 存储当前语言
         from translations import get_translation
-
         _ = lambda t: get_translation(t, lang)
 
-        
+        # 标题和副标题 — 由 main_window_v2.py 的 on_nav_changed 处理
+
+        # ★ i18n: 更新页面标题
+        if hasattr(self, 'history_title'):
+            self.history_title.setText(_('📋 处理历史'))
+
+        # ★ i18n: 更新筛选下拉框
+        if hasattr(self, 'filter_action'):
+            idx = self.filter_action.currentIndex()
+            self.filter_action.clear()
+            self.filter_action.addItems([_('全部'), _('文件减肠'), _('文件脱敏'), _('批量减肠'), _('批量脱敏')])
+            self.filter_action.setCurrentIndex(idx)
+
+        # 更新统计标签
+        if hasattr(self, 'stats_label'):
+            n = getattr(self, '_record_count', 0)
+            self.stats_label.setText(_('共 {n} 条记录').format(n=n))
 
         # 更新按钮
-
-        if hasattr(self, 'btn_clear'):
-
-            self.btn_clear.setText(_('清空历史'))
-
         if hasattr(self, 'btn_export'):
+            self.btn_export.setText(_('导出报告'))
+        if hasattr(self, 'btn_refresh'):
+            self.btn_refresh.setText(_('刷新'))
+        if hasattr(self, 'btn_clear'):
+            self.btn_clear.setText(_('清空历史'))
+        if hasattr(self, 'btn_reset'):
+            self.btn_reset.setText(_('重置'))
 
-            self.btn_export.setText(_('导出历史'))
+        # 更新标签
+        if hasattr(self, 'date_label'):
+            self.date_label.setText(_('筛选日期:'))
 
-        
+        # 更新搜索框占位符
+        if hasattr(self, 'filter_name'):
+            self.filter_name.setPlaceholderText(_('文件名筛选'))
+
+        # 更新提示标签
+        if hasattr(self, 'hint_label'):
+            self.hint_label.setText(_('提示：右键点击记录可以打开或删除'))
 
         # 更新表格标题
-
         if hasattr(self, 'table'):
-
             self.table.setHorizontalHeaderLabels([
-
                 _('时间'), _('文件名'), _('操作'), _('原大小'), _('新大小'), _('状态'), _('详情')
-
             ])
+
+        # QCalendarWidget locale
+        if hasattr(self, 'filter_date_from'):
+            from PySide6.QtCore import QLocale
+            if lang == 'en-US':
+                locale = QLocale(QLocale.English, QLocale.UnitedStates)
+            else:
+                locale = QLocale(QLocale.Chinese, QLocale.China)
+            self.filter_date_from.setLocale(locale)
+            self.filter_date_to.setLocale(locale)

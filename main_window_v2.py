@@ -176,6 +176,24 @@ from safe_shrink import main as safe_shrink_main
 
 
 
+# ★ i18n: 模块级翻译函数（所有方法可用）
+def _get_init_lang():
+    """读取 settings 中的语言设置"""
+    try:
+        import json
+        _settings_path = str(Path.home() / 'AppData' / 'Roaming' / 'SafeShrink' / 'settings.json')
+        if not Path(_settings_path).exists():
+            return 'zh-CN'
+        with open(_settings_path, 'r', encoding='utf-8') as _f:
+            _s = json.load(_f)
+        return _s.get('language', 'zh-CN')
+    except Exception:
+        return 'zh-CN'
+
+from translations import get_translation as _get_tr
+def _(text):
+    return _get_tr(text, _get_init_lang())
+
 
 class MainWindow(QMainWindow):
 
@@ -215,7 +233,10 @@ class MainWindow(QMainWindow):
 
         super().__init__()
 
-        self.setWindowTitle("SafeShrink - 文档工具箱")
+        # ★ i18n: 存储当前语言
+        self._lang = _get_init_lang()
+
+        self.setWindowTitle("SafeShrink - " + _("文档工具箱"))
 
         self.setMinimumSize(1200, 750)
 
@@ -272,6 +293,9 @@ class MainWindow(QMainWindow):
         self.drag_hint = None
 
 
+
+        # ★ i18n: 启动时应用语言设置到所有 UI
+        self.apply_language(self._lang)
 
         # 延迟检查更新，避免启动时阻塞
 
@@ -383,11 +407,11 @@ class MainWindow(QMainWindow):
 
             if self.current_theme == 'dark':
 
-                self.theme_btn.setText("  🌙  深色模式")
+                self.theme_btn.setText("  🌙  " + _("深色模式"))
 
             else:
 
-                self.theme_btn.setText("  ☀️  浅色模式")
+                self.theme_btn.setText("  ☀️  " + _("浅色模式"))
 
 
 
@@ -635,7 +659,7 @@ class MainWindow(QMainWindow):
 
 
 
-        logo_sub = QLabel("密小件")
+        logo_sub = QLabel(_("密小件"))
 
         logo_sub.setFont(QFont("Segoe UI", 11))
 
@@ -733,7 +757,7 @@ class MainWindow(QMainWindow):
 
         self.theme_btn.setObjectName("themeToggle")
 
-        self.theme_btn.setText("  🌙  深色模式")
+        self.theme_btn.setText("  🌙  " + _("深色模式"))
 
         self.theme_btn.setFont(QFont("Segoe UI", 12))
 
@@ -773,7 +797,7 @@ class MainWindow(QMainWindow):
 
         # 版本信息
 
-        footer = QLabel("v1.2.1  SafeShrink")
+        footer = QLabel("v1.2.3  SafeShrink")
 
         footer.setObjectName("footer")
 
@@ -827,7 +851,7 @@ class MainWindow(QMainWindow):
 
 
 
-        self.page_title = QLabel("文件减肥")
+        self.page_title = QLabel(_("文件减肥"))
 
         self.page_title.setObjectName("pageTitle")
 
@@ -835,7 +859,7 @@ class MainWindow(QMainWindow):
 
 
 
-        self.page_subtitle = QLabel("智能压缩文档，减小文件体积")
+        self.page_subtitle = QLabel(_("智能压缩文档，减小文件体积"))
 
         self.page_subtitle.setObjectName("pageSubtitle")
 
@@ -885,7 +909,7 @@ class MainWindow(QMainWindow):
 
         # 拖拽提示
 
-        self.drag_hint = QLabel("📂 松开鼠标添加文件", self)
+        self.drag_hint = QLabel(_("📂 松开鼠标添加文件"), self)
 
         self.drag_hint.setObjectName("dragHint")
 
@@ -935,23 +959,29 @@ class MainWindow(QMainWindow):
 
             icon, text, key = self.NAV_ITEMS[index]
 
-            self.page_title.setText(text)
+            # ★ i18n: 根据当前语言翻译标题
+            from translations import get_translation
+            lang = getattr(self, '_lang', 'zh-CN')
+            _ = lambda t: get_translation(t, lang)
+
+            title_map = {
+                'slim': _('文件减肥'),
+                'sanitize': _('文档脱敏'),
+                'batch': _('批量处理'),
+                'history': _('处理历史'),
+                'settings': _('设置'),
+            }
+            self.page_title.setText(title_map.get(key, text))
 
             subtitles = {
-
-                "slim": "📄 智能压缩文档，减小文件体积",
-
-                "sanitize": "🔒 自动识别并脱敏敏感信息",
-
-                "batch": "📁 批量处理多个文件",
-
-                "history": "📋 查看和管理处理记录",
-
-                "settings": "⚙️ 配置应用偏好",
-
+                'slim': f'📄 {_("智能压缩文档，减小文件体积")}',
+                'sanitize': f'🔒 {_("自动识别并脱敏敏感信息")}',
+                'batch': f'📁 {_("批量处理多个文件")}',
+                'history': f'📋 {_("查看和管理处理记录")}',
+                'settings': f'⚙️ {_("配置应用偏好")}',
             }
 
-            self.page_subtitle.setText(subtitles.get(key, ""))
+            self.page_subtitle.setText(subtitles.get(key, ''))
 
 
 
@@ -988,6 +1018,9 @@ class MainWindow(QMainWindow):
 
     def apply_language(self, lang):
         """应用语言切换到所有 UI 元素"""
+        from translations import get_translation
+        _ = lambda t: get_translation(t, lang)
+
         if lang == 'en-US':
             items = [
                 ('📄', 'Slim', 'slim'),
@@ -996,22 +1029,16 @@ class MainWindow(QMainWindow):
                 ('📋', 'History', 'history'),
                 ('⚙️', 'Settings', 'settings'),
             ]
-            subtitles = {
-                'slim': '📄 Smart compression to reduce file size',
-                'sanitize': '🔒 Auto-detect and sanitize sensitive info',
-                'batch': '📁 Process multiple files at once',
-                'history': '📋 View and manage processing records',
-                'settings': '⚙️ Configure preferences',
-            }
         else:
             items = self.NAV_ITEMS
-            subtitles = {
-                'slim': '📄 智能压缩文档，减小文件体积',
-                'sanitize': '🔒 自动识别并脱敏敏感信息',
-                'batch': '📁 批量处理多个文件',
-                'history': '📋 查看和管理处理记录',
-                'settings': '⚙️ 配置应用偏好',
-            }
+
+        subtitles = {
+            'slim': f'📄 {_("智能压缩文档，减小文件体积")}',
+            'sanitize': f'🔒 {_("自动识别并脱敏敏感信息")}',
+            'batch': f'📁 {_("批量处理多个文件")}',
+            'history': f'📋 {_("查看和管理处理记录")}',
+            'settings': f'⚙️ {_("配置应用偏好")}',
+        }
         
         # 更新导航栏文字
         for i, (icon, text, key) in enumerate(items):
@@ -1038,6 +1065,16 @@ class MainWindow(QMainWindow):
             self.tab_history.update_language(lang)
         if hasattr(self.tab_settings, 'update_language'):
             self.tab_settings.update_language(lang)
+
+        # ★ i18n fix4: store translated NAV_ITEMS for on_nav_changed
+        if lang == 'en-US':
+            self.NAV_ITEMS = items
+
+        # ★ i18n: 更新窗口标题
+        self.setWindowTitle("SafeShrink - " + _("文档工具箱"))
+
+        # ★ i18n: 更新主题按钮
+        self.update_theme_button()
 
     def dragEnterEvent(self, event):
 
@@ -1161,7 +1198,7 @@ class MainWindow(QMainWindow):
 
             self.tray_icon = QSystemTrayIcon(self)
 
-            self.tray_icon.setToolTip("SafeShrink - 文档工具箱")
+            self.tray_icon.setToolTip("SafeShrink - " + _("文档工具箱"))
 
             # 优先使用图标文件，否则 fallback
 
@@ -1177,7 +1214,7 @@ class MainWindow(QMainWindow):
 
             tray_menu = QMenu()
 
-            show_action = QAction("显示主窗口", self)
+            show_action = QAction(_("显示主窗口"), self)
 
             show_action.triggered.connect(self.show_from_tray)
 
@@ -1185,7 +1222,7 @@ class MainWindow(QMainWindow):
 
             tray_menu.addSeparator()
 
-            exit_action = QAction("退出", self)
+            exit_action = QAction(_("退出"), self)
 
             exit_action.triggered.connect(self._on_tray_exit)
 
@@ -1359,13 +1396,13 @@ class MainWindow(QMainWindow):
             batch_progress = self.tab_batch.get_progress_text()
 
         if batch_progress:
-            msg = f'有批量任务正在进行中！\n\n{batch_progress}\n\n强制关闭可能导致数据丢失，是否继续退出？'
+            msg = f'{_("有批量任务正在进行中！")}\n\n{batch_progress}\n\n{_("强制关闭可能导致数据丢失，是否继续退出？")}'
         else:
-            msg = '确定要退出 SafeShrink 吗？'
+            msg = _('确定要退出 SafeShrink 吗？')
 
         reply = QMessageBox.question(
             self,
-            '确认退出',
+            _('确认退出'),
             msg,
 
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -1490,9 +1527,9 @@ def _show_already_running_dialog():
 
     msg_box.setWindowTitle("SafeShrink")
 
-    msg_box.setText("SafeShrink 已经在运行")
+    msg_box.setText(_("SafeShrink 已经在运行"))
 
-    msg_box.setInformativeText("检测到已有实例在运行。\n\n是否打开新的窗口？")
+    msg_box.setInformativeText(_("检测到已有实例在运行。\n\n是否打开新的窗口？"))
 
     msg_box.setIcon(QMessageBox.Icon.Question)
 
@@ -1500,11 +1537,11 @@ def _show_already_running_dialog():
 
     # 添加按钮
 
-    new_window_btn = msg_box.addButton("打开新窗口", QMessageBox.ButtonRole.AcceptRole)
+    new_window_btn = msg_box.addButton(_("打开新窗口"), QMessageBox.ButtonRole.AcceptRole)
 
-    bring_to_front_btn = msg_box.addButton("切换到已有窗口", QMessageBox.ButtonRole.DestructiveRole)
+    bring_to_front_btn = msg_box.addButton(_("切换到已有窗口"), QMessageBox.ButtonRole.DestructiveRole)
 
-    cancel_btn = msg_box.addButton("取消", QMessageBox.ButtonRole.RejectRole)
+    cancel_btn = msg_box.addButton(_("取消"), QMessageBox.ButtonRole.RejectRole)
 
     
 
@@ -1688,7 +1725,7 @@ if __name__ == '__main__':
 
             crash_app = QApplication([])
 
-            QMessageBox.critical(None, "SafeShrink 崩溃", f"错误:\n{e}\n\n详情已输出到控制台")
+            QMessageBox.critical(None, "SafeShrink", f"{_("错误")}:\n{e}\n\n{_("详情已输出到控制台")}")
 
             crash_app.quit()
 

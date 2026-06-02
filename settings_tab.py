@@ -113,25 +113,25 @@ class SettingsTab(QWidget):
         header = QFrame()
         header_layout = QHBoxLayout(header)
         header_layout.setContentsMargins(24, 20, 24, 0)  # bottom=0，消除白线间隙
-        title = QLabel("设置")
-        title.setStyleSheet("font-size: 20px; font-weight: 700;")
-        header_layout.addWidget(title)
+        self.settings_title = QLabel("设置")
+        self.settings_title.setStyleSheet("font-size: 20px; font-weight: 700;")
+        header_layout.addWidget(self.settings_title)
         header_layout.addStretch()
         layout.addWidget(header)
 
         # 标签页容器
-        tabs = QTabWidget()
-        tabs.setDocumentMode(True)
-        tabs.setProperty("drawBase", False)
-        tabs.tabBar().setDrawBase(False)
-        tabs.addTab(self.create_general_tab(), "通用")
-        tabs.addTab(self.create_output_tab(), "输出")
-        tabs.addTab(self.create_process_tab(), "处理")
-        tabs.addTab(self.create_sanitize_tab(), "脱敏")
-        tabs.addTab(self.create_ui_tab(), "界面")
-        tabs.addTab(self.create_advanced_tab(), "高级")
+        self.tabs = QTabWidget()
+        self.tabs.setDocumentMode(True)
+        self.tabs.setProperty("drawBase", False)
+        self.tabs.tabBar().setDrawBase(False)
+        self.tabs.addTab(self.create_general_tab(), "通用")
+        self.tabs.addTab(self.create_output_tab(), "输出")
+        self.tabs.addTab(self.create_process_tab(), "处理")
+        self.tabs.addTab(self.create_sanitize_tab(), "脱敏")
+        self.tabs.addTab(self.create_ui_tab(), "界面")
+        self.tabs.addTab(self.create_advanced_tab(), "高级")
 
-        layout.addWidget(tabs, 1)
+        layout.addWidget(self.tabs, 1)
 
         # 底部按钮
         btn_frame = QFrame()
@@ -166,9 +166,9 @@ class SettingsTab(QWidget):
             layout.addWidget(widget, 1)
 
         if hint_text:
-            hint = QLabel(hint_text)
-            hint.setProperty("class", "hint-text")
-            layout.addWidget(hint)
+            self.hint_1 = QLabel(hint_text)
+            self.hint_1.setProperty("class", "hint-text")
+            layout.addWidget(self.hint_1)
 
         return layout
 
@@ -192,8 +192,8 @@ class SettingsTab(QWidget):
         widget.setMinimumWidth(800)  # 初始值，resizeEvent 会动态修正
 
         # 外观设置
-        group1 = QGroupBox("外观")
-        g1_layout = QVBoxLayout(group1)
+        self.general_group1 = QGroupBox("外观")
+        g1_layout = QVBoxLayout(self.general_group1)
         g1_layout.setSpacing(16)
 
         # 语言
@@ -213,11 +213,11 @@ class SettingsTab(QWidget):
         self.theme_combo.currentIndexChanged.connect(self.on_theme_changed)
         g1_layout.addLayout(self.create_row("颜色主题", self.theme_combo))
 
-        layout.addWidget(group1)
+        layout.addWidget(self.general_group1)
 
         # 启动与退出
-        group2 = QGroupBox("启动与退出")
-        g2_layout = QVBoxLayout(group2)
+        self.general_group2 = QGroupBox("启动与退出")
+        g2_layout = QVBoxLayout(self.general_group2)
         g2_layout.setSpacing(12)
 
         self.chk_auto_update = QCheckBox("启动时自动检查更新")
@@ -232,7 +232,7 @@ class SettingsTab(QWidget):
         self.chk_confirm_exit.setChecked(self.settings.get('confirm_on_exit', True))
         g2_layout.addWidget(self.chk_confirm_exit)
 
-        layout.addWidget(group2)
+        layout.addWidget(self.general_group2)
         scroll.setWidget(widget)
         return scroll
 
@@ -249,29 +249,29 @@ class SettingsTab(QWidget):
         widget.setMinimumWidth(800)  # 初始值，resizeEvent 会动态修正
 
         # 输出位置
-        group1 = QGroupBox("输出位置")
-        g1_layout = QVBoxLayout(group1)
+        self.output_group1 = QGroupBox("输出位置")
+        g1_layout = QVBoxLayout(self.output_group1)
         g1_layout.setSpacing(16)
 
         self.output_dir_edit = QLineEdit()
         self.output_dir_edit.setPlaceholderText("留空则保存到 output 子目录")
         self.output_dir_edit.setText(self.settings.get('output_dir', ''))
-        btn_browse = QPushButton("浏览...")
-        btn_browse.setProperty("secondary", True)
-        btn_browse.clicked.connect(self.browse_output_dir)
-        btn_browse.setFixedWidth(80)
+        self.btn_browse = QPushButton("浏览...")
+        self.btn_browse.setProperty("secondary", True)
+        self.btn_browse.clicked.connect(self.browse_output_dir)
+        self.btn_browse.setFixedWidth(80)
 
         dir_row = QHBoxLayout()
         dir_row.addWidget(self.output_dir_edit, 1)
-        dir_row.addWidget(btn_browse)
+        dir_row.addWidget(self.btn_browse)
         g1_layout.addLayout(self.create_row("默认目录", None))
         g1_layout.addLayout(dir_row)
 
-        layout.addWidget(group1)
+        layout.addWidget(self.output_group1)
 
         # 输出选项
-        group2 = QGroupBox("输出选项")
-        g2_layout = QVBoxLayout(group2)
+        self.output_group2 = QGroupBox("输出选项")
+        g2_layout = QVBoxLayout(self.output_group2)
         g2_layout.setSpacing(12)
 
         self.chk_auto_backup = QCheckBox("默认保留原文件")
@@ -290,7 +290,7 @@ class SettingsTab(QWidget):
         self.chk_timestamp.setChecked(self.settings.get('timestamp_output', False))
         g2_layout.addWidget(self.chk_timestamp)
 
-        layout.addWidget(group2)
+        layout.addWidget(self.output_group2)
         scroll.setWidget(widget)
         return scroll
 
@@ -307,8 +307,8 @@ class SettingsTab(QWidget):
         widget.setMinimumWidth(800)  # 初始值，resizeEvent 会动态修正
 
         # 性能设置
-        group1 = QGroupBox("性能")
-        g1_layout = QVBoxLayout(group1)
+        self.process_group1 = QGroupBox("性能")
+        g1_layout = QVBoxLayout(self.process_group1)
         g1_layout.setSpacing(16)
 
         self.workers_spin = QSpinBox()
@@ -317,66 +317,66 @@ class SettingsTab(QWidget):
         self.workers_spin.setFixedWidth(80)
         g1_layout.addLayout(self.create_row("并发线程数", self.workers_spin, "小文件 4-8，大文件 1-4"))
 
-        layout.addWidget(group1)
+        layout.addWidget(self.process_group1)
 
         # 压缩质量
-        group2 = QGroupBox("压缩质量")
-        g2_layout = QVBoxLayout(group2)
+        self.process_group2 = QGroupBox("压缩质量")
+        g2_layout = QVBoxLayout(self.process_group2)
         g2_layout.setSpacing(20)
 
         # 图片压缩
         img_row = QHBoxLayout()
-        img_label = QLabel("图片质量")
-        img_label.setMinimumWidth(140)
-        img_label.setStyleSheet("font-weight: 500;")
+        self.img_label = QLabel("图片质量")
+        self.img_label.setMinimumWidth(140)
+        self.img_label.setStyleSheet("font-weight: 500;")
         self.img_slider = QSlider(Qt.Orientation.Horizontal)
         self.img_slider.setRange(10, 100)
         self.img_slider.setValue(self.settings.get('image_quality', 60))
         self.img_value = QLabel(f"{self.settings.get('image_quality', 60)}%")
         self.img_value.setMinimumWidth(50)
         self.img_slider.valueChanged.connect(lambda v: self.img_value.setText(f"{v}%"))
-        img_row.addWidget(img_label)
+        img_row.addWidget(self.img_label)
         img_row.addWidget(self.img_slider, 1)
         img_row.addWidget(self.img_value)
         g2_layout.addLayout(img_row)
 
         # 文本压缩
         text_row = QHBoxLayout()
-        text_label = QLabel("文本压缩")
-        text_label.setMinimumWidth(140)
-        text_label.setStyleSheet("font-weight: 500;")
+        self.text_label = QLabel("文本压缩")
+        self.text_label.setMinimumWidth(140)
+        self.text_label.setStyleSheet("font-weight: 500;")
         self.text_slider = QSlider(Qt.Orientation.Horizontal)
         self.text_slider.setRange(0, 100)
         self.text_slider.setValue(self.settings.get('text_compression', 50))
         self.text_value = QLabel(f"{self.settings.get('text_compression', 50)}%")
         self.text_value.setMinimumWidth(50)
         self.text_slider.valueChanged.connect(lambda v: self.text_value.setText(f"{v}%"))
-        text_row.addWidget(text_label)
+        text_row.addWidget(self.text_label)
         text_row.addWidget(self.text_slider, 1)
         text_row.addWidget(self.text_value)
         g2_layout.addLayout(text_row)
 
         # PDF 质量
         pdf_row = QHBoxLayout()
-        pdf_label = QLabel("PDF 质量")
-        pdf_label.setMinimumWidth(140)
-        pdf_label.setStyleSheet("font-weight: 500;")
+        self.pdf_label = QLabel("PDF 质量")
+        self.pdf_label.setMinimumWidth(140)
+        self.pdf_label.setStyleSheet("font-weight: 500;")
         self.pdf_slider = QSlider(Qt.Orientation.Horizontal)
         self.pdf_slider.setRange(10, 100)
         self.pdf_slider.setValue(self.settings.get('pdf_quality', 70))
         self.pdf_value = QLabel(f"{self.settings.get('pdf_quality', 70)}%")
         self.pdf_value.setMinimumWidth(50)
         self.pdf_slider.valueChanged.connect(lambda v: self.pdf_value.setText(f"{v}%"))
-        pdf_row.addWidget(pdf_label)
+        pdf_row.addWidget(self.pdf_label)
         pdf_row.addWidget(self.pdf_slider, 1)
         pdf_row.addWidget(self.pdf_value)
         g2_layout.addLayout(pdf_row)
 
-        layout.addWidget(group2)
+        layout.addWidget(self.process_group2)
 
         # 清理选项
-        group3 = QGroupBox("清理选项")
-        g3_layout = QVBoxLayout(group3)
+        self.process_group3 = QGroupBox("清理选项")
+        g3_layout = QVBoxLayout(self.process_group3)
         g3_layout.setSpacing(12)
 
         self.chk_remove_empty = QCheckBox("移除空行")
@@ -396,7 +396,7 @@ class SettingsTab(QWidget):
         self.chk_embed.setToolTip("勾选：图片转为Base64内嵌，SSD为单文件但体积变大\n不勾选：只保留文字引用，文件更小（推荐）")
         g3_layout.addWidget(self.chk_embed)
 
-        layout.addWidget(group3)
+        layout.addWidget(self.process_group3)
         scroll.setWidget(widget)
         return scroll
 
@@ -413,13 +413,13 @@ class SettingsTab(QWidget):
         widget.setMinimumWidth(800)  # 初始值，resizeEvent 会动态修正
 
         # 场景预设
-        scene_group = QGroupBox("适用场景（快捷预设）")
-        sg_layout = QVBoxLayout(scene_group)
+        self.scene_group = QGroupBox("适用场景（快捷预设）")
+        sg_layout = QVBoxLayout(self.scene_group)
         sg_layout.setSpacing(8)
 
-        scene_tip = QLabel("选择场景后自动勾选对应脱敏类型，可手动调整")
-        scene_tip.setStyleSheet("color: #8b92a5; font-size: 12px;")
-        sg_layout.addWidget(scene_tip)
+        self.scene_tip = QLabel("选择场景后自动勾选对应脱敏类型，可手动调整")
+        self.scene_tip.setStyleSheet("color: #8b92a5; font-size: 12px;")
+        sg_layout.addWidget(self.scene_tip)
 
         scene_row = QHBoxLayout()
         self.scene_general = QRadioButton("通用文档（推荐）")
@@ -451,19 +451,19 @@ class SettingsTab(QWidget):
         self.scene_medical.toggled.connect(lambda: self._apply_scene('medical'))
         self.scene_edu.toggled.connect(lambda: self._apply_scene('edu'))
 
-        layout.addWidget(scene_group)
+        layout.addWidget(self.scene_group)
 
         # 默认脱敏类型
-        group1 = QGroupBox("默认脱敏类型")
-        g1_layout = QVBoxLayout(group1)
+        self.san_group1 = QGroupBox("默认脱敏类型")
+        g1_layout = QVBoxLayout(self.san_group1)
         g1_layout.setSpacing(12)
 
         types = self.settings.get('sanitize_types', ['手机号', '邮箱', '身份证', '银行卡', 'IP地址'])
 
         # 个人敏感信息
-        personal_label = QLabel("个人敏感:")
-        personal_label.setStyleSheet("font-size: 12px; color: #8b92a5; margin-top: 4px;")
-        g1_layout.addWidget(personal_label)
+        self.personal_label = QLabel("个人敏感:")
+        self.personal_label.setStyleSheet("font-size: 12px; color: #8b92a5; margin-top: 4px;")
+        g1_layout.addWidget(self.personal_label)
 
         self.chk_phone = QCheckBox("手机号 (138****8888)")
         self.chk_phone.setChecked('手机号' in types)
@@ -506,9 +506,9 @@ class SettingsTab(QWidget):
         g1_layout.addWidget(self.chk_social)
 
         # 商业敏感信息
-        biz_label = QLabel("商业敏感:")
-        biz_label.setStyleSheet("font-size: 12px; color: #8b92a5; margin-top: 8px;")
-        g1_layout.addWidget(biz_label)
+        self.biz_label = QLabel("商业敏感:")
+        self.biz_label.setStyleSheet("font-size: 12px; color: #8b92a5; margin-top: 8px;")
+        g1_layout.addWidget(self.biz_label)
 
         self.chk_credit = QCheckBox("社会信用代码 (91**********)")
         self.chk_credit.setChecked('社会信用代码' in types)
@@ -555,9 +555,9 @@ class SettingsTab(QWidget):
         g1_layout.addWidget(self.chk_postal)
 
         # 党政公文专用
-        gov_label = QLabel("党政公文专用:")
-        gov_label.setStyleSheet("font-size: 12px; color: #8b92a5; margin-top: 8px;")
-        g1_layout.addWidget(gov_label)
+        self.gov_label = QLabel("党政公文专用:")
+        self.gov_label.setStyleSheet("font-size: 12px; color: #8b92a5; margin-top: 8px;")
+        g1_layout.addWidget(self.gov_label)
 
         self.chk_docnum = QCheckBox("公文份号 (№******)")
         self.chk_docnum.setChecked('公文份号' in types)
@@ -572,9 +572,9 @@ class SettingsTab(QWidget):
         g1_layout.addWidget(self.chk_docref)
 
         # 医疗档案专用
-        med_label = QLabel("医疗档案专用:")
-        med_label.setStyleSheet("font-size: 12px; color: #8b92a5; margin-top: 8px;")
-        g1_layout.addWidget(med_label)
+        self.med_label = QLabel("医疗档案专用:")
+        self.med_label.setStyleSheet("font-size: 12px; color: #8b92a5; margin-top: 8px;")
+        g1_layout.addWidget(self.med_label)
 
         self.chk_medicare = QCheckBox("医保卡号")
         self.chk_medicare.setChecked('医保号' in types)
@@ -584,11 +584,11 @@ class SettingsTab(QWidget):
         self.chk_medical_record.setChecked('病历号' in types)
         g1_layout.addWidget(self.chk_medical_record)
 
-        layout.addWidget(group1)
+        layout.addWidget(self.san_group1)
 
         # 脱敏样式
-        group2 = QGroupBox("脱敏样式")
-        g2_layout = QVBoxLayout(group2)
+        self.san_group2 = QGroupBox("脱敏样式")
+        g2_layout = QVBoxLayout(self.san_group2)
         g2_layout.setSpacing(16)
 
         self.mask_edit = QLineEdit()
@@ -605,11 +605,11 @@ class SettingsTab(QWidget):
         self.chk_pseudo_mode.setChecked(self.settings.get('sanitize_mode') == 'pseudo')
         g2_layout.addWidget(self.chk_pseudo_mode)
 
-        layout.addWidget(group2)
+        layout.addWidget(self.san_group2)
 
         # 自定义脱敏规则
-        group3 = QGroupBox("自定义脱敏规则")
-        g3_layout = QVBoxLayout(group3)
+        self.san_group3 = QGroupBox("自定义脱敏规则")
+        g3_layout = QVBoxLayout(self.san_group3)
         g3_layout.setSpacing(16)
 
         custom_patterns = self.settings.get('custom_patterns', {'keywords': '', 'regex': ''})
@@ -624,7 +624,7 @@ class SettingsTab(QWidget):
         self.custom_regex_edit.setText(custom_patterns.get('regex', ''))
         g3_layout.addLayout(self.create_row("自定义正则表达式", self.custom_regex_edit))
 
-        layout.addWidget(group3)
+        layout.addWidget(self.san_group3)
         scroll.setWidget(widget)
         # 所有 checkbox 已创建，启用场景联动
         self._scene_ready = True
@@ -643,8 +643,8 @@ class SettingsTab(QWidget):
         widget.setMinimumWidth(800)  # 初始值，resizeEvent 会动态修正
 
         # 显示设置
-        group1 = QGroupBox("显示")
-        g1_layout = QVBoxLayout(group1)
+        self.ui_group1 = QGroupBox("显示")
+        g1_layout = QVBoxLayout(self.ui_group1)
         g1_layout.setSpacing(16)
 
         self.history_spin = QSpinBox()
@@ -665,11 +665,11 @@ class SettingsTab(QWidget):
         self.row_spin.setFixedWidth(80)
         g1_layout.addLayout(self.create_row("表格行高", self.row_spin))
 
-        layout.addWidget(group1)
+        layout.addWidget(self.ui_group1)
 
         # 交互设置
-        group2 = QGroupBox("交互")
-        g2_layout = QVBoxLayout(group2)
+        self.ui_group2 = QGroupBox("交互")
+        g2_layout = QVBoxLayout(self.ui_group2)
         g2_layout.setSpacing(12)
 
         self.chk_show_result = QCheckBox("处理完成后显示结果对话框")
@@ -680,7 +680,7 @@ class SettingsTab(QWidget):
         self.chk_show_progress.setChecked(self.settings.get('show_progress_detail', True))
         g2_layout.addWidget(self.chk_show_progress)
 
-        layout.addWidget(group2)
+        layout.addWidget(self.ui_group2)
         scroll.setWidget(widget)
         return scroll
 
@@ -697,8 +697,8 @@ class SettingsTab(QWidget):
         widget.setMinimumWidth(800)  # 初始值，resizeEvent 会动态修正
 
         # 日志设置
-        group1 = QGroupBox("日志")
-        g1_layout = QVBoxLayout(group1)
+        self.adv_group1 = QGroupBox("日志")
+        g1_layout = QVBoxLayout(self.adv_group1)
         g1_layout.setSpacing(16)
 
         self.log_combo = QComboBox()
@@ -714,11 +714,11 @@ class SettingsTab(QWidget):
         self.logsize_spin.setFixedWidth(80)
         g1_layout.addLayout(self.create_row("最大日志大小 (MB)", self.logsize_spin))
 
-        layout.addWidget(group1)
+        layout.addWidget(self.adv_group1)
 
         # 缓存设置
-        group2 = QGroupBox("缓存")
-        g2_layout = QVBoxLayout(group2)
+        self.adv_group2 = QGroupBox("缓存")
+        g2_layout = QVBoxLayout(self.adv_group2)
         g2_layout.setSpacing(16)
 
         self.chk_cache = QCheckBox("启用缓存（加速重复处理）")
@@ -731,11 +731,11 @@ class SettingsTab(QWidget):
         self.cache_spin.setFixedWidth(80)
         g2_layout.addLayout(self.create_row("缓存上限 (MB)", self.cache_spin))
 
-        layout.addWidget(group2)
+        layout.addWidget(self.adv_group2)
 
         # 数据管理
-        group3 = QGroupBox("数据管理")
-        g3_layout = QVBoxLayout(group3)
+        self.adv_group3 = QGroupBox("数据管理")
+        g3_layout = QVBoxLayout(self.adv_group3)
         g3_layout.setSpacing(12)
 
         self.btn_clear_history = QPushButton("清空所有历史记录")
@@ -748,7 +748,7 @@ class SettingsTab(QWidget):
         self.btn_clear_cache.clicked.connect(self.clear_cache)
         g3_layout.addWidget(self.btn_clear_cache)
 
-        layout.addWidget(group3)
+        layout.addWidget(self.adv_group3)
         scroll.setWidget(widget)
         return scroll
 
@@ -1036,7 +1036,7 @@ class SettingsTab(QWidget):
         self.settings = DEFAULT_SETTINGS.copy()
         self.save_settings()
         from PySide6.QtWidgets import QMessageBox
-        QMessageBox.information(self, "提示", "已恢复默认设置，重启软件后生效。")
+        QMessageBox.information(self, _("提示"), _(_("已恢复默认设置，重启软件后生效。")))
 
     def clear_history(self):
         from PySide6.QtWidgets import QMessageBox
@@ -1048,7 +1048,7 @@ class SettingsTab(QWidget):
             history_file = Path(__file__).parent / 'processing_history.json'
             if history_file.exists():
                 history_file.unlink()
-            QMessageBox.information(self, "完成", "历史记录已清空。")
+            QMessageBox.information(self, _("完成"), _(_("历史记录已清空。")))
 
     def clear_cache(self):
         from PySide6.QtWidgets import QMessageBox
@@ -1056,19 +1056,103 @@ class SettingsTab(QWidget):
         if cache_dir.exists():
             import shutil
             shutil.rmtree(cache_dir, ignore_errors=True)
-        QMessageBox.information(self, "完成", "缓存已清空。")
+        QMessageBox.information(self, _("完成"), _(_("缓存已清空。")))
 
     def get_settings(self):
         return self.settings
 
     def update_language(self, lang):
         """更新语言"""
+        self._lang = lang  # ★ i18n: 存储当前语言
         from translations import get_translation
         _ = lambda t: get_translation(t, lang)
 
-        # 更新场景预设
+        # 标题
+        if hasattr(self, 'settings_title'):
+            self.settings_title.setText(_('设置'))
+
+        # Tab 页签
+        if hasattr(self, 'tabs'):
+            tab_names = [_('通用'), _('输出'), _('处理'), _('脱敏'), _('界面'), _('高级')]
+            for i, name in enumerate(tab_names):
+                if i < self.tabs.count():
+                    self.tabs.setTabText(i, name)
+
+        # 语言和主题
+        if hasattr(self, 'lang_combo'):
+            idx = self.lang_combo.currentIndex()
+            self.lang_combo.setItemText(0, _('简体中文'))
+            self.lang_combo.setItemText(1, 'English')
+        if hasattr(self, 'theme_combo'):
+            idx = self.theme_combo.currentIndex()
+            self.theme_combo.clear()
+            self.theme_combo.addItems([_('浅色'), _('深色'), _('跟随系统')])
+            self.theme_combo.setCurrentIndex(idx)
+
+        # 通用 - 启动与退出
+        if hasattr(self, 'chk_auto_update'):
+            self.chk_auto_update.setText(_('启动时自动检查更新'))
+        if hasattr(self, 'chk_minimize_tray'):
+            self.chk_minimize_tray.setText(_('最小化到系统托盘'))
+        if hasattr(self, 'chk_confirm_exit'):
+            self.chk_confirm_exit.setText(_('退出时确认'))
+
+        # GroupBox 标题
+        if hasattr(self, 'general_group1'):
+            self.general_group1.setTitle(_('外观'))
+        if hasattr(self, 'general_group2'):
+            self.general_group2.setTitle(_('启动与退出'))
+
+        # 输出
+        if hasattr(self, 'output_group1'):
+            self.output_group1.setTitle(_('输出位置'))
+        if hasattr(self, 'output_group2'):
+            self.output_group2.setTitle(_('输出选项'))
+        if hasattr(self, 'output_dir_edit'):
+            self.output_dir_edit.setPlaceholderText(_('留空则保存到 output 子目录'))
+        if hasattr(self, 'btn_browse'):
+            self.btn_browse.setText(_('浏览...'))
+        if hasattr(self, 'chk_auto_backup'):
+            self.chk_auto_backup.setText(_('默认保留原文件'))
+        if hasattr(self, 'chk_overwrite_confirm'):
+            self.chk_overwrite_confirm.setText(_('覆盖文件前确认'))
+        if hasattr(self, 'chk_preserve_structure'):
+            self.chk_preserve_structure.setText(_('保留原始文件夹结构'))
+        if hasattr(self, 'chk_timestamp'):
+            self.chk_timestamp.setText(_('输出文件名添加时间戳'))
+
+        # 处理 - 压缩质量
+        if hasattr(self, 'process_group1'):
+            self.process_group1.setTitle(_('性能'))
+        if hasattr(self, 'process_group2'):
+            self.process_group2.setTitle(_('压缩质量'))
+        if hasattr(self, 'img_label'):
+            self.img_label.setText(_('图片质量'))
+        if hasattr(self, 'text_label'):
+            self.text_label.setText(_('文本压缩'))
+        if hasattr(self, 'pdf_label'):
+            self.pdf_label.setText(_('PDF 质量'))
+
+        # 处理 - 清理选项
+        if hasattr(self, 'process_group3'):
+            self.process_group3.setTitle(_('清理选项'))
+        if hasattr(self, 'chk_remove_empty'):
+            self.chk_remove_empty.setText(_('移除空行'))
+        if hasattr(self, 'chk_remove_empty_para'):
+            self.chk_remove_empty_para.setText(_('移除空段落 (Word)'))
+        if hasattr(self, 'chk_deep_clean'):
+            self.chk_deep_clean.setText(_('Word 深度清理（移除隐藏元数据）'))
+        if hasattr(self, 'chk_embed'):
+            self.chk_embed.setText(_('SSD 转换时嵌入图片（Base64）'))
+            self.chk_embed.setToolTip(_('勾选：图片转为Base64内嵌，SSD为单文件但体积变大\n不勾选：只保留文字引用，文件更小（推荐）'))
+
+        # 脱敏 - 场景预设
+        if hasattr(self, 'scene_group'):
+            self.scene_group.setTitle(_('适用场景（快捷预设）'))
+        if hasattr(self, 'scene_tip'):
+            self.scene_tip.setText(_('选择场景后自动勾选对应脱敏类型，可手动调整'))
         if hasattr(self, 'scene_general'):
-            self.scene_general.setText(_('通用文档'))
+            self.scene_general.setText(_('通用文档（推荐）'))
         if hasattr(self, 'scene_gov'):
             self.scene_gov.setText(_('党政公文'))
         if hasattr(self, 'scene_finance'):
@@ -1079,18 +1163,122 @@ class SettingsTab(QWidget):
             self.scene_edu.setText(_('教育材料'))
         if hasattr(self, 'scene_custom'):
             self.scene_custom.setText(_('自定义'))
+            self.scene_custom.setToolTip(_('自定义脱敏项组合，默认全部勾选'))
 
-        # 更新按钮
-        if hasattr(self, 'btn_save'):
-            self.btn_save.setText(_('保存设置'))
-        if hasattr(self, 'btn_reset'):
-            self.btn_reset.setText(_('恢复默认'))
+        # 脱敏 - 类型
+        if hasattr(self, 'san_group1'):
+            self.san_group1.setTitle(_('默认脱敏类型'))
+        if hasattr(self, 'san_group2'):
+            self.san_group2.setTitle(_('脱敏样式'))
+        if hasattr(self, 'san_group3'):
+            self.san_group3.setTitle(_('自定义脱敏规则'))
+        if hasattr(self, 'personal_label'):
+            self.personal_label.setText(_('个人敏感:'))
+        if hasattr(self, 'biz_label'):
+            self.biz_label.setText(_('商业敏感:'))
+        if hasattr(self, 'gov_label'):
+            self.gov_label.setText(_('党政公文专用:'))
+        if hasattr(self, 'med_label'):
+            self.med_label.setText(_('医疗档案专用:'))
+
+        # 脱敏类型 checkbox
+        sanitize_types = [
+            ('chk_phone', '手机号 (138****8888)'), ('chk_email', '邮箱 (ab***@domain.com)'),
+            ('chk_idcard', '身份证号 (3301***********4)'), ('chk_bankcard', '银行卡号 (1234****5678)'),
+            ('chk_ip', 'IP 地址 (xxx.xxx.xxx.xxx)'), ('chk_passport', '护照号 (G********1)'),
+            ('chk_mac', 'Mac 地址 (AA:BB:CC:**:**:**)'), ('chk_imei', 'IMEI 设备号 (460012******34)'),
+            ('chk_plate', '车牌号 (浙A*****5)'), ('chk_social', '社保卡号 (330***********4)'),
+            ('chk_credit', '社会信用代码 (91**********)'), ('chk_contract', '合同编号 (HT-****-2024)'),
+            ('chk_amount', '投标/成交价 (¥***万)'), ('chk_license', '营业执照号 (9135********)'),
+            ('chk_phone_biz', '固定电话 (0571-****8888)'), ('chk_account_permit', '开户许可证号'),
+            ('chk_purchase_order', '采购/订单编号'), ('chk_fax', '传真号'),
+            ('chk_employee_id', '工号/学号'), ('chk_project_code', '项目代号'),
+            ('chk_postal', '邮编 (330000)'),
+            ('chk_docnum', '公文份号 (№******)'), ('chk_doclevel', '密级标注 (绝密★***年)'),
+            ('chk_docref', '公文文号 (〔2024〕*字第***号)'),
+            ('chk_medicare', '医保卡号'), ('chk_medical_record', '病历号/门诊号'),
+        ]
+        for attr, key in sanitize_types:
+            if hasattr(self, attr):
+                getattr(self, attr).setText(_(key))
+
+        # 脱敏样式
+        if hasattr(self, 'chk_preserve'):
+            self.chk_preserve.setText(_('保留首尾字符（如：138****5678）'))
+        if hasattr(self, 'chk_pseudo_mode'):
+            self.chk_pseudo_mode.setText(_('假名化模式（替换为真实格式的假数据）'))
+
+        # 自定义规则
+        if hasattr(self, 'custom_keywords_edit'):
+            self.custom_keywords_edit.setPlaceholderText(_('输入敏感词，用逗号分隔（如：公司名,项目名,人名）'))
+        if hasattr(self, 'custom_regex_edit'):
+            self.custom_regex_edit.setPlaceholderText(_('输入正则表达式（如：\\d{4}-\\d{4}-\\d{4}）'))
+
+        # 界面
+        if hasattr(self, 'ui_group1'):
+            self.ui_group1.setTitle(_('显示'))
+        if hasattr(self, 'ui_group2'):
+            self.ui_group2.setTitle(_('交互'))
+        if hasattr(self, 'chk_show_result'):
+            self.chk_show_result.setText(_('处理完成后显示结果对话框'))
+        if hasattr(self, 'chk_show_progress'):
+            self.chk_show_progress.setText(_('显示处理进度详情'))
+
+        # 高级
+        if hasattr(self, 'adv_group1'):
+            self.adv_group1.setTitle(_('日志'))
+        if hasattr(self, 'adv_group2'):
+            self.adv_group2.setTitle(_('缓存'))
+        if hasattr(self, 'adv_group3'):
+            self.adv_group3.setTitle(_('数据管理'))
+        if hasattr(self, 'log_combo'):
+            idx = self.log_combo.currentIndex()
+            self.log_combo.clear()
+            self.log_combo.addItems([_('调试'), _('信息'), _('警告'), _('错误')])
+            self.log_combo.setCurrentIndex(idx)
+        if hasattr(self, 'chk_cache'):
+            self.chk_cache.setText(_('启用缓存（加速重复处理）'))
         if hasattr(self, 'btn_clear_history'):
             self.btn_clear_history.setText(_('清空所有历史记录'))
         if hasattr(self, 'btn_clear_cache'):
             self.btn_clear_cache.setText(_('清空缓存'))
 
-        # 更新语言下拉框
-        if hasattr(self, 'lang_combo'):
-            self.lang_combo.setItemText(0, _('简体中文'))
-            self.lang_combo.setItemText(1, 'English')
+        # 按钮
+        if hasattr(self, 'btn_save'):
+            self.btn_save.setText(_('保存设置'))
+        if hasattr(self, 'btn_reset'):
+            self.btn_reset.setText(_('恢复默认'))
+
+        # ★ i18n: 翻译 create_row() 创建的标签（未存储为 self.xxx）
+        from PySide6.QtWidgets import QLabel as _QLabel
+        _label_map = {
+            '默认目录': _('默认目录'),
+            '并发线程数': _('并发线程数'),
+            '颜色主题': _('颜色主题'),
+            '语言': _('语言'),
+            '遮罩字符': _('遮罩字符'),
+            '自定义敏感词': _('自定义敏感词'),
+            '自定义正则表达式': _('自定义正则表达式'),
+            '历史记录数量': _('历史记录数量'),
+            '字体大小': _('字体大小'),
+            '表格行高': _('表格行高'),
+            '日志级别': _('日志级别'),
+            '最大日志大小 (MB)': _('最大日志大小 (MB)'),
+            '缓存上限 (MB)': _('缓存上限 (MB)'),
+        }
+        for _lbl in self.findChildren(_QLabel):
+            _txt = _lbl.text()
+            if _txt in _label_map:
+                _lbl.setText(_label_map[_txt])
+
+        # ★ i18n: 更新提示文字
+        if hasattr(self, 'hint_1'):
+            self.hint_1.setText(_('小文件 4-8，大文件 1-4'))
+
+        # ★ i18n: 更新占位符
+        if hasattr(self, 'output_dir_edit'):
+            self.output_dir_edit.setPlaceholderText(_('留空则保存到 output 子目录'))
+
+        # ★ i18n: Browse 按钮宽度防截断
+        if hasattr(self, 'btn_browse'):
+            self.btn_browse.setMinimumWidth(80)

@@ -23,7 +23,7 @@
 ---
 
 
-**版本：v1.2.2** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 zip](https://github.com/JinwaTech/safeshrink/releases/latest)
+**版本：v1.2.3** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 zip](https://github.com/JinwaTech/safeshrink/releases/latest)
 
 ---
 
@@ -169,7 +169,7 @@ OCR scanned PDFs, output searchable text
 
 ### 方式一：下载 zip 包（推荐）/ Option 1: Download zip (Recommended)
 
-前往 [GitHub Releases](https://github.com/JinwaTech/safeshrink/releases/latest) 下载 `SafeShrink-v1.2.2.zip`，解压后双击 `SafeShrink.exe` 运行，无需安装。
+前往 [GitHub Releases](https://github.com/JinwaTech/safeshrink/releases/latest) 下载 `SafeShrink-v1.2.3.zip`，解压后双击 `SafeShrink.exe` 运行，无需安装。
 
 > ⚠️ **系统要求 / System Requirements**：Windows 8 或更高版本 / Windows 8 or later。不支持 Windows 7（缺少必要的系统 API）。
 > ⚠️ **System Requirements**: Windows 8 or later. Windows 7 is not supported (missing required system APIs).
@@ -197,12 +197,34 @@ python start_gui.py
 
 ## 📋 更新日志 / Changelog
 
+### v1.2.3（2026-06-02）
+
+#### 新增 / New Features
+
+- **GUI 全面英文支持 / Full GUI English Support**：全部界面元素支持中英双语切换，启动时自动检测系统语言 / All UI elements support Chinese/English switching, auto-detect system language on startup
+
+#### 修复 / Bug Fixes
+
+- **QSpinBox 高度压缩 / QSpinBox Height Compression**：QSpinBox 最小高度未设置，布局系统将其高度压缩 30% 导致数值显示截断 / QSpinBox minimum height unset, layout system compressed height by 30% causing value display truncation
+- **关闭对话框硬编码中文 / Close Dialog Hardcoded Chinese**：退出确认对话框 3 处硬编码中文，已用 `_()` 包裹支持英文 / 3 exit confirmation dialog strings hardcoded in Chinese, wrapped with `_()` for English support
+- **Settings Tab hasattr 双前缀 / Settings Tab hasattr Double Prefix**：`hasattr(self, 'self.xxx')` 导致属性检查永远返回 False / `hasattr(self, 'self.xxx')` caused attribute check to always return False
+- **i18n 启动不生效 / i18n Not Working on Startup**：启动时未调用语言切换，导致界面始终显示中文 / Language switch not called on startup, UI always showed Chinese
+
+#### 改进 / Improvements
+
+- **版本号统一 / Version Unified**：CLI `--version`、GUI 状态栏、文件标记三处版本号统一为 v1.2.3 / Version number unified across CLI, GUI footer, and file status marker
+
+---
+
 ### v1.2.2（2026-05-28）
 
 #### 新增 / New Features
 
 - **结构化安全脱敏 / Structured Sanitization**：JSON/XML/YAML/CSV/HTML 等结构化文件支持安全脱敏，递归遍历只替换 string value，不破坏 key 和数据结构 / Structured files (JSON/XML/YAML/CSV/HTML) support safe sanitization — recursive traversal replaces only string values, preserving keys and structure
 - **XLS 旧格式支持 / XLS Legacy Support**：通过 xlrd 支持 .xls（OLE2 格式）的预览、压缩跳过和脱敏处理 / .xls (OLE2) format supported via xlrd for preview, compression skip, and sanitization
+- **CLI 英文输出 / CLI English Output**：CLI 根据系统 locale 自动切换中英文输出 / CLI auto-switches output language based on system locale
+- **英文脱敏规则 / English Sanitization Rules**：新增 US Phone、UK Phone、SSN、Credit Card 等英文敏感信息识别 / Added US Phone, UK Phone, SSN, Credit Card detection patterns
+- **XLS 写入支持 / XLS Write Support**：通过 xlwt 支持 .xls（OLE2 格式）文件写入和保存 / .xls (OLE2) write and save support via xlwt
 
 #### 修复 / Bug Fixes
 
@@ -212,11 +234,11 @@ python start_gui.py
 - **批量脱敏 CSV/XLSX 无效 / Batch Sanitize CSV/XLSX Ineffective**：CSV 未加入原生脱敏列表，dummy SanitizeTab 实例缺少属性导致 fallback / CSV missing from native sanitize list; dummy SanitizeTab instance missing attributes
 - **批量脱敏跳过逻辑 / Batch Sanitize Skip Logic**：`_减肥` 文件被同等跳过，无法二次脱敏；修复后 `_减肥` 可再脱敏，`_脱敏` 可再减肥 / `_减肥` files were skipped during sanitization; now `_减肥` can be re-sanitized, `_脱敏` can be re-slimmed
 - **GUI 单文件 CSV/JSON 压缩 / GUI Single-File CSV/JSON Compression**：slim_tab 独立流程未跳过结构化格式，导致 CSV/JSON 被错误压缩 / slim_tab's independent flow didn't skip structured formats
+- **Qt platform plugin 初始化失败 / Qt Platform Plugin Init Failure**：添加 qt.conf 解决 VCRUNTIME140.dll 多版本冲突 / Added qt.conf resolving VCRUNTIME140.dll version conflicts
 
 #### 改进 / Improvements
 
 - **PyInstaller 打包优化 / PyInstaller Packaging Optimization**：18 个模块编译为 .pyd，1079 文件/168MB（旧版 1552 文件/186MB）/ 18 modules compiled to .pyd, 1079 files/168MB (was 1552/186MB)
-- **版本号统一 / Version Unified**：CLI `--version`、GUI 状态栏、文件标记三处版本号统一为 v1.2.2 / Version number unified across CLI, GUI footer, and file status marker
 
 ---
 
