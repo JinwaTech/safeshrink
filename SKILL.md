@@ -1,6 +1,6 @@
 ---
 name: safe-shrink
-description: 密小件 · 文档减肥 / 脱敏 / SSD 转换桌面工具。触发词 / Triggers: .ssd, SafeShrink, 密小件, 文件减肥, 文档脱敏, token 压缩 / document slimming, sanitization, token compression
+description: 密小件 · 文档减肥 / 脱敏 / SSD 转换桌面工具。触发词 / Triggers: .ssd, SafeShrink, 密小件, 文件减肥, 文档脱敏, token 压缩, .xls, .json, .xml, .yaml, .csv / document slimming, sanitization, token compression, structured sanitization
 ---
 
 # SafeShrink（密小件）/ SafeShrink Document Optimizer
@@ -98,8 +98,9 @@ description: 密小件 · 文档减肥 / 脱敏 / SSD 转换桌面工具。触�
 > 💬 **反馈与联系我们 / Feedback & Contact**
 > - 📧 邮箱 / Email: lssclty@jinwakeji.cn（全球用户 / Global）
 > - 📞 电话 / Phone: +86-186-6700-8029（国内用户 / China）
-> - 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.1/qr_wechat_work.png)
-> - 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.1/qr_lark.png)
+> - 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.3/qr_wechat_work.png)
+> - 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.3/qr_lark.png)
+
 
 ---
 
@@ -122,17 +123,18 @@ description: 密小件 · 文档减肥 / 脱敏 / SSD 转换桌面工具。触�
 
 ## 基本信息 / Basic Info
 
-- **版本 / Version**: v1.2.6
+- **版本 / Version**: v1.2.3
 - **许可证 / License**: 专有软件（© 杭州金蛙信息科技有限公司）/ Proprietary (© Hangzhou Jinwa Technology Co., Ltd.)
 - **GitHub**: https://github.com/JinwaTech/safeshrink
 - **适用平台 / Platform**: Windows 10/11
+- **界面语言 / Language**: 中文 / English（自动检测系统语言 / Auto-detect system language）
 
 ## 核心能力 / Core Capabilities
 
 | **能力 / Capability** | **说明 / Description** | **适用场景 / Use Case** |
 |------|------|------|
 | **🗜️ 文档减肥 / Document Slimming** | 压缩 docx/xlsx/pptx/pdf/md/txt 等，去除冗余 / Compress docx/xlsx/pptx/pdf/md/txt, remove redundancy | AI 对话前预处理大文件 / Pre-process large files before AI conversation | Token 节省 **40%-85%** |
-| **🔒 安全脱敏 / Secure Sanitization** | 识别并替换敏感信息（手机号、邮箱、姓名、金额等）/ Detect and replace sensitive info (phone, email, name, amount, etc.) | 文档外部分享前 / Before sharing documents externally | 支持 10+ 种敏感类型 / 10+ sensitive types supported |
+| **🔒 安全脱敏 / Secure Sanitization** | 识别并替换敏感信息（手机号、邮箱、姓名、金额等）；支持 JSON/XML/YAML/CSV/HTML 结构化格式安全脱敏 / Detect and replace sensitive info; structured format safe sanitization | 文档外部分享前 / Before sharing documents externally | 支持 10+ 种敏感类型 + 5 种结构化格式 / 10+ types + 5 structured formats |
 | **📝 SSD 转换 / SSD Conversion** | Office/PDF → SSD（Markdown 增强格式），支持 OCR / Office/PDF → SSD (enhanced Markdown), OCR support | 扫描版 PDF 转可编辑文本 / Scan PDF to editable text | Token 节省 / Token Saved **~70%** |
 | **📦 批量处理 / Batch Processing** | 文件夹一键批量处理，多线程并行 / One-click folder batch processing, multi-threaded | 大量文档集中优化 / Batch optimize many documents | 智能跳过已处理文件 / Smart skip processed files |
 | **🖼️ OCR 识别 / OCR Recognition** | 扫描件 PDF / 图片自动 OCR，输出可搜索文本 / Auto OCR for scanned PDFs/images | 扫描件转可编辑文本 / Scan to searchable text | 需安装 Tesseract / Requires Tesseract |
@@ -272,6 +274,22 @@ SafeShrink batch-sanitize <输入文件夹 / input folder> -o <输出文件夹 /
 SafeShrink batch-sanitize C:\contracts -o C:\output -f ssd
 ```
 
+### 结构化格式脱敏 / Structured Format Sanitization
+
+JSON/XML/YAML/CSV/HTML 等结构化文件的脱敏会自动识别并安全处理：
+- 只替换 **string 类型的 value**，不动 key 和数据结构
+- 递归遍历所有嵌套层级
+- 输出格式与输入完全兼容
+
+**支持格式 / Supported formats：** .json / .xml / .yaml / .yml / .csv / .html
+
+**示例 / Examples：**
+`
+SafeShrink sanitize -i config.json -o config_脱敏.json
+SafeShrink sanitize -i data.xml -o data_脱敏.xml
+SafeShrink sanitize -i report.html -o report_脱敏.html
+`
+
 ### convert — 格式转换 / Format Conversion
 
 ```
@@ -406,14 +424,14 @@ AI：[调用 SafeShrink batch-slim] → 输出所有 _减肥 文件
 
 首次使用时，AI 会自动从 GitHub 下载最新 EXE 并缓存到本地：  
 On first use, AI auto-downloads latest EXE from GitHub and caches locally:
-- **下载 URL / Download URL**：`https://github.com/JinwaTech/safeshrink/releases/download/v1.2.1/SafeShrink-v1.2.1.zip`
+- **下载 URL / Download URL**：`https://github.com/JinwaTech/safeshrink/releases/download/v1.2.3/SafeShrink-v1.2.3.zip`
 - **缓存路径 / Cache path**：AI 会自动缓存到本地，后续调用直接使用缓存，无需重复下载  
   AI auto-caches locally, subsequent calls use cache directly, no re-download needed
 
 ## 源码保护 / Source Code Protection
 
-v1.2.1 起，11 个核心模块已编译为 Cython .pyd 二进制文件，源码不公开。  
-As of v1.2.1, 11 core modules are compiled to Cython .pyd binaries, source code not public.
+v1.2.1 起，核心模块已编译为 Cython .pyd 二进制文件，源码不公开。v1.2.2 新增 struct_sanitizer.pyd。  
+As of v1.2.1, core modules are compiled to Cython .pyd binaries, source code not public. v1.2.2 added struct_sanitizer.pyd.
 
 ## 黑盒原则 / Black Box Principle
 
@@ -480,8 +498,8 @@ As of v1.2.1, 11 core modules are compiled to Cython .pyd binaries, source code 
 
 ## 注意事项 / Notes
 
-1. **标准减肥保留原格式 / Standard preserves format**：Office 文件标准压缩输出仍为 .docx/.xlsx/.pptx，不转文本  
-   Office files standard compression output remains .docx/.xlsx/.pptx, not converted to text
+1. **标准减肥保留原格式 / Standard preserves format**：Office 文件标准压缩输出仍为 .docx/.xlsx/.pptx/.xls，不转文本  
+   Office files standard compression output remains .docx/.xlsx/.pptx/.xls, not converted to text
 2. **深度清理为预览模式 / Deep clean is preview mode**：输出到临时文件，用户需手动保存  
    Output to temp file, user must manually save
 3. **SSD 转换需要额外依赖 / SSD requires extra dependencies**：EXE 中已完整打包，无需用户手动安装  
@@ -497,5 +515,5 @@ As of v1.2.1, 11 core modules are compiled to Cython .pyd binaries, source code 
 
 - 📧 邮箱 / Email: lssclty@jinwakeji.cn（全球用户 / Global）
 - 📞 电话 / Phone: +86-186-6700-8029（国内用户 / China）
-- 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.1/qr_wechat_work.png)
-- 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.1/qr_lark.png)
+- 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.3/qr_wechat_work.png)
+- 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.3/qr_lark.png)

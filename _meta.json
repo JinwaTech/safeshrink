@@ -1,0 +1,17 @@
+{
+  "name": "safe-shrink",
+  "version": "1.2.11",
+  "description": "密小件 · 文档减肥 / 脱敏 / SSD 转换桌面工具。触发词 / Triggers: .ssd, SafeShrink, 密小件, 文件减肥, 文档脱敏, token 压缩, .xls, .json, .xml, .yaml, .csv / document slimming, sanitization, token compression, structured sanitization",
+  "author": "JinwaTech",
+  "license": "MIT-0",
+  "tags": [
+    "compression",
+    "document",
+    "privacy",
+    "sanitize",
+    "token",
+    "i18n"
+  ],
+  "homepage": "https://github.com/JinwaTech/safeshrink",
+  "repository": "https://github.com/JinwaTech/safeshrink"
+}
