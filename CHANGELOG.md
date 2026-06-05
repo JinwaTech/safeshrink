@@ -2,6 +2,11 @@
 
 ## [v1.2.4] - 2026-06-05
 
+### Added
+- **英文脱敏模式扩展**：EN_PATTERNS 从 6 种扩至 26 种（Personal 9 + Business 17）
+- GUI 三页同步：sanitize_tab / settings_tab / batch_tab 各新增 26 个英文 checkbox
+- 中英文显隐切换：中文模式只显示中文选项，英文模式只显示英文选项
+
 ### Fixed
 - 设置页标签不翻译（英文切回中文时 13 个标签仍显示英文）
 - 导航栏不切换（apply_language 读实例属性而非类属性）
@@ -115,4 +120,5 @@
 [v1.2.1]: https://github.com/JinwaTech/safeshrink/releases/tag/v1.2.1
 [v1.2.0]: https://github.com/JinwaTech/safeshrink/releases/tag/v1.2.0
 [v1.1.8]: https://github.com/JinwaTech/safeshrink/releases/tag/v1.1.8
+
 

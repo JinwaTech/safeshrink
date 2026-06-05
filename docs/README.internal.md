@@ -39,6 +39,13 @@
 
 ### v1.2.4（2026-06-05）
 
+**英文脱敏模式扩展：**
+- EN_PATTERNS 从 6 种扩至 26 种（Personal 9 + Business 17）
+- GUI 三页同步：sanitize_tab / settings_tab / batch_tab 各新增 26 个英文 checkbox
+- 中英文显隐切换：中文模式只显示中文选项，英文模式只显示英文选项
+
+**Bug Fixes：**
+
 **Bug Fixes：**
 - 设置页标签不翻译（_orig_zh + get_translation 动态映射）
 - 导航栏不切换（MainWindow.NAV_ITEMS 类属性修复）
@@ -407,4 +414,5 @@ Welcome to submit Issues and Pull Requests!
 **如果对你有帮助，欢迎 ⭐ Star 支持！ / If this helps you, please ⭐ Star to support!**
 
 </div>
+
 

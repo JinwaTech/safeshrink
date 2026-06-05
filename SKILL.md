@@ -134,7 +134,7 @@ description: 密小件 · 文档减肥 / 脱敏 / SSD 转换桌面工具。触�
 | **能力 / Capability** | **说明 / Description** | **适用场景 / Use Case** |
 |------|------|------|
 | **🗜️ 文档减肥 / Document Slimming** | 压缩 docx/xlsx/pptx/pdf/md/txt 等，去除冗余 / Compress docx/xlsx/pptx/pdf/md/txt, remove redundancy | AI 对话前预处理大文件 / Pre-process large files before AI conversation | Token 节省 **40%-85%** |
-| **🔒 安全脱敏 / Secure Sanitization** | 识别并替换敏感信息（手机号、邮箱、姓名、金额等）；支持 JSON/XML/YAML/CSV/HTML 结构化格式安全脱敏 / Detect and replace sensitive info; structured format safe sanitization | 文档外部分享前 / Before sharing documents externally | 支持 10+ 种敏感类型 + 5 种结构化格式 / 10+ types + 5 structured formats |
+| **🔒 安全脱敏 / Secure Sanitization** | 识别并替换敏感信息（手机号、邮箱、姓名、金额等）；支持 JSON/XML/YAML/CSV/HTML 结构化格式安全脱敏 / Detect and replace sensitive info; structured format safe sanitization | 文档外部分享前 / Before sharing documents externally | 支持 26 种中文 + 26 种英文敏感类型 + 5 种结构化格式 / 26 CN + 26 EN types + 5 structured formats |
 | **📝 SSD 转换 / SSD Conversion** | Office/PDF → SSD（Markdown 增强格式），支持 OCR / Office/PDF → SSD (enhanced Markdown), OCR support | 扫描版 PDF 转可编辑文本 / Scan PDF to editable text | Token 节省 / Token Saved **~70%** |
 | **📦 批量处理 / Batch Processing** | 文件夹一键批量处理，多线程并行 / One-click folder batch processing, multi-threaded | 大量文档集中优化 / Batch optimize many documents | 智能跳过已处理文件 / Smart skip processed files |
 | **🖼️ OCR 识别 / OCR Recognition** | 扫描件 PDF / 图片自动 OCR，输出可搜索文本 / Auto OCR for scanned PDFs/images | 扫描件转可编辑文本 / Scan to searchable text | 需安装 Tesseract / Requires Tesseract |
@@ -517,4 +517,5 @@ As of v1.2.1, core modules are compiled to Cython .pyd binaries, source code not
 - 📞 电话 / Phone: +86-186-6700-8029（国内用户 / China）
 - 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.4/qr_wechat_work.png)
 - 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.4/qr_lark.png)
+
 

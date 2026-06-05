@@ -461,3 +461,4 @@ python start_gui.py
 - 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.4/qr_wechat_work.png)
 - 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.4/qr_lark.png)
 
+
