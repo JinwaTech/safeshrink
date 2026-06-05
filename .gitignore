@@ -1,4 +1,4 @@
-# 构建脚本
+﻿# 构建脚本
 build.py
 build_safeshrink.py
 fix_version.py
@@ -20,7 +20,6 @@ test_cli.py
 # Internal docs (but keep screenshots)
 !docs/screenshot/
 !docs/screenshot/*
-!docs/README.internal.md
 docs/*
 !docs/.gitkeep
 
@@ -53,3 +52,4 @@ src_backup/
 versions/
 
 tests/
+
