@@ -32,7 +32,7 @@
 | 功能 / Feature | 说明 / Description | 效果 / Effect |
 |------|------|------|
 | 🗜️ **文档减肥 / Document Slimming** | 压缩文档体积，去除冗余内容 / Compress document size, remove redundancy | 体积减少 / Size reduced **30%-70%** |
-| 🔒 **智能脱敏 / Smart Sanitization** | 自动识别并脱敏敏感信息 / Auto-detect and mask sensitive info | 支持 10+ 种敏感类型 / 10+ sensitive types supported |
+| 🔒 **智能脱敏 / Smart Sanitization** | 自动识别并脱敏敏感信息 / Auto-detect and mask sensitive info | 支持 26+ 种中英文敏感类型 / 26+ CN/EN sensitive types supported |
 | 📝 **SSD 转换 / SSD Conversion** | Office/PDF → .ssd 格式 / Office/PDF → .ssd format | Token 消耗降低 / Token reduced **~70%** |
 | 📦 **批量处理 / Batch Processing** | 文件夹一键批量处理 / One-click folder batch processing | 多线程并行，智能跳过 / Multi-threaded, smart skip |
 | 🖼️ **OCR 识别 / OCR Recognition** | 扫描件 PDF / 图片自动 OCR / Auto OCR for scanned PDFs/images | 输出可搜索文本 / Searchable text output |
@@ -198,6 +198,10 @@ python start_gui.py
 ## 📋 更新日志 / Changelog
 
 ### v1.2.4（2026-06-05）
+
+**New Features：**
+- **26 种英文脱敏规则 / 26 English Sanitization Patterns**：对标 Microsoft Presidio（MIT License），新增 US Phone、SSN、Tax ID、Passport、MAC Address、Employee ID 等 26 种英文敏感信息识别，覆盖个人身份、金融、网络、证件四大类 / Aligned with Microsoft Presidio (MIT License); added 26 English patterns covering Personal Identity, Financial, Network, and Document categories
+- **GUI 英文选项 / GUI English Options**：设置页和批量页新增 26 个英文脱敏 checkbox，中/英文模式自动切换显示 / Settings and Batch tabs add 26 English checkboxes, auto-toggled by language mode
 
 **Bug Fixes：**
 - **设置页标签不翻译 / Settings Labels Not Translating**：从英文切回中文时，13 个标签仍显示英文。根因：_label_map 反向映射键不匹配，改为 _orig_zh + get_translation 动态映射 / Labels stayed English when switching back to Chinese; fixed with dynamic bidirectional mapping
