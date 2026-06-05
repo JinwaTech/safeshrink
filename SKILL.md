@@ -1,4 +1,4 @@
----
+﻿---
 name: safe-shrink
 description: 密小件 · 文档减肥 / 脱敏 / SSD 转换桌面工具。触发词 / Triggers: .ssd, SafeShrink, 密小件, 文件减肥, 文档脱敏, token 压缩, .xls, .json, .xml, .yaml, .csv / document slimming, sanitization, token compression, structured sanitization
 ---
@@ -98,8 +98,8 @@ description: 密小件 · 文档减肥 / 脱敏 / SSD 转换桌面工具。触�
 > 💬 **反馈与联系我们 / Feedback & Contact**
 > - 📧 邮箱 / Email: lssclty@jinwakeji.cn（全球用户 / Global）
 > - 📞 电话 / Phone: +86-186-6700-8029（国内用户 / China）
-> - 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.3/qr_wechat_work.png)
-> - 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.3/qr_lark.png)
+> - 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.4/qr_wechat_work.png)
+> - 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.4/qr_lark.png)
 
 
 ---
@@ -123,7 +123,7 @@ description: 密小件 · 文档减肥 / 脱敏 / SSD 转换桌面工具。触�
 
 ## 基本信息 / Basic Info
 
-- **版本 / Version**: v1.2.3
+- **版本 / Version**: v1.2.4
 - **许可证 / License**: 专有软件（© 杭州金蛙信息科技有限公司）/ Proprietary (© Hangzhou Jinwa Technology Co., Ltd.)
 - **GitHub**: https://github.com/JinwaTech/safeshrink
 - **适用平台 / Platform**: Windows 10/11
@@ -424,7 +424,7 @@ AI：[调用 SafeShrink batch-slim] → 输出所有 _减肥 文件
 
 首次使用时，AI 会自动从 GitHub 下载最新 EXE 并缓存到本地：  
 On first use, AI auto-downloads latest EXE from GitHub and caches locally:
-- **下载 URL / Download URL**：`https://github.com/JinwaTech/safeshrink/releases/download/v1.2.3/SafeShrink-v1.2.3.zip`
+- **下载 URL / Download URL**：`https://github.com/JinwaTech/safeshrink/releases/download/v1.2.4/SafeShrink-v1.2.4.zip`
 - **缓存路径 / Cache path**：AI 会自动缓存到本地，后续调用直接使用缓存，无需重复下载  
   AI auto-caches locally, subsequent calls use cache directly, no re-download needed
 
@@ -515,5 +515,6 @@ As of v1.2.1, core modules are compiled to Cython .pyd binaries, source code not
 
 - 📧 邮箱 / Email: lssclty@jinwakeji.cn（全球用户 / Global）
 - 📞 电话 / Phone: +86-186-6700-8029（国内用户 / China）
-- 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.3/qr_wechat_work.png)
-- 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.3/qr_lark.png)
+- 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.4/qr_wechat_work.png)
+- 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.4/qr_lark.png)
+

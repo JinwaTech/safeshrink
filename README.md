@@ -1,4 +1,4 @@
-# SafeShrink 密小件 / SafeShrink Document Optimizer
+﻿# SafeShrink 密小件 / SafeShrink Document Optimizer
 
 > **密小件** 帮您让文档变得更轻、更安全、更 AI 友好。
 >
@@ -23,7 +23,7 @@
 ---
 
 
-**版本：v1.2.3** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 zip](https://github.com/JinwaTech/safeshrink/releases/latest)
+**版本：v1.2.4** | [GitHub](https://github.com/JinwaTech/safeshrink) · [下载 zip](https://github.com/JinwaTech/safeshrink/releases/latest)
 
 ---
 
@@ -169,7 +169,7 @@ OCR scanned PDFs, output searchable text
 
 ### 方式一：下载 zip 包（推荐）/ Option 1: Download zip (Recommended)
 
-前往 [GitHub Releases](https://github.com/JinwaTech/safeshrink/releases/latest) 下载 `SafeShrink-v1.2.3.zip`，解压后双击 `SafeShrink.exe` 运行，无需安装。
+前往 [GitHub Releases](https://github.com/JinwaTech/safeshrink/releases/latest) 下载 `SafeShrink-v1.2.4.zip`，解压后双击 `SafeShrink.exe` 运行，无需安装。
 
 > ⚠️ **系统要求 / System Requirements**：Windows 8 或更高版本 / Windows 8 or later。不支持 Windows 7（缺少必要的系统 API）。
 > ⚠️ **System Requirements**: Windows 8 or later. Windows 7 is not supported (missing required system APIs).
@@ -197,6 +197,19 @@ python start_gui.py
 
 ## 📋 更新日志 / Changelog
 
+### v1.2.4（2026-06-05）
+
+**Bug Fixes：**
+- **设置页标签不翻译 / Settings Labels Not Translating**：从英文切回中文时，13 个标签仍显示英文。根因：_label_map 反向映射键不匹配，改为 _orig_zh + get_translation 动态映射 / Labels stayed English when switching back to Chinese; fixed with dynamic bidirectional mapping
+- **导航栏不切换 / Navbar Not Switching**：pply_language 的 else 分支读实例属性而非类属性。修复：items = MainWindow.NAV_ITEMS / Navbar read instance attribute instead of class attribute
+- **"减肠"错别字 / "减肠" Typo**：history_tab 筛选下拉框和 translations.py 中 "减肥" 误写为 "减肠" / Filter dropdown and translations.py had typo "减肠" instead of "减肥"
+- **CJK 字体渲染 / CJK Font Rendering**：CSS font-family Segoe UI 优先导致中文字符错误渲染，改为 Microsoft YaHei 优先 / CSS font-family order caused incorrect CJK rendering
+
+**Build Optimization：**
+- **spec 恢复 collect_submodules**：EXE 从 30MB 降至 18.4MB，dist 从 252MB 降至 182MB / Restored collect_submodules in spec, EXE 30MB→18.4MB
+- **.pyd 全部重编译**：8 个模块用最新代码重编译 / Recompiled all 8 .pyd modules
+- **format_to_ssd.py 编码修复**：UTF-16 LE → UTF-8 / Converted from UTF-16 LE to UTF-8
+- **Python 版本迁移**：构建环境从 3.14 迁回 3.13.13 / Migrated build from Python 3.14 back to 3.13.13
 ### v1.2.3（2026-06-02）
 
 #### 新增 / New Features
@@ -445,5 +458,6 @@ python start_gui.py
 
 - 📧 邮箱 / Email: lssclty@jinwakeji.cn（全球用户 / Global）
 - 📞 电话 / Phone: +86-186-6700-8029（国内用户 / China）
-- 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.1/qr_wechat_work.png)
-- 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.1/qr_lark.png)
+- 💼 企业微信 / WeChat Work: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.4/qr_wechat_work.png)
+- 🚀 飞书 / Lark: [扫码添加 / Scan QR code](https://github.com/JinwaTech/safeshrink/releases/download/v1.2.4/qr_lark.png)
+

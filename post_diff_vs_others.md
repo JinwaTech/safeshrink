@@ -1,4 +1,4 @@
-# SafeShrink 和其他 Skill 有什么区别？
+﻿# SafeShrink 和其他 Skill 有什么区别？
 
 > 一句话：**它不是"又一个文档处理 Skill"，它是你本地的文档隐私守门员。**
 
@@ -104,4 +104,5 @@ PDF 转 Markdown 不是 SafeShrink 的独创，但 SSD（SafeShrink Document）�
 
 ---
 
-*SafeShrink v1.2.1 | 本地处理 · 隐私优先 · 主动拦截*
+*SafeShrink v1.2.4 | 本地处理 · 隐私优先 · 主动拦截*
+

@@ -1,4 +1,4 @@
-# SafeShrink / SafeShrink Document Optimizer
+﻿# SafeShrink / SafeShrink Document Optimizer
 
 > **密小件** 帮您让文档变得更轻、更安全、更 AI 友好。
 >
@@ -23,7 +23,7 @@
 ---
 
 
-**版本：v1.2.3 / Version: v1.2.3** *(2026-06-02)*
+**版本：v1.2.4 / Version: v1.2.4 *(2026-06-05)** *(2026-06-02)*
 
 | 功能 / Feature | 说明 / Description | 效果 / Effect |
 |------|------|------|
@@ -37,6 +37,19 @@
 
 ## 更新日志 / Changelog
 
+### v1.2.4（2026-06-05）
+
+**Bug Fixes：**
+- 设置页标签不翻译（_orig_zh + get_translation 动态映射）
+- 导航栏不切换（MainWindow.NAV_ITEMS 类属性修复）
+- "减肠"错别字（history_tab + translations.py）
+- CJK 字体渲染（CSS font-family 改为 Microsoft YaHei 优先）
+
+**Build Optimization：**
+- spec 恢复 collect_submodules（EXE 18.4MB / dist 182MB）
+- 8 个 .pyd 全部重编译
+- format_to_ssd.py UTF-16→UTF-8
+- Python 3.14→3.13.13
 ### v1.2.3（2026-06-02）
 
 #### 新增 / New Features
@@ -290,8 +303,8 @@ OCR scanned PDFs to searchable text
 ### 下载 zip 包（推荐）/ Download zip (Recommended)
 
 ```bash
-# 下载 SafeShrink-v1.2.3.zip，解压后双击 SafeShrink.exe 运行
-# Download SafeShrink-v1.2.3.zip, extract, then double-click SafeShrink.exe
+# 下载 SafeShrink-v1.2.4.zip，解压后双击 SafeShrink.exe 运行
+# Download SafeShrink-v1.2.4.zip, extract, then double-click SafeShrink.exe
 https://github.com/JinwaTech/safeshrink/releases
 ```
 
@@ -394,3 +407,4 @@ Welcome to submit Issues and Pull Requests!
 **如果对你有帮助，欢迎 ⭐ Star 支持！ / If this helps you, please ⭐ Star to support!**
 
 </div>
+

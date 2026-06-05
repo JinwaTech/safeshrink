@@ -1,5 +1,22 @@
-# SafeShrink Changelog
+﻿# SafeShrink Changelog
 
+## [v1.2.4] - 2026-06-05
+
+### Fixed
+- 设置页标签不翻译（英文切回中文时 13 个标签仍显示英文）
+- 导航栏不切换（apply_language 读实例属性而非类属性）
+- "减肠"错别字（history_tab 筛选下拉框 + translations.py）
+- CJK 字体渲染（CSS font-family 顺序）
+
+### Changed
+- spec 恢复 collect_submodules（EXE 18.4MB / dist 182MB）
+- 8 个 .pyd 全部重编译
+- format_to_ssd.py UTF-16 → UTF-8
+- 构建环境 Python 3.14 → 3.13.13
+
+### Links
+- **GitHub Release**: https://github.com/JinwaTech/safeshrink/releases/tag/v1.2.4
+- **完整打包**: SafeShrink-v1.2.4.zip（128MB，含 _internal 目录）
 ## [v1.2.1] - 2026-05-25
 
 ### 🛡️ 源码保护（重大变更）
@@ -93,7 +110,9 @@
 
 ---
 
-[Unreleased]: https://github.com/JinwaTech/safeshrink/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/JinwaTech/safeshrink/compare/v1.2.4...HEAD
+[v1.2.4]: https://github.com/JinwaTech/safeshrink/releases/tag/v1.2.4
 [v1.2.1]: https://github.com/JinwaTech/safeshrink/releases/tag/v1.2.1
 [v1.2.0]: https://github.com/JinwaTech/safeshrink/releases/tag/v1.2.0
 [v1.1.8]: https://github.com/JinwaTech/safeshrink/releases/tag/v1.1.8
+
