@@ -101,3 +101,7 @@ main_window_v2.py
 format_to_ssd.py
 struct_sanitizer.py
 main_window_v2.spec
+
+pytest.ini
+qt.conf
+requirements.txt
