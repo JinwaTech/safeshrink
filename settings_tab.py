@@ -554,6 +554,98 @@ class SettingsTab(QWidget):
         self.chk_postal.setChecked('邮编' in types)
         g1_layout.addWidget(self.chk_postal)
 
+
+        # ========== English Patterns (英文脱敏) ==========
+        self.en_personal_label = QLabel("English Personal Info:")
+        self.en_personal_label.setStyleSheet("font-size: 12px; color: #8b92a5; margin-top: 8px;")
+        g1_layout.addWidget(self.en_personal_label)
+
+        self.chk_en_phone = QCheckBox("Phone (US/UK)")
+        g1_layout.addWidget(self.chk_en_phone)
+        self.chk_en_ssn = QCheckBox("SSN (123-45-6789)")
+        g1_layout.addWidget(self.chk_en_ssn)
+        self.chk_en_credit_card = QCheckBox("Credit Card")
+        g1_layout.addWidget(self.chk_en_credit_card)
+        self.chk_en_email = QCheckBox("Email")
+        g1_layout.addWidget(self.chk_en_email)
+        self.chk_en_ip = QCheckBox("IP Address")
+        g1_layout.addWidget(self.chk_en_ip)
+        self.chk_en_passport = QCheckBox("Passport")
+        g1_layout.addWidget(self.chk_en_passport)
+        self.chk_en_mac_address = QCheckBox("MAC Address")
+        g1_layout.addWidget(self.chk_en_mac_address)
+        self.chk_en_imei = QCheckBox("IMEI")
+        g1_layout.addWidget(self.chk_en_imei)
+        self.chk_en_license_plate = QCheckBox("License Plate")
+        g1_layout.addWidget(self.chk_en_license_plate)
+
+        self.en_business_label = QLabel("English Business Info:")
+        self.en_business_label.setStyleSheet("font-size: 12px; color: #8b92a5; margin-top: 8px;")
+        g1_layout.addWidget(self.en_business_label)
+
+        self.chk_en_tax_id = QCheckBox("Tax ID / EIN")
+        g1_layout.addWidget(self.chk_en_tax_id)
+        self.chk_en_business_license = QCheckBox("Business License")
+        g1_layout.addWidget(self.chk_en_business_license)
+        self.chk_en_bank_routing = QCheckBox("Bank Routing (ABA)")
+        g1_layout.addWidget(self.chk_en_bank_routing)
+        self.chk_en_currency = QCheckBox("Currency Amount")
+        g1_layout.addWidget(self.chk_en_currency)
+        self.chk_en_contract = QCheckBox("Contract Number")
+        g1_layout.addWidget(self.chk_en_contract)
+        self.chk_en_po = QCheckBox("PO Number")
+        g1_layout.addWidget(self.chk_en_po)
+        self.chk_en_fax = QCheckBox("Fax Number")
+        g1_layout.addWidget(self.chk_en_fax)
+        self.chk_en_employee_id = QCheckBox("Employee ID")
+        g1_layout.addWidget(self.chk_en_employee_id)
+        self.chk_en_student_id = QCheckBox("Student ID")
+        g1_layout.addWidget(self.chk_en_student_id)
+        self.chk_en_project_code = QCheckBox("Project Code")
+        g1_layout.addWidget(self.chk_en_project_code)
+        self.chk_en_zip_code = QCheckBox("ZIP Code")
+        g1_layout.addWidget(self.chk_en_zip_code)
+        self.chk_en_nino = QCheckBox("NINO (UK)")
+        g1_layout.addWidget(self.chk_en_nino)
+        self.chk_en_nhs = QCheckBox("NHS Number (UK)")
+        g1_layout.addWidget(self.chk_en_nhs)
+        self.chk_en_medical_record = QCheckBox("Medical Record")
+        g1_layout.addWidget(self.chk_en_medical_record)
+        self.chk_en_doc_serial = QCheckBox("Document Serial")
+        g1_layout.addWidget(self.chk_en_doc_serial)
+        self.chk_en_classification = QCheckBox("Classification Level")
+        g1_layout.addWidget(self.chk_en_classification)
+        self.chk_en_doc_ref = QCheckBox("Document Reference")
+        g1_layout.addWidget(self.chk_en_doc_ref)
+
+        # Restore English checkbox states from settings
+        self.chk_en_phone.setChecked('Phone' in types)
+        self.chk_en_ssn.setChecked('SSN' in types)
+        self.chk_en_credit_card.setChecked('Credit Card' in types)
+        self.chk_en_email.setChecked('Email' in types)
+        self.chk_en_ip.setChecked('IP Address' in types)
+        self.chk_en_passport.setChecked('Passport' in types)
+        self.chk_en_mac_address.setChecked('MAC Address' in types)
+        self.chk_en_imei.setChecked('IMEI' in types)
+        self.chk_en_license_plate.setChecked('License Plate' in types)
+        self.chk_en_tax_id.setChecked('Tax ID' in types)
+        self.chk_en_business_license.setChecked('Business License' in types)
+        self.chk_en_bank_routing.setChecked('Bank Routing' in types)
+        self.chk_en_currency.setChecked('Currency Amount' in types)
+        self.chk_en_contract.setChecked('Contract Number' in types)
+        self.chk_en_po.setChecked('PO Number' in types)
+        self.chk_en_fax.setChecked('Fax Number' in types)
+        self.chk_en_employee_id.setChecked('Employee ID' in types)
+        self.chk_en_student_id.setChecked('Student ID' in types)
+        self.chk_en_project_code.setChecked('Project Code' in types)
+        self.chk_en_zip_code.setChecked('ZIP Code' in types)
+        self.chk_en_nino.setChecked('NINO' in types)
+        self.chk_en_nhs.setChecked('NHS Number' in types)
+        self.chk_en_medical_record.setChecked('Medical Record' in types)
+        self.chk_en_doc_serial.setChecked('Document Serial' in types)
+        self.chk_en_classification.setChecked('Classification Level' in types)
+        self.chk_en_doc_ref.setChecked('Document Reference' in types)
+
         # 党政公文专用
         self.gov_label = QLabel("党政公文专用:")
         self.gov_label.setStyleSheet("font-size: 12px; color: #8b92a5; margin-top: 8px;")
@@ -628,6 +720,37 @@ class SettingsTab(QWidget):
         scroll.setWidget(widget)
         # 所有 checkbox 已创建，启用场景联动
         self._scene_ready = True
+
+        # 根据当前语言设置初始显隐
+        is_en = (self.settings.get('language', 'zh-CN') == 'en-US')
+        _en_names = [
+            'en_personal_label', 'en_business_label',
+            'chk_en_phone', 'chk_en_ssn', 'chk_en_credit_card', 'chk_en_email',
+            'chk_en_ip', 'chk_en_passport', 'chk_en_mac_address', 'chk_en_imei',
+            'chk_en_license_plate', 'chk_en_tax_id', 'chk_en_business_license',
+            'chk_en_bank_routing', 'chk_en_currency', 'chk_en_contract',
+            'chk_en_po', 'chk_en_fax', 'chk_en_employee_id', 'chk_en_student_id',
+            'chk_en_project_code', 'chk_en_zip_code', 'chk_en_nino',
+            'chk_en_nhs', 'chk_en_medical_record', 'chk_en_doc_serial',
+            'chk_en_classification', 'chk_en_doc_ref',
+        ]
+        _zh_names = [
+            'personal_label', 'biz_label', 'gov_label', 'med_label',
+            'chk_phone', 'chk_email', 'chk_idcard', 'chk_bankcard', 'chk_ip',
+            'chk_passport', 'chk_mac', 'chk_imei', 'chk_plate', 'chk_social',
+            'chk_credit', 'chk_contract', 'chk_amount', 'chk_license',
+            'chk_phone_biz', 'chk_account_permit', 'chk_purchase_order',
+            'chk_fax', 'chk_employee_id', 'chk_project_code', 'chk_postal',
+            'chk_docnum', 'chk_doclevel', 'chk_docref', 'chk_medicare',
+            'chk_medical_record',
+        ]
+        for name in _en_names:
+            w = getattr(self, name, None)
+            if w: w.setVisible(is_en)
+        for name in _zh_names:
+            w = getattr(self, name, None)
+            if w: w.setVisible(not is_en)
+
         return scroll
 
     # ===== 界面设置 =====
@@ -908,12 +1031,69 @@ class SettingsTab(QWidget):
             types.append('项目代号')
         if self.chk_postal.isChecked():
             types.append('邮编')
+        # English Patterns
+        if self.chk_en_phone.isChecked(): types.append('Phone')
+        if self.chk_en_ssn.isChecked(): types.append('SSN')
+        if self.chk_en_credit_card.isChecked(): types.append('Credit Card')
+        if self.chk_en_email.isChecked(): types.append('Email')
+        if self.chk_en_ip.isChecked(): types.append('IP Address')
+        if self.chk_en_passport.isChecked(): types.append('Passport')
+        if self.chk_en_mac_address.isChecked(): types.append('MAC Address')
+        if self.chk_en_imei.isChecked(): types.append('IMEI')
+        if self.chk_en_license_plate.isChecked(): types.append('License Plate')
+        if self.chk_en_tax_id.isChecked(): types.append('Tax ID')
+        if self.chk_en_business_license.isChecked(): types.append('Business License')
+        if self.chk_en_bank_routing.isChecked(): types.append('Bank Routing')
+        if self.chk_en_currency.isChecked(): types.append('Currency Amount')
+        if self.chk_en_contract.isChecked(): types.append('Contract Number')
+        if self.chk_en_po.isChecked(): types.append('PO Number')
+        if self.chk_en_fax.isChecked(): types.append('Fax Number')
+        if self.chk_en_employee_id.isChecked(): types.append('Employee ID')
+        if self.chk_en_student_id.isChecked(): types.append('Student ID')
+        if self.chk_en_project_code.isChecked(): types.append('Project Code')
+        if self.chk_en_zip_code.isChecked(): types.append('ZIP Code')
+        if self.chk_en_nino.isChecked(): types.append('NINO')
+        if self.chk_en_nhs.isChecked(): types.append('NHS Number')
+        if self.chk_en_medical_record.isChecked(): types.append('Medical Record')
+        if self.chk_en_doc_serial.isChecked(): types.append('Document Serial')
+        if self.chk_en_classification.isChecked(): types.append('Classification Level')
+        if self.chk_en_doc_ref.isChecked(): types.append('Document Reference')
         return types
 
     def on_language_changed(self, index):
         """语言下拉框选择后立即生效"""
         lang = 'zh-CN' if index == 0 else 'en-US'
         self.settings['language'] = lang
+
+        # 按语言切换中英文脱敏组显隐
+        is_en = (lang == 'en-US')
+        en_widgets = [
+            'en_personal_label', 'en_business_label',
+            'chk_en_phone', 'chk_en_ssn', 'chk_en_credit_card', 'chk_en_email',
+            'chk_en_ip', 'chk_en_passport', 'chk_en_mac_address', 'chk_en_imei',
+            'chk_en_license_plate', 'chk_en_tax_id', 'chk_en_business_license',
+            'chk_en_bank_routing', 'chk_en_currency', 'chk_en_contract',
+            'chk_en_po', 'chk_en_fax', 'chk_en_employee_id', 'chk_en_student_id',
+            'chk_en_project_code', 'chk_en_zip_code', 'chk_en_nino',
+            'chk_en_nhs', 'chk_en_medical_record', 'chk_en_doc_serial',
+            'chk_en_classification', 'chk_en_doc_ref',
+        ]
+        zh_widgets = [
+            'personal_label', 'biz_label', 'gov_label', 'med_label',
+            'chk_phone', 'chk_email', 'chk_idcard', 'chk_bankcard', 'chk_ip',
+            'chk_passport', 'chk_mac', 'chk_imei', 'chk_plate', 'chk_social',
+            'chk_credit', 'chk_contract', 'chk_amount', 'chk_license',
+            'chk_phone_biz', 'chk_account_permit', 'chk_purchase_order',
+            'chk_fax', 'chk_employee_id', 'chk_project_code', 'chk_postal',
+            'chk_docnum', 'chk_doclevel', 'chk_docref', 'chk_medicare',
+            'chk_medical_record',
+        ]
+        for name in en_widgets:
+            w = getattr(self, name, None)
+            if w: w.setVisible(is_en)
+        for name in zh_widgets:
+            w = getattr(self, name, None)
+            if w: w.setVisible(not is_en)
         self._propagate_language()
 
     def on_theme_changed(self, index):
@@ -1251,21 +1431,19 @@ class SettingsTab(QWidget):
 
         # ★ i18n: 翻译 create_row() 创建的标签（未存储为 self.xxx）
         from PySide6.QtWidgets import QLabel as _QLabel
-        _label_map = {
-            '默认目录': _('默认目录'),
-            '并发线程数': _('并发线程数'),
-            '颜色主题': _('颜色主题'),
-            '语言': _('语言'),
-            '遮罩字符': _('遮罩字符'),
-            '自定义敏感词': _('自定义敏感词'),
-            '自定义正则表达式': _('自定义正则表达式'),
-            '历史记录数量': _('历史记录数量'),
-            '字体大小': _('字体大小'),
-            '表格行高': _('表格行高'),
-            '日志级别': _('日志级别'),
-            '最大日志大小 (MB)': _('最大日志大小 (MB)'),
-            '缓存上限 (MB)': _('缓存上限 (MB)'),
-        }
+        # ★ fix: 完整双向映射——用实际翻译函数构建，不硬编码英文
+        _orig_zh = ['语言', '颜色主题', '默认目录', '并发线程数', '遮罩字符',
+                    '自定义敏感词', '自定义正则表达式', '历史记录数量',
+                    '字体大小', '表格行高', '日志级别',
+                    '最大日志大小 (MB)', '缓存上限 (MB)']
+        _label_map = {}
+        # 双向：用 zh-CN 和 en-US 各翻译一次，作为可查找的 key
+        for _zh in _orig_zh:
+            _label_map[_zh] = _(_zh)                        # 中文 key → 当前语言
+        for _zh in _orig_zh:
+            _en = get_translation(_zh, 'en-US')
+            if _en != _zh:  # 只添加不同的英文 key
+                _label_map[_en] = _(_zh)                    # 英文 key → 当前语言
         for _lbl in self.findChildren(_QLabel):
             _txt = _lbl.text()
             if _txt in _label_map:

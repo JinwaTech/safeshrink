@@ -39,9 +39,8 @@ TRANSLATIONS = {
     '清理选项': 'Cleanup Options',
     '密小件': 'SafeShrink',
     '文件减肥': 'Slim',
-    '文件减肠': 'Slim',
     '文件脱敏': 'Sanitize',
-    '批量减肠': 'Batch Slim',
+    '批量减肥': 'Batch Slim',
     '批量脱敏': 'Batch Sanitize',
     '全部': 'All',
     '刷新': 'Refresh',
@@ -418,8 +417,35 @@ TRANSLATIONS = {
 
     # History 标题+下拉
     '📋 处理历史': '📋 Processing History',
-    '文件减肠': 'File Slim',
-    '批量减肠': 'Batch Slim',
+    '文件减肥': 'File Slim',
+    '批量减肥': 'Batch Slim',
+
+    # ===== 英文脱敏标签 =====
+    'English Patterns (英文脱敏:)': 'English Patterns:',
+    'Phone (US/UK)': 'Phone (US/UK)',
+    'SSN (123-45-6789)': 'SSN (123-45-6789)',
+    'Credit Card': 'Credit Card',
+    'Tax ID / EIN': 'Tax ID / EIN',
+    'Business License': 'Business License',
+    'Bank Routing (ABA)': 'Bank Routing (ABA)',
+    'Currency Amount': 'Currency Amount',
+    'Contract Number': 'Contract Number',
+    'PO Number': 'PO Number',
+    'Fax Number': 'Fax Number',
+    'Employee ID': 'Employee ID',
+    'Student ID': 'Student ID',
+    'Project Code': 'Project Code',
+    'ZIP Code': 'ZIP Code',
+    'Passport': 'Passport',
+    'MAC Address': 'MAC Address',
+    'IMEI': 'IMEI',
+    'License Plate': 'License Plate',
+    'NINO (UK)': 'NINO (UK)',
+    'NHS Number (UK)': 'NHS Number (UK)',
+    'Medical Record': 'Medical Record',
+    'Document Serial': 'Document Serial',
+    'Classification Level': 'Classification Level',
+    'Document Reference': 'Document Reference',
 }
 
 

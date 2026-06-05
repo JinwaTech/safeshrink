@@ -193,7 +193,7 @@ class HistoryTab(QWidget):
 
         self.filter_action = QComboBox()
 
-        self.filter_action.addItems(["全部", "文件减肠", "文件脱敏", "批量减肠", "批量脱敏"])
+        self.filter_action.addItems(["全部", "文件减肥", "文件脱敏", "批量减肥", "批量脱敏"])
 
         self.filter_action.currentIndexChanged.connect(self._on_filter_changed)
 
@@ -1348,7 +1348,7 @@ class HistoryTab(QWidget):
         if hasattr(self, 'filter_action'):
             idx = self.filter_action.currentIndex()
             self.filter_action.clear()
-            self.filter_action.addItems([_('全部'), _('文件减肠'), _('文件脱敏'), _('批量减肠'), _('批量脱敏')])
+            self.filter_action.addItems([_('全部'), _('文件减肥'), _('文件脱敏'), _('批量减肥'), _('批量脱敏')])
             self.filter_action.setCurrentIndex(idx)
 
         # 更新统计标签

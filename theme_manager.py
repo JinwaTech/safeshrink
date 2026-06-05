@@ -275,7 +275,7 @@ class ThemeManager:
             QWidget {{
                 background-color: {c['window_bg']};
                 color: {c['text_primary']};
-                font-family: "Segoe UI", "Microsoft YaHei", -apple-system, sans-serif;
+                font-family: "Microsoft YaHei", sans-serif;
                 font-size: 14px;
             }}
 

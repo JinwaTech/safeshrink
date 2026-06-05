@@ -661,7 +661,7 @@ class MainWindow(QMainWindow):
 
         logo_sub = QLabel(_("密小件"))
 
-        logo_sub.setFont(QFont("Segoe UI", 11))
+        logo_sub.setFont(QFont("Microsoft YaHei", 11))
 
         logo_sub.setStyleSheet("background: transparent; color: #8b949e;")
 
@@ -759,7 +759,7 @@ class MainWindow(QMainWindow):
 
         self.theme_btn.setText("  🌙  " + _("深色模式"))
 
-        self.theme_btn.setFont(QFont("Segoe UI", 12))
+        self.theme_btn.setFont(QFont("Microsoft YaHei", 12))
 
         self.theme_btn.setCursor(Qt.CursorShape.PointingHandCursor)
 
@@ -797,7 +797,7 @@ class MainWindow(QMainWindow):
 
         # 版本信息
 
-        footer = QLabel("v1.2.3  SafeShrink")
+        footer = QLabel("v1.2.4  SafeShrink")
 
         footer.setObjectName("footer")
 
@@ -855,7 +855,7 @@ class MainWindow(QMainWindow):
 
         self.page_title.setObjectName("pageTitle")
 
-        self.page_title.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
+        self.page_title.setFont(QFont("Microsoft YaHei", 20, QFont.Weight.Bold))
 
 
 
@@ -1030,7 +1030,7 @@ class MainWindow(QMainWindow):
                 ('⚙️', 'Settings', 'settings'),
             ]
         else:
-            items = self.NAV_ITEMS
+            items = MainWindow.NAV_ITEMS
 
         subtitles = {
             'slim': f'📄 {_("智能压缩文档，减小文件体积")}',
@@ -1069,6 +1069,10 @@ class MainWindow(QMainWindow):
         # ★ i18n fix4: store translated NAV_ITEMS for on_nav_changed
         if lang == 'en-US':
             self.NAV_ITEMS = items
+        else:
+            # ★ fix: restore Chinese NAV_ITEMS from class attribute
+            self.NAV_ITEMS = MainWindow.NAV_ITEMS
+            items = self.NAV_ITEMS
 
         # ★ i18n: 更新窗口标题
         self.setWindowTitle("SafeShrink - " + _("文档工具箱"))

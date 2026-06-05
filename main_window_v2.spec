@@ -1,23 +1,29 @@
 # -*- mode: python ; coding: utf-8 -*-
-from PyInstaller.utils.hooks import collect_all
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
-# ── 收集第三方包 ──
-_markitdown_d, _markitdown_b, _markitdown_h = collect_all('markitdown')
-_magika_d, _magika_b, _magika_h = collect_all('magika')
-_fitz_d, _fitz_b, _fitz_h = collect_all('fitz')
-_pdfplumber_d, _pdfplumber_b, _pdfplumber_h = collect_all('pdfplumber')
-_openpyxl_d, _openpyxl_b, _openpyxl_h = collect_all('openpyxl')
-_pypdf_d, _pypdf_b, _pypdf_h = collect_all('pypdf')
-_reportlab_d, _reportlab_b, _reportlab_h = collect_all('reportlab')
-_xlrd_d, _xlrd_b, _xlrd_h = collect_all('xlrd')
-_docx_d, _docx_b, _docx_h = collect_all('docx')
-_pptx_d, _pptx_b, _pptx_h = collect_all('pptx')
+# markitdown 依赖链: markitdown -> magika -> onnxruntime
+# 用 collect_submodules 获取模块名(用于 hiddenimports)
+# 用 collect_data_files(include_py_files=True) 获取 .py 文件(用于 datas)
+_markitdown_mods = collect_submodules('markitdown')
+_markitdown_datas = collect_data_files('markitdown', include_py_files=True)
+_magika_mods = collect_submodules('magika')
+_magika_datas = collect_data_files('magika', include_py_files=True)
+_onnxruntime_mods = collect_submodules('onnxruntime')
+_onnxruntime_datas = collect_data_files('onnxruntime', include_py_files=True)
+_fitz_mods = collect_submodules('fitz')
+# Office 文件处理依赖
+_pptx_mods = collect_submodules('pptx')
+_pptx_datas = collect_data_files('pptx', include_py_files=True)
+_openpyxl_mods = collect_submodules('openpyxl')
+_openpyxl_datas = collect_data_files('openpyxl', include_py_files=True)
+_pypdf_mods = collect_submodules('pypdf')
+_pypdf_datas = collect_data_files('pypdf', include_py_files=True)
 
 a = Analysis(
     ['main_window_v2.py'],
     pathex=[],
+    # Cython-compiled .pyd modules (replaces .py source files)
     binaries=[
-        # ── 项目核心 .pyd（Cython 编译） ──
         ('safe_shrink.cp313-win_amd64.pyd', '.'),
         ('safe_shrink_gui.cp313-win_amd64.pyd', '.'),
         ('batch_processor.cp313-win_amd64.pyd', '.'),
@@ -32,14 +38,8 @@ a = Analysis(
         ('struct_sanitizer.cp313-win_amd64.pyd', '.'),
         ('history_manager.cp313-win_amd64.pyd', '.'),
         ('history_tab.cp313-win_amd64.pyd', '.'),
-        ('settings_tab.cp313-win_amd64.pyd', '.'),
-        ('theme_manager.cp313-win_amd64.pyd', '.'),
 # translations.py 纯 .py 运行，不编译为 .pyd
         ('result_compare_dialog.cp313-win_amd64.pyd', '.'),
-        # ── 第三方包 binaries ──
-        *_markitdown_b, *_magika_b, *_fitz_b, *_pdfplumber_b,
-        *_openpyxl_b, *_pypdf_b, *_reportlab_b, *_xlrd_b,
-        *_docx_b, *_pptx_b,
     ],
     datas=[
         ('assets/icon06_light.ico', 'assets'),
@@ -48,22 +48,74 @@ a = Analysis(
         ('assets/arrow_down2.png', 'assets'),
         ('assets/icon06_64x64_light.png', 'assets'),
         ('assets/icon14_64x64_dark.png', 'assets'),
-        # ── 第三方包数据 ──
-        *_markitdown_d, *_magika_d, *_fitz_d, *_pdfplumber_d,
-        *_openpyxl_d, *_pypdf_d, *_reportlab_d, *_xlrd_d,
-        *_docx_d, *_pptx_d,
-    ],
+        ('.venv313/Lib/site-packages/fitz', 'fitz'),
+        ('.venv313/Lib/site-packages/onnxruntime/capi', 'onnxruntime/capi'),
+        ('.venv313/Lib/site-packages/pptx', 'pptx'),
+        ('.venv313/Lib/site-packages/openpyxl', 'openpyxl'),
+        ('.venv313/Lib/site-packages/pypdf', 'pypdf'),
+    ] + _markitdown_datas + _magika_datas + _onnxruntime_datas + _pptx_datas + _openpyxl_datas + _pypdf_datas,
     hiddenimports=[
-        # ── 第三方包 hidden imports ──
-        *_markitdown_h, *_magika_h, *_fitz_h, *_pdfplumber_h,
-        *_openpyxl_h, *_pypdf_h, *_reportlab_h, *_xlrd_h,
-        *_docx_h, *_pptx_h,
+        'safe_shrink',
+        'safe_shrink_gui',
+        'batch_processor',
+        'format_to_ssd',
+        'sanitize_ssd',
+        'ssd_embed_images',
+        'sanitize_tab',
+        'batch_tab',
+        'slim_tab',
+        'history_tab',
+        'settings_tab',
+        'theme_manager',
+        'history_manager',
+        'file_status',
+        'translations',
+        'result_compare_dialog',
+        'struct_sanitizer',
+        'fitz',
+        'fitz.table',
+        'fitz.utils',
+        'docx',
+        'pypdf',
         'PIL',
-    ],
+        'markitdown',
+        'mammoth',
+        'cobble',
+        'xlrd',
+        'magika',
+        'onnxruntime',
+        'pptx',
+        'pptx.dmlc',
+        'pptx.oxml',
+        'pptx.presentation',
+        'pptx.slide',
+        'pptx.shape',
+        'pptx.text',
+        'pptx.table',
+        'pptx.chart',
+        'pptx.media',
+        'pptx.util',
+        'openpyxl',
+        'openpyxl.worksheet',
+        'openpyxl.workbook',
+        'openpyxl.cell',
+        'openpyxl.styles',
+        'openpyxl.utils',
+        'openpyxl.xml',
+        'reportlab',
+        'pdfplumber',
+    ] + _markitdown_mods + _magika_mods + _onnxruntime_mods + _fitz_mods + _pptx_mods + _openpyxl_mods + _pypdf_mods,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
+        'speech_recognition',
+        'pocketsphinx',
+        'Pythonwin',
+        'pywin32',
+        'win32com',
+        'win32ui',
+        'pandas',
         'Cython',
         'setuptools',
         'pip',
