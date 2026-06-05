@@ -85,3 +85,19 @@ check_sk3.py
 cli_test.bat
 post_diff_plain.txt
 sanitize_tab_cp313.py
+
+# 核心源码保护（不公开）
+safe_shrink.py
+batch_tab.py
+sanitize_tab.py
+settings_tab.py
+history_tab.py
+history_manager.py
+theme_manager.py
+translations.py
+result_compare_dialog.py
+assets_rc.py
+main_window_v2.py
+format_to_ssd.py
+struct_sanitizer.py
+main_window_v2.spec
