@@ -124,7 +124,7 @@ description: 密小件 · 文档减肥 / 脱敏 / SSD 转换桌面工具。触�
 ## 基本信息 / Basic Info
 
 - **版本 / Version**: v1.2.4
-- **许可证 / License**: 专有软件（© 杭州金蛙信息科技有限公司）/ Proprietary (© Hangzhou Jinwa Technology Co., Ltd.)
+- **许可证 / License**: MIT-0（Skill 包）/ MIT-0 (Skill package)
 - **GitHub**: https://github.com/JinwaTech/safeshrink
 - **适用平台 / Platform**: Windows 10/11
 - **界面语言 / Language**: 中文 / English（自动检测系统语言 / Auto-detect system language）
