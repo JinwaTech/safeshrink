@@ -53,3 +53,17 @@ versions/
 
 tests/
 
+
+# 临时调试/测试脚本
+_check_*.py
+_fix_*.py
+_scan*.py
+_test_*.py
+_fulltest_v*.py
+_fulltest/
+_recompile.py
+_temp_compile.*
+_debug_*.png
+
+# PyInstaller 构建产物
+_internal/
