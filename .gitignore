@@ -67,3 +67,21 @@ _debug_*.png
 
 # PyInstaller 构建产物
 _internal/
+
+# 编译产物
+*.obj
+*.lib
+*.exp
+
+# 构建产物
+SafeShrink.exe
+.coverage
+
+# 临时检查/测试脚本
+check_bilingual.py
+check_sk.py
+check_sk2.py
+check_sk3.py
+cli_test.bat
+post_diff_plain.txt
+sanitize_tab_cp313.py
